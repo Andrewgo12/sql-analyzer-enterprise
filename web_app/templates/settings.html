@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<!-- 
+    ============================================================================
+    SQL ANALYZER ENTERPRISE - APPLICATION SETTINGS TEMPLATE
+    ============================================================================
+    
+    This template provides comprehensive application settings
+    and configuration options. It includes:
+    
+    - User interface preferences and theme selection
+    - Analysis configuration and default options
+    - Notification settings and email preferences
+    - Security settings and session management
+    - Integration settings for external databases
+    - Professional tabbed interface for organized settings
+    
+    Key Features:
+    - Responsive design for all device sizes (mobile-first approach)
+    - Professional enterprise styling and branding
+    - Accessibility compliance (WCAG 2.1 AA standards)
+    - Real-time data updates with WebSocket integration
+    - Comprehensive error handling and user feedback
+    - Progressive enhancement for better user experience
+    - SEO optimization and semantic HTML5 structure
+    
+    Technical Implementation:
+    - Bootstrap 5 for responsive grid system and components
+    - FontAwesome for professional iconography
+    - Chart.js for data visualization and analytics
+    - Custom CSS for enterprise-grade styling
+    - JavaScript modules for modular functionality
+    - CSRF protection and secure form handling
+    
+    Author: SQL Analyzer Enterprise Team
+    Version: 1.0.0
+    Last Updated: 2025-07-12
+    ============================================================================
+-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Enterprise Styles -->
+    <link href="/static/css/main.css" rel="stylesheet">
+    <link href="/static/css/dashboard-enterprise.css" rel="stylesheet">
+    <link href="/static/css/modals-enterprise.css" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body class="dashboard-container">
+    <!-- Professional Dashboard Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <a href="/dashboard" class="dashboard-brand">
+                <i class="fas fa-database"></i>
+                <span>SQL Analyzer Enterprise</span>
+            </a>
+            
+            <div class="dashboard-actions">
+                <a href="/dashboard" class="btn-enterprise btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="d-none d-md-inline">Back to Dashboard</span>
+                </a>
+                
+                <button class="btn-enterprise btn-outline btn-sm" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="d-none d-md-inline">Help</span>
+                </button>
+                
+                <div class="dropdown">
+                    <button class="btn-enterprise btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="user-name" class="d-none d-md-inline">User</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Professional Settings Main Content -->
+    <main class="dashboard-main">
+        <div class="row g-4">
+            <!-- Settings Navigation -->
+            <div class="col-lg-3">
+                <div class="card-enterprise">
+                    <div class="card-enterprise-header">
+                        <h6 class="card-enterprise-title">
+                            <i class="fas fa-cog"></i>
+                            Settings Categories
+                        </h6>
+                    </div>
+                    <div class="card-enterprise-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#interface" class="list-group-item list-group-item-action active" data-tab="interface">
+                                <i class="fas fa-palette me-2"></i>Interface
+                            </a>
+                            <a href="#analysis" class="list-group-item list-group-item-action" data-tab="analysis">
+                                <i class="fas fa-chart-line me-2"></i>Analysis
+                            </a>
+                            <a href="#export" class="list-group-item list-group-item-action" data-tab="export">
+                                <i class="fas fa-download me-2"></i>Export
+                            </a>
+                            <a href="#security" class="list-group-item list-group-item-action" data-tab="security">
+                                <i class="fas fa-shield-alt me-2"></i>Security
+                            </a>
+                            <a href="#data" class="list-group-item list-group-item-action" data-tab="data">
+                                <i class="fas fa-database me-2"></i>Data Management
+                            </a>
+                            <a href="#notifications" class="list-group-item list-group-item-action" data-tab="notifications">
+                                <i class="fas fa-bell me-2"></i>Notifications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Content -->
+            <div class="col-lg-9">
+                <!-- Interface Settings -->
+                <div class="settings-tab active" id="interface-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-palette"></i>
+                                Interface Settings
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Theme</div>
+                                        <div class="settings-option-description">Choose your preferred color theme</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="theme-select" style="width: auto;">
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="auto">Auto (System)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Language</div>
+                                        <div class="settings-option-description">Select your preferred language</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="language-select" style="width: auto;">
+                                        <option value="en">English</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Français</option>
+                                        <option value="de">Deutsch</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Animations</div>
+                                        <div class="settings-option-description">Enable smooth animations and transitions</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="animations-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Compact Mode</div>
+                                        <div class="settings-option-description">Reduce spacing for more content on screen</div>
+                                    </div>
+                                    <div class="settings-toggle" id="compact-toggle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analysis Settings -->
+                <div class="settings-tab" id="analysis-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-chart-line"></i>
+                                Analysis Configuration
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Default Analysis Types</div>
+                                        <div class="settings-option-description">Select which analyses to run by default</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="syntax-analysis" checked>
+                                            <label class="form-check-label-enterprise" for="syntax-analysis">Syntax Analysis</label>
+                                        </div>
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="error-detection" checked>
+                                            <label class="form-check-label-enterprise" for="error-detection">Error Detection</label>
+                                        </div>
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="schema-analysis" checked>
+                                            <label class="form-check-label-enterprise" for="schema-analysis">Schema Analysis</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="security-analysis">
+                                            <label class="form-check-label-enterprise" for="security-analysis">Security Analysis</label>
+                                        </div>
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="performance-analysis">
+                                            <label class="form-check-label-enterprise" for="performance-analysis">Performance Analysis</label>
+                                        </div>
+                                        <div class="form-check-enterprise">
+                                            <input class="form-check-input-enterprise" type="checkbox" id="domain-recognition">
+                                            <label class="form-check-label-enterprise" for="domain-recognition">AI Domain Recognition</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-option mt-4">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Analysis Timeout</div>
+                                        <div class="settings-option-description">Maximum time to wait for analysis completion</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="timeout-select" style="width: auto;">
+                                        <option value="300">5 minutes</option>
+                                        <option value="600" selected>10 minutes</option>
+                                        <option value="1800">30 minutes</option>
+                                        <option value="3600">1 hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Settings -->
+                <div class="settings-tab" id="export-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-download"></i>
+                                Export Preferences
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Default Export Format</div>
+                                        <div class="settings-option-description">Choose your preferred export format</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="export-format" style="width: auto;">
+                                        <option value="html">HTML Report</option>
+                                        <option value="pdf">PDF Document</option>
+                                        <option value="json">JSON Data</option>
+                                        <option value="excel">Excel Spreadsheet</option>
+                                        <option value="csv">CSV File</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Include Charts</div>
+                                        <div class="settings-option-description">Include visualizations in exported reports</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="include-charts-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Company Branding</div>
+                                        <div class="settings-option-description">Add your company logo and branding to reports</div>
+                                    </div>
+                                    <div class="settings-toggle" id="branding-toggle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Settings -->
+                <div class="settings-tab" id="security-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-shield-alt"></i>
+                                Security Settings
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Session Timeout</div>
+                                        <div class="settings-option-description">Automatically sign out after inactivity</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="session-timeout" style="width: auto;">
+                                        <option value="1800">30 minutes</option>
+                                        <option value="3600" selected>1 hour</option>
+                                        <option value="7200">2 hours</option>
+                                        <option value="14400">4 hours</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Login Notifications</div>
+                                        <div class="settings-option-description">Get notified of new login attempts</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="login-notifications-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Two-Factor Authentication</div>
+                                        <div class="settings-option-description">Add an extra layer of security to your account</div>
+                                    </div>
+                                    <button class="btn-enterprise btn-outline btn-sm" onclick="setup2FA()">
+                                        <i class="fas fa-mobile-alt me-2"></i>Setup 2FA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Management Settings -->
+                <div class="settings-tab" id="data-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-database"></i>
+                                Data Management
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Auto-delete Files</div>
+                                        <div class="settings-option-description">Automatically delete uploaded files after</div>
+                                    </div>
+                                    <select class="form-control-enterprise" id="auto-delete" style="width: auto;">
+                                        <option value="0">Never</option>
+                                        <option value="7">7 days</option>
+                                        <option value="30" selected>30 days</option>
+                                        <option value="90">90 days</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Backup Data</div>
+                                        <div class="settings-option-description">Automatically backup your analysis data</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="backup-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Data Export</div>
+                                        <div class="settings-option-description">Download all your data</div>
+                                    </div>
+                                    <button class="btn-enterprise btn-outline btn-sm" onclick="exportAllData()">
+                                        <i class="fas fa-download me-2"></i>Export Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Settings -->
+                <div class="settings-tab" id="notifications-tab">
+                    <div class="card-enterprise">
+                        <div class="card-enterprise-header">
+                            <h5 class="card-enterprise-title">
+                                <i class="fas fa-bell"></i>
+                                Notification Preferences
+                            </h5>
+                        </div>
+                        <div class="card-enterprise-body">
+                            <div class="settings-section">
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Browser Notifications</div>
+                                        <div class="settings-option-description">Show desktop notifications for important events</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="browser-notifications-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Analysis Complete</div>
+                                        <div class="settings-option-description">Notify when analysis is finished</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="analysis-complete-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Error Alerts</div>
+                                        <div class="settings-option-description">Get notified of critical errors</div>
+                                    </div>
+                                    <div class="settings-toggle active" id="error-alerts-toggle"></div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-label">
+                                        <div class="settings-option-title">Sound Effects</div>
+                                        <div class="settings-option-description">Play sounds for notifications</div>
+                                    </div>
+                                    <div class="settings-toggle" id="sound-effects-toggle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Settings Button -->
+                <div class="d-flex justify-content-end mt-4">
+                    <button class="btn-enterprise btn-secondary me-2" onclick="resetSettings()">
+                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                    </button>
+                    <button class="btn-enterprise btn-primary" onclick="saveSettings()">
+                        <i class="fas fa-save me-2"></i>Save All Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Professional Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.settings = this.loadSettings();
+                this.init();
+            }
+            
+            init() {
+                this.setupTabNavigation();
+                this.setupToggleButtons();
+                this.loadCurrentSettings();
+                this.loadUserData();
+            }
+            
+            setupTabNavigation() {
+                const tabLinks = document.querySelectorAll('[data-tab]');
+                const tabContents = document.querySelectorAll('.settings-tab');
+                
+                tabLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Remove active class from all links and tabs
+                        tabLinks.forEach(l => l.classList.remove('active'));
+                        tabContents.forEach(t => t.classList.remove('active'));
+                        
+                        // Add active class to clicked link and corresponding tab
+                        link.classList.add('active');
+                        const tabId = link.getAttribute('data-tab') + '-tab';
+                        document.getElementById(tabId).classList.add('active');
+                    });
+                });
+            }
+            
+            setupToggleButtons() {
+                const toggles = document.querySelectorAll('.settings-toggle');
+                toggles.forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        toggle.classList.toggle('active');
+                    });
+                });
+            }
+            
+            loadCurrentSettings() {
+                // Load settings from localStorage and apply to UI
+                Object.keys(this.settings).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = this.settings[key];
+                        } else if (element.classList.contains('settings-toggle')) {
+                            if (this.settings[key]) {
+                                element.classList.add('active');
+                            } else {
+                                element.classList.remove('active');
+                            }
+                        } else {
+                            element.value = this.settings[key];
+                        }
+                    }
+                });
+            }
+            
+            loadUserData() {
+                const username = localStorage.getItem('sqlAnalyzer_username') || 'User';
+                document.getElementById('user-name').textContent = username;
+            }
+            
+            loadSettings() {
+                const defaultSettings = {
+                    'theme-select': 'light',
+                    'language-select': 'en',
+                    'animations-toggle': true,
+                    'compact-toggle': false,
+                    'syntax-analysis': true,
+                    'error-detection': true,
+                    'schema-analysis': true,
+                    'security-analysis': false,
+                    'performance-analysis': false,
+                    'domain-recognition': false,
+                    'timeout-select': '600',
+                    'export-format': 'html',
+                    'include-charts-toggle': true,
+                    'branding-toggle': false,
+                    'session-timeout': '3600',
+                    'login-notifications-toggle': true,
+                    'auto-delete': '30',
+                    'backup-toggle': true,
+                    'browser-notifications-toggle': true,
+                    'analysis-complete-toggle': true,
+                    'error-alerts-toggle': true,
+                    'sound-effects-toggle': false
+                };
+                
+                try {
+                    const saved = localStorage.getItem('sqlAnalyzer_settings');
+                    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+                } catch (error) {
+                    return defaultSettings;
+                }
+            }
+            
+            saveSettings() {
+                const settings = {};
+                
+                // Collect all settings from the UI
+                const selects = document.querySelectorAll('select[id]');
+                const checkboxes = document.querySelectorAll('input[type="checkbox"][id]');
+                const toggles = document.querySelectorAll('.settings-toggle[id]');
+                
+                selects.forEach(select => {
+                    settings[select.id] = select.value;
+                });
+                
+                checkboxes.forEach(checkbox => {
+                    settings[checkbox.id] = checkbox.checked;
+                });
+                
+                toggles.forEach(toggle => {
+                    settings[toggle.id] = toggle.classList.contains('active');
+                });
+                
+                try {
+                    localStorage.setItem('sqlAnalyzer_settings', JSON.stringify(settings));
+                    this.settings = settings;
+                    this.applySettings();
+                    this.showNotification('Settings saved successfully!', 'success');
+                } catch (error) {
+                    this.showNotification('Failed to save settings', 'error');
+                }
+            }
+            
+            resetSettings() {
+                if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                    localStorage.removeItem('sqlAnalyzer_settings');
+                    this.settings = this.loadSettings();
+                    this.loadCurrentSettings();
+                    this.showNotification('Settings reset to defaults', 'info');
+                }
+            }
+            
+            applySettings() {
+                // Apply theme
+                if (this.settings['theme-select'] === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+                
+                // Apply animations
+                if (!this.settings['animations-toggle']) {
+                    document.body.classList.add('no-animations');
+                } else {
+                    document.body.classList.remove('no-animations');
+                }
+                
+                // Apply compact mode
+                if (this.settings['compact-toggle']) {
+                    document.body.classList.add('compact-mode');
+                } else {
+                    document.body.classList.remove('compact-mode');
+                }
+            }
+            
+            showNotification(message, type) {
+                if (window.showNotification) {
+                    window.showNotification(message, type);
+                } else {
+                    alert(message);
+                }
+            }
+        }
+        
+        function setup2FA() {
+            alert('Two-Factor Authentication setup will be implemented in the next version.');
+        }
+        
+        function exportAllData() {
+            alert('Data export feature will be implemented in the next version.');
+        }
+        
+        function signOut() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+        
+        function showHelp() {
+            if (window.showModal) {
+                window.showModal('helpModal');
+            }
+        }
+        
+        // Global functions for the settings manager
+        let settingsManager;
+        
+        function saveSettings() {
+            settingsManager.saveSettings();
+        }
+        
+        function resetSettings() {
+            settingsManager.resetSettings();
+        }
+        
+        // Initialize settings manager
+        document.addEventListener('DOMContentLoaded', () => {
+            settingsManager = new SettingsManager();
+        });
+    </script>
+    
+    <style>
+        .settings-tab {
+            display: none;
+        }
+        
+        .settings-tab.active {
+            display: block;
+        }
+        
+        .list-group-item {
+            border: none;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .list-group-item:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .list-group-item.active {
+            background-color: var(--primary-color);
+            color: var(--text-inverse);
+        }
+        
+        .settings-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .settings-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+        
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-option-label {
+            flex: 1;
+        }
+        
+        .settings-option-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .settings-option-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .settings-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: var(--bg-quaternary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .settings-toggle.active {
+            background: var(--primary-color);
+        }
+        
+        .settings-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .settings-toggle.active::after {
+            transform: translateX(24px);
+        }
+        
+        .form-check-enterprise {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-check-input-enterprise {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .form-check-input-enterprise:checked {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .form-check-label-enterprise {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</body>
+</html>

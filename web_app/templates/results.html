@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<!-- 
+    ============================================================================
+    SQL ANALYZER ENTERPRISE - ANALYSIS RESULTS TEMPLATE
+    ============================================================================
+    
+    This template displays comprehensive SQL analysis results
+    with professional data visualization. It includes:
+    
+    - Detailed analysis results with multiple view modes
+    - Interactive charts and graphs for data visualization
+    - Error reporting with severity levels and recommendations
+    - Schema analysis with relationship diagrams
+    - Performance metrics and optimization suggestions
+    - Export functionality for various formats (PDF, Excel, JSON)
+    
+    Key Features:
+    - Responsive design for all device sizes (mobile-first approach)
+    - Professional enterprise styling and branding
+    - Accessibility compliance (WCAG 2.1 AA standards)
+    - Real-time data updates with WebSocket integration
+    - Comprehensive error handling and user feedback
+    - Progressive enhancement for better user experience
+    - SEO optimization and semantic HTML5 structure
+    
+    Technical Implementation:
+    - Bootstrap 5 for responsive grid system and components
+    - FontAwesome for professional iconography
+    - Chart.js for data visualization and analytics
+    - Custom CSS for enterprise-grade styling
+    - JavaScript modules for modular functionality
+    - CSRF protection and secure form handling
+    
+    Author: SQL Analyzer Enterprise Team
+    Version: 1.0.0
+    Last Updated: 2025-07-12
+    ============================================================================
+-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Enterprise Styles -->
+    <link href="/static/css/main.css" rel="stylesheet">
+    <link href="/static/css/dashboard-enterprise.css" rel="stylesheet">
+    <link href="/static/css/modals-enterprise.css" rel="stylesheet">
+
+    <!-- Professional Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+
+<body class="dashboard-container">
+    <!-- Professional Dashboard Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <a href="/dashboard" class="dashboard-brand">
+                <i class="fas fa-database"></i>
+                <span>SQL Analyzer Enterprise</span>
+            </a>
+
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="d-none d-md-block">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/history">History</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Results</li>
+                </ol>
+            </nav>
+
+            <div class="dashboard-actions">
+                <button class="btn-enterprise btn-outline btn-sm" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="d-none d-md-inline">Back</span>
+                </button>
+
+                <div class="dropdown">
+                    <button class="btn-enterprise btn-primary btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                        <i class="fas fa-download"></i>
+                        <span class="d-none d-md-inline">Export</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="exportResults('pdf')">
+                                <i class="fas fa-file-pdf me-2"></i>PDF Report
+                            </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportResults('html')">
+                                <i class="fas fa-file-code me-2"></i>HTML Report
+                            </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportResults('json')">
+                                <i class="fas fa-file-alt me-2"></i>JSON Data
+                            </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportResults('excel')">
+                                <i class="fas fa-file-excel me-2"></i>Excel Spreadsheet
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#" onclick="shareResults()">
+                                <i class="fas fa-share me-2"></i>Share Results
+                            </a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn-enterprise btn-secondary btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="user-name" class="d-none d-md-inline">User</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                        <li><a class="dropdown-item" href="/settings">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/" onclick="signOut()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                            </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Professional Results Main Content -->
+    <main class="dashboard-main">
+        <!-- Analysis Overview -->
+        <div class="card-enterprise mb-4">
+            <div class="card-enterprise-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-enterprise-title">
+                        <i class="fas fa-chart-line"></i>
+                        Analysis Overview
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-success" id="analysis-status">Completed</span>
+                        <small class="text-muted" id="analysis-date">Today, 2:30 PM</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-enterprise-body">
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <div class="analysis-info">
+                            <h6 class="mb-3">File Information</h6>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="info-item">
+                                        <span class="info-label">File Name:</span>
+                                        <span class="info-value" id="file-name">database_schema.sql</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">File Size:</span>
+                                        <span class="info-value" id="file-size">2.3 MB</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Lines of Code:</span>
+                                        <span class="info-value" id="lines-count">1,247</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="info-item">
+                                        <span class="info-label">Processing Time:</span>
+                                        <span class="info-value" id="processing-time">45 seconds</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Analysis Types:</span>
+                                        <span class="info-value" id="analysis-types">Syntax, Schema, Security</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Database Type:</span>
+                                        <span class="info-value" id="database-type">PostgreSQL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="health-score-container text-center">
+                            <h6 class="mb-3">Overall Health Score</h6>
+                            <div class="health-score-circle">
+                                <canvas id="health-score-chart" width="120" height="120"></canvas>
+                                <div class="score-overlay">
+                                    <span class="score-value" id="health-score">85</span>
+                                    <span class="score-max">/100</span>
+                                </div>
+                            </div>
+                            <p class="text-muted mt-2">Good quality with minor issues</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tabs -->
+        <div class="card-enterprise">
+            <div class="card-enterprise-header">
+                <ul class="nav nav-tabs card-header-tabs" id="results-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary"
+                            type="button" role="tab">
+                            <i class="fas fa-chart-pie me-2"></i>Summary
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="errors-tab" data-bs-toggle="tab" data-bs-target="#errors"
+                            type="button" role="tab">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Errors <span class="badge bg-danger ms-1"
+                                id="errors-count">3</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="schema-tab" data-bs-toggle="tab" data-bs-target="#schema"
+                            type="button" role="tab">
+                            <i class="fas fa-sitemap me-2"></i>Schema
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security"
+                            type="button" role="tab">
+                            <i class="fas fa-shield-alt me-2"></i>Security
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance"
+                            type="button" role="tab">
+                            <i class="fas fa-tachometer-alt me-2"></i>Performance
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-enterprise-body">
+                <div class="tab-content" id="results-tab-content">
+                    <!-- Summary Tab -->
+                    <div class="tab-pane fade show active" id="summary" role="tabpanel">
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="summary-metrics mb-4">
+                                    <h6 class="mb-3">Key Metrics</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value text-primary" id="summary-tables">12</div>
+                                                <div class="metric-label">Tables</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value text-info" id="summary-columns">89</div>
+                                                <div class="metric-label">Columns</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value text-success" id="summary-indexes">24</div>
+                                                <div class="metric-label">Indexes</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value text-warning" id="summary-constraints">15</div>
+                                                <div class="metric-label">Constraints</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="chart-container">
+                                    <h6 class="mb-3">Analysis Distribution</h6>
+                                    <canvas id="summary-chart" height="300"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="recommendations">
+                                    <h6 class="mb-3">Top Recommendations</h6>
+                                    <div class="recommendation-list" id="recommendations-list">
+                                        <div class="recommendation-item">
+                                            <div class="recommendation-icon bg-warning">
+                                                <i class="fas fa-lightbulb"></i>
+                                            </div>
+                                            <div class="recommendation-content">
+                                                <div class="recommendation-title">Add Missing Indexes</div>
+                                                <div class="recommendation-desc">Consider adding indexes on frequently
+                                                    queried columns</div>
+                                            </div>
+                                        </div>
+                                        <div class="recommendation-item">
+                                            <div class="recommendation-icon bg-info">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </div>
+                                            <div class="recommendation-content">
+                                                <div class="recommendation-title">Security Review</div>
+                                                <div class="recommendation-desc">Review table permissions and access
+                                                    controls</div>
+                                            </div>
+                                        </div>
+                                        <div class="recommendation-item">
+                                            <div class="recommendation-icon bg-success">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div class="recommendation-content">
+                                                <div class="recommendation-title">Good Practices</div>
+                                                <div class="recommendation-desc">Schema follows most best practices
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Errors Tab -->
+                    <div class="tab-pane fade" id="errors" role="tabpanel">
+                        <div class="errors-container">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="mb-0">SQL Errors & Issues</h6>
+                                <div class="error-filters">
+                                    <select class="form-control-enterprise form-control-sm" id="error-severity-filter">
+                                        <option value="">All Severities</option>
+                                        <option value="critical">Critical</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="info">Info</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="error-list" id="error-list">
+                                <div class="error-item severity-critical">
+                                    <div class="error-icon">
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    </div>
+                                    <div class="error-content">
+                                        <div class="error-header">
+                                            <span class="error-title">Syntax Error</span>
+                                            <span class="badge bg-danger">Critical</span>
+                                        </div>
+                                        <div class="error-message">Missing semicolon at end of statement</div>
+                                        <div class="error-location">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            Line 45, Column 23
+                                        </div>
+                                        <div class="error-code">
+                                            <pre><code>CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(100)  -- Missing semicolon here
+)</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="error-item severity-warning">
+                                    <div class="error-icon">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                    <div class="error-content">
+                                        <div class="error-header">
+                                            <span class="error-title">Performance Warning</span>
+                                            <span class="badge bg-warning">Warning</span>
+                                        </div>
+                                        <div class="error-message">Table lacks primary key index</div>
+                                        <div class="error-location">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            Table: user_sessions
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="error-item severity-info">
+                                    <div class="error-icon">
+                                        <i class="fas fa-info-circle text-info"></i>
+                                    </div>
+                                    <div class="error-content">
+                                        <div class="error-header">
+                                            <span class="error-title">Best Practice</span>
+                                            <span class="badge bg-info">Info</span>
+                                        </div>
+                                        <div class="error-message">Consider using BIGINT for auto-incrementing IDs</div>
+                                        <div class="error-location">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            Multiple tables
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schema Tab -->
+                    <div class="tab-pane fade" id="schema" role="tabpanel">
+                        <div class="schema-container">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="schema-visualization">
+                                        <h6 class="mb-3">Database Schema Diagram</h6>
+                                        <div class="schema-diagram" id="schema-diagram">
+                                            <div class="table-node" data-table="users">
+                                                <div class="table-header">
+                                                    <i class="fas fa-table me-2"></i>users
+                                                </div>
+                                                <div class="table-columns">
+                                                    <div class="column primary-key">id (PK)</div>
+                                                    <div class="column">username</div>
+                                                    <div class="column">email</div>
+                                                    <div class="column">created_at</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-node" data-table="orders">
+                                                <div class="table-header">
+                                                    <i class="fas fa-table me-2"></i>orders
+                                                </div>
+                                                <div class="table-columns">
+                                                    <div class="column primary-key">id (PK)</div>
+                                                    <div class="column foreign-key">user_id (FK)</div>
+                                                    <div class="column">total_amount</div>
+                                                    <div class="column">order_date</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="relationship-line" data-from="users" data-to="orders"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="schema-details">
+                                        <h6 class="mb-3">Schema Statistics</h6>
+                                        <div class="schema-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">Total Tables:</span>
+                                                <span class="stat-value">12</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Total Columns:</span>
+                                                <span class="stat-value">89</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Primary Keys:</span>
+                                                <span class="stat-value">12</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Foreign Keys:</span>
+                                                <span class="stat-value">8</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Indexes:</span>
+                                                <span class="stat-value">24</span>
+                                            </div>
+                                        </div>
+
+                                        <h6 class="mt-4 mb-3">Table List</h6>
+                                        <div class="table-list" id="table-list">
+                                            <div class="table-item" onclick="selectTable('users')">
+                                                <i class="fas fa-table me-2"></i>
+                                                <span>users</span>
+                                                <small class="text-muted">(4 columns)</small>
+                                            </div>
+                                            <div class="table-item" onclick="selectTable('orders')">
+                                                <i class="fas fa-table me-2"></i>
+                                                <span>orders</span>
+                                                <small class="text-muted">(6 columns)</small>
+                                            </div>
+                                            <div class="table-item" onclick="selectTable('products')">
+                                                <i class="fas fa-table me-2"></i>
+                                                <span>products</span>
+                                                <small class="text-muted">(8 columns)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel">
+                        <div class="security-container">
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <div class="security-score-card">
+                                        <h6 class="mb-3">Security Score</h6>
+                                        <div class="security-score-display">
+                                            <div class="score-circle">
+                                                <canvas id="security-score-chart" width="100" height="100"></canvas>
+                                                <div class="score-text">
+                                                    <span class="score-number">78</span>
+                                                    <span class="score-label">/100</span>
+                                                </div>
+                                            </div>
+                                            <div class="score-description">
+                                                <p class="text-warning">Moderate security level</p>
+                                                <p class="small text-muted">Some security improvements recommended</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="security-issues mt-4">
+                                        <h6 class="mb-3">Security Issues</h6>
+                                        <div class="issue-list">
+                                            <div class="issue-item high-risk">
+                                                <div class="issue-icon">
+                                                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                                                </div>
+                                                <div class="issue-content">
+                                                    <div class="issue-title">SQL Injection Risk</div>
+                                                    <div class="issue-desc">Dynamic query construction detected</div>
+                                                    <div class="issue-location">Line 156</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="issue-item medium-risk">
+                                                <div class="issue-icon">
+                                                    <i class="fas fa-shield-alt text-warning"></i>
+                                                </div>
+                                                <div class="issue-content">
+                                                    <div class="issue-title">Weak Password Policy</div>
+                                                    <div class="issue-desc">No password complexity requirements</div>
+                                                    <div class="issue-location">users table</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="security-recommendations">
+                                        <h6 class="mb-3">Security Recommendations</h6>
+                                        <div class="recommendation-list">
+                                            <div class="recommendation-card">
+                                                <div class="recommendation-header">
+                                                    <i class="fas fa-lock text-primary"></i>
+                                                    <span>Use Parameterized Queries</span>
+                                                </div>
+                                                <div class="recommendation-body">
+                                                    Replace dynamic SQL with parameterized queries to prevent SQL
+                                                    injection attacks.
+                                                </div>
+                                            </div>
+
+                                            <div class="recommendation-card">
+                                                <div class="recommendation-header">
+                                                    <i class="fas fa-key text-success"></i>
+                                                    <span>Implement Password Hashing</span>
+                                                </div>
+                                                <div class="recommendation-body">
+                                                    Use bcrypt or similar strong hashing algorithms for password
+                                                    storage.
+                                                </div>
+                                            </div>
+
+                                            <div class="recommendation-card">
+                                                <div class="recommendation-header">
+                                                    <i class="fas fa-user-shield text-info"></i>
+                                                    <span>Add Access Controls</span>
+                                                </div>
+                                                <div class="recommendation-body">
+                                                    Implement role-based access control for sensitive tables.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Tab -->
+                    <div class="tab-pane fade" id="performance" role="tabpanel">
+                        <div class="performance-container">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="performance-metrics">
+                                        <h6 class="mb-3">Performance Analysis</h6>
+                                        <div class="metrics-grid">
+                                            <div class="metric-item">
+                                                <div class="metric-icon bg-primary">
+                                                    <i class="fas fa-database"></i>
+                                                </div>
+                                                <div class="metric-info">
+                                                    <div class="metric-value">2.3 MB</div>
+                                                    <div class="metric-label">Database Size</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="metric-item">
+                                                <div class="metric-icon bg-success">
+                                                    <i class="fas fa-bolt"></i>
+                                                </div>
+                                                <div class="metric-info">
+                                                    <div class="metric-value">24</div>
+                                                    <div class="metric-label">Indexes</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="metric-item">
+                                                <div class="metric-icon bg-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="metric-info">
+                                                    <div class="metric-value">3</div>
+                                                    <div class="metric-label">Missing Indexes</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="metric-item">
+                                                <div class="metric-icon bg-info">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </div>
+                                                <div class="metric-info">
+                                                    <div class="metric-value">85%</div>
+                                                    <div class="metric-label">Query Efficiency</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="performance-chart mt-4">
+                                        <h6 class="mb-3">Performance Trends</h6>
+                                        <canvas id="performance-chart" height="300"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="performance-suggestions">
+                                        <h6 class="mb-3">Optimization Suggestions</h6>
+                                        <div class="suggestion-list">
+                                            <div class="suggestion-item">
+                                                <div class="suggestion-priority high">HIGH</div>
+                                                <div class="suggestion-content">
+                                                    <div class="suggestion-title">Add Index on user_id</div>
+                                                    <div class="suggestion-desc">orders table queries will be 60% faster
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="suggestion-item">
+                                                <div class="suggestion-priority medium">MEDIUM</div>
+                                                <div class="suggestion-content">
+                                                    <div class="suggestion-title">Normalize email_logs table</div>
+                                                    <div class="suggestion-desc">Reduce storage by 25%</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="suggestion-item">
+                                                <div class="suggestion-priority low">LOW</div>
+                                                <div class="suggestion-content">
+                                                    <div class="suggestion-title">Archive old records</div>
+                                                    <div class="suggestion-desc">Move data older than 2 years</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Professional Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+
+    <!-- Modular JavaScript Architecture -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/modals.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/navigation.js"></script>
+    <script src="/static/js/results.js"></script>
+    <script src="/static/js/events.js"></script>
+
+    <script>
+        // Initialize Results Manager
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.ResultsManager) {
+                window.resultsManager = new ResultsManager();
+            }
+        });
+
+        // Global functions for results view
+        function goBack() {
+            if (window.navigationManager) {
+                window.navigationManager.goBack();
+            } else {
+                window.history.back();
+            }
+        }
+
+        function exportResults(format) {
+            if (window.resultsManager) {
+                window.resultsManager.exportResults(format);
+            }
+        }
+
+        function shareResults() {
+            if (window.resultsManager) {
+                window.resultsManager.shareResults();
+            }
+        }
+
+        function selectTable(tableName) {
+            if (window.resultsManager) {
+                window.resultsManager.selectTable(tableName);
+            }
+        }
+
+        function signOut() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+    </script>
+
+    <style>
+        /* Results View Specific Styles */
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .breadcrumb-item+.breadcrumb-item::before {
+            content: ">";
+            color: var(--text-muted);
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-muted);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .health-score-circle {
+            position: relative;
+            display: inline-block;
+        }
+
+        .score-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .score-max {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-primary);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+
+        .recommendation-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .recommendation-content {
+            flex: 1;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .recommendation-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .error-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            background: var(--bg-primary);
+        }
+
+        .error-icon {
+            font-size: 1.25rem;
+        }
+
+        .error-content {
+            flex: 1;
+        }
+
+        .error-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-right: 1rem;
+        }
+
+        .error-message {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-location {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .error-code {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+        }
+
+        .error-code pre {
+            margin: 0;
+            font-family: var(--font-family-mono);
+            font-size: 0.875rem;
+        }
+
+        .schema-diagram {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .table-node {
+            position: absolute;
+            background: var(--bg-primary);
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            min-width: 150px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .table-node[data-table="users"] {
+            top: 50px;
+            left: 50px;
+        }
+
+        .table-node[data-table="orders"] {
+            top: 50px;
+            right: 50px;
+        }
+
+        .table-header {
+            background: var(--primary-color);
+            color: var(--text-inverse);
+            padding: 0.75rem;
+            font-weight: 600;
+        }
+
+        .table-columns {
+            padding: 0.5rem;
+        }
+
+        .column {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            font-family: var(--font-family-mono);
+        }
+
+        .column.primary-key {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .column.foreign-key {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .table-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .table-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary-color);
+        }
+
+        .security-score-display {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .score-circle {
+            position: relative;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning-color);
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .issue-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        .issue-icon {
+            font-size: 1.25rem;
+        }
+
+        .issue-content {
+            flex: 1;
+        }
+
+        .issue-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .issue-desc {
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .issue-location {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .recommendation-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-body {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-primary);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .metric-info {
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-priority {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .suggestion-priority.high {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .suggestion-priority.medium {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .suggestion-priority.low {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .suggestion-content {
+            flex: 1;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .suggestion-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .breadcrumb {
+                display: none;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .security-score-display {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .table-node {
+                position: static;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</body>
+
+</html>
