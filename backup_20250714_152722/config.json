@@ -1,0 +1,107 @@
+{
+  "app": {
+    "name": "Analizador SQL Empresarial",
+    "version": "2.0.0",
+    "description": "Análisis SQL empresarial de alto rendimiento",
+    "debug": false,
+    "environment": "production"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "workers": 1,
+    "reload": false,
+    "access_log": false,
+    "timeout_keep_alive": 5,
+    "timeout_graceful_shutdown": 30
+  },
+  "upload": {
+    "max_file_size": 10737418240,
+    "allowed_extensions": [".sql", ".txt", ".text"],
+    "upload_dir": "uploads",
+    "temp_dir": "temp",
+    "cleanup_interval": 3600
+  },
+  "analysis": {
+    "max_workers": 8,
+    "timeout_seconds": 3600,
+    "chunk_size": 8192,
+    "memory_limit": "2GB",
+    "parallel_processing": true,
+    "cache_enabled": true,
+    "cache_size_mb": 500,
+    "cache_ttl": 1800
+  },
+  "websocket": {
+    "ping_interval": 25,
+    "ping_timeout": 10,
+    "close_timeout": 10,
+    "max_size": 16777216,
+    "max_queue": 32
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "logs/sql_analyzer.log",
+    "max_size_mb": 100,
+    "backup_count": 5,
+    "console_output": true
+  },
+  "security": {
+    "max_request_size": 11811160064,
+    "rate_limit": {
+      "enabled": true,
+      "requests_per_minute": 60,
+      "burst": 10
+    },
+    "cors": {
+      "enabled": true,
+      "origins": ["http://localhost:*", "http://127.0.0.1:*"],
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "headers": ["*"]
+    }
+  },
+  "database": {
+    "type": "sqlite",
+    "path": "data/sql_analyzer.db",
+    "pool_size": 5,
+    "max_overflow": 10,
+    "pool_timeout": 30,
+    "pool_recycle": 3600
+  },
+  "features": {
+    "syntax_analysis": true,
+    "error_detection": true,
+    "schema_analysis": true,
+    "domain_recognition": true,
+    "security_analysis": true,
+    "performance_analysis": true,
+    "ai_suggestions": true,
+    "export_formats": ["html", "json", "pdf", "excel"]
+  },
+  "ui": {
+    "theme": "enterprise",
+    "animations": true,
+    "auto_save": true,
+    "real_time_updates": true,
+    "drag_drop": true,
+    "keyboard_shortcuts": true,
+    "responsive": true
+  },
+  "performance": {
+    "enable_compression": true,
+    "enable_caching": true,
+    "static_file_cache": 86400,
+    "api_cache_ttl": 300,
+    "optimize_images": true,
+    "minify_assets": true,
+    "lazy_loading": true
+  },
+  "monitoring": {
+    "metrics_enabled": true,
+    "health_check_interval": 30,
+    "performance_tracking": true,
+    "error_tracking": true,
+    "usage_analytics": false
+  }
+}

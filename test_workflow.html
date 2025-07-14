@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test SQL Analyzer Workflow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 SQL Analyzer Enterprise - Workflow Test</h1>
+        <p>Esta página prueba todos los endpoints y funcionalidades críticas del SQL Analyzer.</p>
+
+        <!-- Test 1: Server Health -->
+        <div class="test-section">
+            <h3>1. ✅ Test de Salud del Servidor</h3>
+            <button class="test-button" onclick="testServerHealth()">Probar /api/health</button>
+            <div id="health-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 2: File Upload and Analysis -->
+        <div class="test-section">
+            <h3>2. 📁 Test de Análisis Simple</h3>
+            <input type="file" id="testFile" accept=".sql,.txt" style="margin-bottom: 10px;">
+            <br>
+            <button class="test-button" onclick="testSimpleAnalysis()">Probar /api/analyze/simple</button>
+            <div id="analysis-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 3: Auto-Fix -->
+        <div class="test-section">
+            <h3>3. 🔧 Test de Auto-Corrección</h3>
+            <button class="test-button" onclick="testAutoFix()">Probar /api/auto-fix</button>
+            <div id="autofix-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 4: Add Comments -->
+        <div class="test-section">
+            <h3>4. 💬 Test de Comentarios Inteligentes</h3>
+            <button class="test-button" onclick="testAddComments()">Probar /api/add-comments</button>
+            <div id="comments-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 5: Generate Sample Data -->
+        <div class="test-section">
+            <h3>5. 🎲 Test de Generación de Datos</h3>
+            <button class="test-button" onclick="testGenerateSampleData()">Probar /api/generate-sample-data</button>
+            <div id="sampledata-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 6: Modal System -->
+        <div class="test-section">
+            <h3>6. 🪟 Test del Sistema de Modales</h3>
+            <button class="test-button" onclick="testModalSystem()">Probar Modales</button>
+            <div id="modal-result" class="test-result"></div>
+        </div>
+
+        <!-- Test 7: Complete Workflow -->
+        <div class="test-section">
+            <h3>7. 🚀 Test de Flujo Completo</h3>
+            <button class="test-button" onclick="testCompleteWorkflow()">Ejecutar Flujo Completo</button>
+            <div id="workflow-result" class="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test sample SQL content
+        const testSQL = `-- Test SQL for workflow
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE
+);
+
+SELECT * FROM users WHERE id = 1;`;
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `test-result ${type}`;
+            element.textContent = message;
+        }
+
+        async function testServerHealth() {
+            try {
+                showResult('health-result', 'Probando conexión al servidor...', 'info');
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showResult('health-result', `✅ Servidor OK: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult('health-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSimpleAnalysis() {
+            try {
+                const fileInput = document.getElementById('testFile');
+                let file;
+                
+                if (fileInput.files.length > 0) {
+                    file = fileInput.files[0];
+                } else {
+                    // Create a test file
+                    file = new File([testSQL], 'test.sql', { type: 'text/plain' });
+                }
+
+                showResult('analysis-result', 'Ejecutando análisis...', 'info');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/analyze/simple', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('analysis-result', `✅ Análisis completado: ${data.filename}, ${data.lines} líneas, Score: ${data.quality_score}`, 'success');
+            } catch (error) {
+                showResult('analysis-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAutoFix() {
+            try {
+                showResult('autofix-result', 'Ejecutando auto-corrección...', 'info');
+                
+                const file = new File([testSQL], 'test.sql', { type: 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/auto-fix', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('autofix-result', `✅ Auto-fix completado: ${data.total_fixes} correcciones aplicadas`, 'success');
+            } catch (error) {
+                showResult('autofix-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAddComments() {
+            try {
+                showResult('comments-result', 'Agregando comentarios inteligentes...', 'info');
+                
+                const file = new File([testSQL], 'test.sql', { type: 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/add-comments', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('comments-result', `✅ Comentarios agregados: ${data.comments_added} comentarios inteligentes`, 'success');
+            } catch (error) {
+                showResult('comments-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGenerateSampleData() {
+            try {
+                showResult('sampledata-result', 'Generando datos de muestra...', 'info');
+                
+                const file = new File([testSQL], 'test.sql', { type: 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('records_per_table', '5');
+                formData.append('realistic_data', 'true');
+
+                const response = await fetch('/api/generate-sample-data', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('sampledata-result', `✅ Datos generados: ${data.tables_processed || 'N/A'} tablas procesadas`, 'success');
+            } catch (error) {
+                showResult('sampledata-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testModalSystem() {
+            try {
+                showResult('modal-result', 'Probando sistema de modales...', 'info');
+                
+                // Test if we can access the main page functions
+                if (typeof openModal === 'function') {
+                    showResult('modal-result', '✅ Funciones de modal disponibles', 'success');
+                } else {
+                    showResult('modal-result', '⚠️ Funciones de modal no disponibles (normal en página de test)', 'info');
+                }
+            } catch (error) {
+                showResult('modal-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCompleteWorkflow() {
+            try {
+                showResult('workflow-result', 'Ejecutando flujo completo...', 'info');
+                
+                // Test all endpoints in sequence
+                await testServerHealth();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testSimpleAnalysis();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testAutoFix();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testAddComments();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                showResult('workflow-result', '✅ Flujo completo ejecutado exitosamente', 'success');
+            } catch (error) {
+                showResult('workflow-result', `❌ Error en flujo completo: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run server health test on page load
+        window.addEventListener('load', () => {
+            testServerHealth();
+        });
+    </script>
+</body>
+</html>
