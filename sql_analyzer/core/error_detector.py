@@ -13,8 +13,19 @@ from dataclasses import dataclass, field
 from enum import Enum
 import sqlparse
 from sqlparse import sql, tokens as T
-from fuzzywuzzy import fuzz
-from textdistance import levenshtein
+
+# Optional imports for enhanced functionality
+try:
+    from fuzzywuzzy import fuzz
+    FUZZYWUZZY_AVAILABLE = True
+except ImportError:
+    FUZZYWUZZY_AVAILABLE = False
+
+try:
+    from textdistance import levenshtein
+    TEXTDISTANCE_AVAILABLE = True
+except ImportError:
+    TEXTDISTANCE_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

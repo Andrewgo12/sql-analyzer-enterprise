@@ -13,20 +13,22 @@ class Utils {
 
     // Safe logging function
     static log(...args) {
-        if (this.DEBUG_MODE) {
-            if (window.Utils) Utils.log(...args);
+        if (this.DEBUG_MODE && console && console.log) {
+            console.log('[SQL Analyzer]', ...args);
         }
     }
 
     static warn(...args) {
-        if (this.DEBUG_MODE) {
-            if (window.Utils) Utils.warn(...args);
+        if (this.DEBUG_MODE && console && console.warn) {
+            console.warn('[SQL Analyzer]', ...args);
         }
     }
 
     static error(...args) {
         // Always log errors
-        if (window.Utils) Utils.error(...args);
+        if (console && console.error) {
+            console.error('[SQL Analyzer ERROR]', ...args);
+        }
     }
 
     // ========================================================================

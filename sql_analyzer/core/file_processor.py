@@ -21,13 +21,44 @@ import threading
 import queue
 import time
 import gc
-import psutil
-import resource
 import signal
-import magic
-import pandas as pd
-from openpyxl import load_workbook
-import docx
+
+# Optional imports for enhanced functionality
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
+try:
+    import resource
+    RESOURCE_AVAILABLE = True
+except ImportError:
+    RESOURCE_AVAILABLE = False
+
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+
+try:
+    from openpyxl import load_workbook
+    OPENPYXL_AVAILABLE = True
+except ImportError:
+    OPENPYXL_AVAILABLE = False
+
+try:
+    import docx
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
 from bs4 import BeautifulSoup
 import json
 import yaml
@@ -153,21 +184,34 @@ class MemoryManager:
         """Force garbage collection to free memory."""
         gc.collect()
         # Update current usage based on actual memory usage
-        process = psutil.Process()
-        actual_usage = process.memory_info().rss
-        self.current_usage = min(self.current_usage, actual_usage)
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process()
+                actual_usage = process.memory_info().rss
+                self.current_usage = min(self.current_usage, actual_usage)
+            except Exception:
+                pass
 
     def get_memory_stats(self) -> Dict[str, Any]:
         """Get current memory statistics."""
-        process = psutil.Process()
-        return {
+        stats = {
             'allocated': self.current_usage,
             'peak': self.peak_usage,
             'available': self.max_memory_bytes - self.current_usage,
-            'system_usage': process.memory_info().rss,
-            'system_percent': process.memory_percent(),
             'allocation_count': len(self.allocation_history)
         }
+
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process()
+                stats.update({
+                    'system_usage': process.memory_info().rss,
+                    'system_percent': process.memory_percent()
+                })
+            except Exception:
+                pass
+
+        return stats
 
 
 class FileCache:

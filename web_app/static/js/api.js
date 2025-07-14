@@ -6,40 +6,127 @@
 class APIManager {
     constructor() {
         this.baseURL = window.location.origin + '/api';
-        this.sessionId = null;
         this.defaultTimeout = 30000; // 30 seconds
         this.retryAttempts = 3;
         this.retryDelay = 1000; // 1 second
 
-        this.loadSession();
+        // Error throttling
+        this.errorThrottle = new Map();
+        this.maxErrorsPerMinute = 10;
+
+        this.init();
+    }
+
+    async init() {
+        // Wait for session manager to be ready
+        if (window.SessionManager) {
+            await window.SessionManager.init();
+        }
+
+        // Setup error handling
+        this.setupErrorHandling();
     }
 
     // ========================================================================
-    // SESSION MANAGEMENT
+    // SESSION MANAGEMENT (Delegated to SessionManager)
     // ========================================================================
 
-    loadSession() {
-        try {
-            this.sessionId = Utils.getStorage('sqlAnalyzer_sessionId');
-            if (this.sessionId) {
-                if (window.Utils) Utils.log('✅ Session loaded successfully');
-            }
-        } catch (error) {
-            if (window.Utils) Utils.error('❌ Failed to load session:', error);
-            this.sessionId = null;
+    get sessionId() {
+        return window.SessionManager ? window.SessionManager.sessionId : null;
+    }
+
+    async ensureValidSession() {
+        if (window.SessionManager) {
+            return await window.SessionManager.ensureValidSession();
+        }
+        return null;
+    }
+
+    getSessionHeaders() {
+        if (window.SessionManager) {
+            return window.SessionManager.getSessionHeaders();
+        }
+        return {};
+    }
+
+    // ========================================================================
+    // ERROR HANDLING AND THROTTLING
+    // ========================================================================
+
+    setupErrorHandling() {
+        // Global error handler for unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            this.handleGlobalError(event.reason);
+        });
+
+        // Global error handler for JavaScript errors
+        window.addEventListener('error', (event) => {
+            this.handleGlobalError(event.error);
+        });
+    }
+
+    handleGlobalError(error) {
+        // Throttle error reporting
+        if (this.shouldThrottleError(error)) {
+            return;
+        }
+
+        console.error('Global error:', error);
+
+        // Show user-friendly error message
+        if (window.Utils) {
+            Utils.showNotification('Se produjo un error inesperado. Por favor, inténtelo de nuevo.', 'error');
         }
     }
 
-    setSession(sessionId) {
-        this.sessionId = sessionId;
-        Utils.setStorage('sqlAnalyzer_sessionId', sessionId);
+    shouldThrottleError(error) {
+        const errorKey = error.message || error.toString();
+        const now = Date.now();
+        const minute = 60 * 1000;
+
+        if (!this.errorThrottle.has(errorKey)) {
+            this.errorThrottle.set(errorKey, []);
+        }
+
+        const errorTimes = this.errorThrottle.get(errorKey);
+
+        // Remove errors older than 1 minute
+        const recentErrors = errorTimes.filter(time => now - time < minute);
+        this.errorThrottle.set(errorKey, recentErrors);
+
+        // Check if we've exceeded the limit
+        if (recentErrors.length >= this.maxErrorsPerMinute) {
+            return true; // Throttle this error
+        }
+
+        // Add current error time
+        recentErrors.push(now);
+        return false;
     }
 
-    clearSession() {
-        this.sessionId = null;
-        Utils.removeStorage('sqlAnalyzer_sessionId');
-        Utils.removeStorage('sqlAnalyzer_userId');
-        Utils.removeStorage('sqlAnalyzer_username');
+    showUserFriendlyError(error, context = '') {
+        let message = 'Se produjo un error inesperado.';
+
+        if (error.code === 'NETWORK_ERROR') {
+            message = 'Error de conexión. Verifique su conexión a internet.';
+        } else if (error.code === 'TIMEOUT') {
+            message = 'La operación tardó demasiado tiempo. Inténtelo de nuevo.';
+        } else if (error.code === 'UNAUTHORIZED') {
+            message = 'Su sesión ha expirado. La página se recargará automáticamente.';
+            setTimeout(() => window.location.reload(), 2000);
+        } else if (error.code === 'FILE_TOO_LARGE') {
+            message = 'El archivo es demasiado grande. El tamaño máximo permitido es 10GB.';
+        } else if (error.code === 'INVALID_FILE_TYPE') {
+            message = 'Tipo de archivo no válido. Solo se permiten archivos SQL y de texto.';
+        }
+
+        if (context) {
+            message = `${context}: ${message}`;
+        }
+
+        if (window.Utils) {
+            Utils.showNotification(message, 'error');
+        }
     }
 
     // ========================================================================
@@ -47,22 +134,26 @@ class APIManager {
     // ========================================================================
 
     async request(endpoint, options = {}) {
+        // Ensure we have a valid session
+        await this.ensureValidSession();
+
         const url = `${this.baseURL}${endpoint}`;
 
         const defaultOptions = {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                ...this.getSessionHeaders()
             },
             timeout: this.defaultTimeout
         };
 
-        // Add session ID to headers if available
-        if (this.sessionId) {
-            defaultOptions.headers['X-Session-ID'] = this.sessionId;
-        }
-
         const finalOptions = { ...defaultOptions, ...options };
+
+        // Merge headers properly
+        if (options.headers) {
+            finalOptions.headers = { ...defaultOptions.headers, ...options.headers };
+        }
 
         // Handle request body
         if (finalOptions.body && typeof finalOptions.body === 'object' && !(finalOptions.body instanceof FormData)) {
@@ -73,7 +164,9 @@ class APIManager {
             const response = await this.fetchWithTimeout(url, finalOptions);
 
             if (!response.ok) {
-                await this.handleErrorResponse(response);
+                const error = await this.createErrorFromResponse(response);
+                this.handleApiError(error);
+                throw error;
             }
 
             // Handle different content types
@@ -87,8 +180,17 @@ class APIManager {
             }
 
         } catch (error) {
-            Utils.logError(error, `API Request: ${endpoint}`);
+            if (!this.shouldThrottleError(error)) {
+                console.error('API Request failed:', error);
+                this.showUserFriendlyError(error, 'Error en la solicitud');
+            }
             throw error;
+        }
+    }
+
+    handleApiError(error) {
+        if (window.SessionManager && (error.status === 401 || error.code === 'UNAUTHORIZED')) {
+            window.SessionManager.handleSessionError(error);
         }
     }
 
@@ -347,39 +449,51 @@ class APIManager {
     }
 
     // ========================================================================
-    // WEBSOCKET CONNECTION
+    // WEBSOCKET CONNECTION (Delegated to WebSocketManager)
     // ========================================================================
 
     createWebSocket(onMessage = null, onError = null, onClose = null) {
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${window.location.host}/ws/${this.sessionId}`;
+        if (!window.WebSocketManager) {
+            console.error('WebSocketManager not available');
+            return null;
+        }
 
-        const ws = new WebSocket(wsUrl);
+        // Register event handlers with the WebSocket manager
+        if (onMessage) {
+            window.WebSocketManager.on('message', onMessage);
+        }
 
-        ws.onopen = () => {
-            if (window.Utils) Utils.log('WebSocket connected');
-        };
+        if (onError) {
+            window.WebSocketManager.on('error', onError);
+        }
 
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (onMessage) onMessage(data);
-            } catch (error) {
-                if (window.Utils) Utils.error('WebSocket message parse error:', error);
-            }
-        };
+        if (onClose) {
+            window.WebSocketManager.on('close', onClose);
+        }
 
-        ws.onerror = (error) => {
-            if (window.Utils) Utils.error('WebSocket error:', error);
-            if (onError) onError(error);
-        };
+        // Return the WebSocket manager for compatibility
+        return window.WebSocketManager;
+    }
 
-        ws.onclose = (event) => {
-            if (window.Utils) Utils.log('WebSocket closed:', event.code, event.reason);
-            if (onClose) onClose(event);
-        };
+    // Enhanced WebSocket methods
+    sendWebSocketMessage(message, requireAck = true) {
+        if (window.WebSocketManager) {
+            return window.WebSocketManager.sendMessage(message, requireAck);
+        }
+        return false;
+    }
 
-        return ws;
+    getWebSocketStatus() {
+        if (window.WebSocketManager) {
+            return window.WebSocketManager.getStatus();
+        }
+        return { isConnected: false, isConnecting: false };
+    }
+
+    disconnectWebSocket() {
+        if (window.WebSocketManager) {
+            window.WebSocketManager.disconnect();
+        }
     }
 
     // ========================================================================

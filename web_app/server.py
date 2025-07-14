@@ -14,13 +14,8 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir.parent))
 
-# IMPORTAR SISTEMA DE IMPORTACIONES A PRUEBA DE BALAS
-try:
-    from bulletproof_imports import initialize_bulletproof_system
-    initialize_bulletproof_system()
-    print("🛡️  Sistema a prueba de balas activado")
-except ImportError:
-    print("⚠️  Sistema a prueba de balas no disponible - usando fallbacks básicos")
+# Sistema de importaciones simplificado
+print("🚀 Inicializando sistema de importaciones...")
 
 # IMPORTACIONES ESTÁNDAR (SIEMPRE DISPONIBLES)
 import json
@@ -65,18 +60,9 @@ try:
     FASTAPI_AVAILABLE = True
     logger.info("✅ FastAPI disponible - usando implementación completa")
 except ImportError as e:
-    # print(f"⚠️  FastAPI no disponible: {e}") # Print statement removed
-    logger.info("🔧 Cargando implementaciones locales completas...")
-
-    # IMPORTAR IMPLEMENTACIONES LOCALES COMPLETAS
-    from local_fallbacks import (
-        FastAPI, BaseModel, Field, HTTPException, Request, UploadFile,
-        WebSocket, WebSocketDisconnect, HTTPBearer, HTTPAuthorizationCredentials,
-        StaticFiles, Jinja2Templates, HTMLResponse, FileResponse, JSONResponse,
-        CORSMiddleware, Depends, Query, Header, File, uvicorn, asynccontextmanager
-    )
-    FASTAPI_AVAILABLE = False
-    logger.info("✅ Implementaciones locales cargadas exitosamente")
+    logger.error(f"❌ FastAPI no disponible: {e}")
+    logger.error("FastAPI es requerido para ejecutar la aplicación")
+    raise ImportError("FastAPI es requerido. Instalar con: pip install fastapi uvicorn")
 
 # Agregar el directorio raíz al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -365,6 +351,103 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # ============================================================================
+# WEBSOCKET CONNECTION MANAGER
+# ============================================================================
+
+class ConnectionManager:
+    """Manages WebSocket connections with session-based routing."""
+
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+        self.session_connections: Dict[str, str] = {}  # session_id -> connection_id
+        self.connection_sessions: Dict[str, str] = {}  # connection_id -> session_id
+
+    async def connect(self, websocket: WebSocket, session_id: str):
+        """Accept a WebSocket connection and associate it with a session."""
+        await websocket.accept()
+
+        connection_id = f"conn_{int(time.time() * 1000)}_{len(self.active_connections)}"
+
+        # Store the connection
+        self.active_connections[connection_id] = websocket
+        self.session_connections[session_id] = connection_id
+        self.connection_sessions[connection_id] = session_id
+
+        logger.info(f"WebSocket connected: {connection_id} for session {session_id}")
+
+        # Send connection confirmation
+        await self.send_personal_message({
+            "type": "connection_established",
+            "session_id": session_id,
+            "connection_id": connection_id,
+            "timestamp": time.time()
+        }, session_id)
+
+        return connection_id
+
+    def disconnect(self, connection_id: str):
+        """Remove a WebSocket connection."""
+        if connection_id in self.active_connections:
+            session_id = self.connection_sessions.get(connection_id)
+
+            # Clean up mappings
+            del self.active_connections[connection_id]
+            if session_id:
+                self.session_connections.pop(session_id, None)
+            self.connection_sessions.pop(connection_id, None)
+
+            logger.info(f"WebSocket disconnected: {connection_id}")
+
+    async def send_personal_message(self, message: dict, session_id: str):
+        """Send a message to a specific session."""
+        connection_id = self.session_connections.get(session_id)
+        if connection_id and connection_id in self.active_connections:
+            websocket = self.active_connections[connection_id]
+            try:
+                await websocket.send_text(json.dumps(message))
+                return True
+            except Exception as e:
+                logger.error(f"Error sending message to {session_id}: {e}")
+                self.disconnect(connection_id)
+                return False
+        return False
+
+    async def broadcast(self, message: dict):
+        """Broadcast a message to all connected clients."""
+        disconnected = []
+        for connection_id, websocket in self.active_connections.items():
+            try:
+                await websocket.send_text(json.dumps(message))
+            except Exception as e:
+                logger.error(f"Error broadcasting to {connection_id}: {e}")
+                disconnected.append(connection_id)
+
+        # Clean up disconnected connections
+        for connection_id in disconnected:
+            self.disconnect(connection_id)
+
+    def get_session_for_connection(self, connection_id: str) -> Optional[str]:
+        """Get the session ID for a connection."""
+        return self.connection_sessions.get(connection_id)
+
+    def is_session_connected(self, session_id: str) -> bool:
+        """Check if a session has an active WebSocket connection."""
+        connection_id = self.session_connections.get(session_id)
+        return connection_id is not None and connection_id in self.active_connections
+
+    def get_connection_stats(self) -> Dict:
+        """Get connection statistics."""
+        return {
+            "total_connections": len(self.active_connections),
+            "active_sessions": len(self.session_connections),
+            "connections": list(self.active_connections.keys()),
+            "sessions": list(self.session_connections.keys())
+        }
+
+# Global connection manager
+connection_manager = ConnectionManager()
+
+# ============================================================================
 # FUNCIONES DE SEGURIDAD PARA LOGGING
 # ============================================================================
 
@@ -571,63 +654,32 @@ TEMP_DIR.mkdir(exist_ok=True)
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Main application entry point."""
-    import os
-    template_path = "templates/app.html"
-    if os.path.exists(template_path):
-        return FileResponse(template_path, media_type="text/html")
+    """Main application entry point - simplified home page."""
+    template_path = Path("web_app/templates/simple_home.html")
+    if template_path.exists():
+        return FileResponse(str(template_path), media_type="text/html")
     else:
-        return HTMLResponse(f"<h1>Error: Template not found at {os.path.abspath(template_path)}</h1>", status_code=500)
+        return HTMLResponse(f"<h1>Error: Template not found at {template_path.absolute()}</h1>", status_code=500)
 
-@app.get("/auth", response_class=HTMLResponse)
-async def auth_page():
-    """Authentication page (legacy route)."""
-    return FileResponse("templates/app.html", media_type="text/html")
+# Removed auth page - not needed in simplified version
+
+@app.get("/analyze", response_class=HTMLResponse)
+async def analyze():
+    """Analysis page - simplified analysis interface."""
+    template_path = Path("web_app/templates/simple_analyze.html")
+    if template_path.exists():
+        return FileResponse(str(template_path), media_type="text/html")
+    else:
+        return FileResponse("web_app/templates/simple_home.html", media_type="text/html")
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard():
-    """Dashboard view."""
-    return FileResponse("templates/app.html", media_type="text/html")
+    """Dashboard view - redirect to analyze page."""
+    return FileResponse("web_app/templates/simple_analyze.html", media_type="text/html")
 
-@app.get("/upload", response_class=HTMLResponse)
-async def upload():
-    """Upload view."""
-    return FileResponse("templates/app.html", media_type="text/html")
+# Removed unused routes - simplified to just home and analyze pages
 
-@app.get("/profile", response_class=HTMLResponse)
-async def profile():
-    """User profile view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/settings", response_class=HTMLResponse)
-async def settings():
-    """Application settings view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/history", response_class=HTMLResponse)
-async def history():
-    """Analysis history view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/results", response_class=HTMLResponse)
-async def results():
-    """Analysis results view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/analyzer", response_class=HTMLResponse)
-async def analyzer():
-    """SQL analyzer view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/optimizer", response_class=HTMLResponse)
-async def optimizer():
-    """Performance optimizer view."""
-    return FileResponse("templates/app.html", media_type="text/html")
-
-@app.get("/security", response_class=HTMLResponse)
-async def security():
-    """Security scanner view."""
-    return FileResponse("templates/app.html", media_type="text/html")
+# Removed additional routes - all functionality consolidated into /analyze
 
 # ============================================================================
 # API ENDPOINTS
@@ -920,11 +972,11 @@ async def system_info():
 # ============================================================================
 
 @app.post("/api/files/upload")
-async def upload_file(file: UploadFile = File(...), user: dict = Depends(validate_session_dependency)):
-    """Upload SQL file for analysis (requires authentication)."""
-    # User is already validated by the dependency
-    user_id = user.get('user_id', 'unknown')
-    username = user.get('username', 'unknown')
+async def upload_file(file: UploadFile = File(...)):
+    """Upload SQL file for analysis (simplified - no authentication required)."""
+    # Simplified - no authentication required
+    user_id = 'anonymous'
+    username = 'anonymous'
     
     # Validar tipo de archivo (incluyendo PDF)
     allowed_extensions = {'.sql', '.txt', '.text', '.pdf'}
@@ -1022,19 +1074,16 @@ async def delete_file(file_id: str, session_id: str = None):
 # ============================================================================
 
 @app.post("/api/analysis/start")
-async def start_analysis(request: AnalysisRequest, session_id: str = None):
-    """Iniciar análisis SQL de archivo."""
-    if not session_id or session_id not in sessions:
-        raise HTTPException(status_code=401, detail="Sesión inválida")
+async def start_analysis(request: AnalysisRequest):
+    """Start SQL analysis of file (simplified - no session required)."""
+    # Simplified - no session validation required
     
     if request.file_id not in uploaded_files:
         raise HTTPException(status_code=404, detail="Archivo no encontrado")
     
     file_info = uploaded_files[request.file_id]
-    
-    # Verificar permisos
-    if file_info["session_id"] != session_id:
-        raise HTTPException(status_code=403, detail="Sin permisos para analizar este archivo")
+
+    # Simplified - no permission check required
     
     # Generar ID de análisis
     analysis_id = str(uuid.uuid4())
@@ -1051,7 +1100,7 @@ async def start_analysis(request: AnalysisRequest, session_id: str = None):
     # Almacenar información del análisis activo
     active_analyses[analysis_id] = {
         "file_id": request.file_id,
-        "session_id": session_id,
+        "session_id": "anonymous",  # Simplified
         "options": request.options,
         "analysis_types": request.analysis_types,
         "output_formats": request.output_formats,
@@ -1302,6 +1351,145 @@ async def export_analysis_results(analysis_id: str, request: Request):
 
     except Exception as e:
         logger.error(f"Export error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/analyze/simple")
+async def simple_analyze(file: UploadFile = File(...)):
+    """Simple analysis endpoint that handles upload and analysis in one step."""
+    try:
+        # Validate file type
+        allowed_extensions = {'.sql', '.txt', '.text'}
+        file_extension = Path(file.filename).suffix.lower()
+
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File type not supported. Allowed: {', '.join(allowed_extensions)}"
+            )
+
+        # Read file content
+        content = await file.read()
+        sql_content = content.decode('utf-8', errors='ignore')
+
+        # Perform enhanced analysis using the SQL analyzer
+        try:
+            from sql_analyzer.core.error_detector import ErrorDetector
+            error_detector = ErrorDetector()
+            errors = error_detector.analyze_sql(sql_content)
+            errors_found = len([e for e in errors if e.severity.name in ['CRITICAL', 'ERROR']])
+        except Exception:
+            errors_found = 0
+
+        # Perform basic analysis
+        analysis_result = {
+            "filename": file.filename,
+            "size": len(content),
+            "lines": len(sql_content.split('\n')),
+            "errors_found": errors_found,
+            "comments_added": 0,
+            "optimizations": 0,
+            "quality_score": max(50, 98 - (errors_found * 5)),
+            "processed_content": sql_content,
+            "analysis_summary": {
+                "total_statements": sql_content.count(';'),
+                "create_statements": sql_content.upper().count('CREATE'),
+                "select_statements": sql_content.upper().count('SELECT'),
+                "insert_statements": sql_content.upper().count('INSERT'),
+                "update_statements": sql_content.upper().count('UPDATE'),
+                "delete_statements": sql_content.upper().count('DELETE')
+            }
+        }
+
+        return analysis_result
+
+    except Exception as e:
+        logger.error(f"Simple analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/auto-fix")
+async def auto_fix_sql(file: UploadFile = File(...)):
+    """Auto-fix SQL errors endpoint."""
+    try:
+        # Read file content
+        content = await file.read()
+        sql_content = content.decode('utf-8', errors='ignore')
+
+        # Use the error detector to fix SQL
+        from sql_analyzer.core.error_detector import ErrorDetector
+        error_detector = ErrorDetector()
+        correction_result = error_detector.correct_sql(sql_content)
+
+        return {
+            "success": True,
+            "corrected_sql": correction_result.corrected_sql,
+            "corrections": [
+                {
+                    "line_number": i + 1,
+                    "fixes": [{"description": correction}]
+                } for i, correction in enumerate(correction_result.corrections_applied)
+            ],
+            "total_fixes": len(correction_result.corrections_applied),
+            "confidence_score": correction_result.confidence_score
+        }
+
+    except Exception as e:
+        logger.error(f"Auto-fix error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/add-comments")
+async def add_comments_to_sql(file: UploadFile = File(...)):
+    """Add intelligent comments to SQL code."""
+    try:
+        # Read file content
+        content = await file.read()
+        sql_content = content.decode('utf-8', errors='ignore')
+
+        # Use the intelligent commenter
+        from sql_analyzer.core.intelligent_commenter import IntelligentCommenter
+        commenter = IntelligentCommenter()
+        result = commenter.add_comments(sql_content)
+
+        return {
+            "success": result['success'],
+            "commented_sql": result['commented_sql'],
+            "comments_added": result['comments_added'],
+            "comment_details": result['comment_details'],
+            "error": result.get('error')
+        }
+
+    except Exception as e:
+        logger.error(f"Add comments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/generate-sample-data")
+async def generate_sample_data(
+    file: UploadFile = File(...),
+    records_per_table: int = 100,
+    realistic_data: bool = True,
+    referential_integrity: bool = True
+):
+    """Generate sample data for SQL schema."""
+    try:
+        # Read file content
+        content = await file.read()
+        sql_content = content.decode('utf-8', errors='ignore')
+
+        # Use the sample data generator
+        from sql_analyzer.core.sample_data_generator import SampleDataGenerator, GenerationConfig
+
+        config = GenerationConfig(
+            records_per_table=records_per_table,
+            use_realistic_data=realistic_data,
+            maintain_referential_integrity=referential_integrity
+        )
+
+        generator = SampleDataGenerator()
+        result = generator.generate_sample_data(sql_content, config)
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Generate sample data error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/results/{analysis_id}/share")

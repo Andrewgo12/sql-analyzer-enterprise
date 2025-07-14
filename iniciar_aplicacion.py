@@ -66,7 +66,7 @@ def crear_directorios():
 def abrir_navegador():
     """Abrir navegador después de un delay."""
     time.sleep(3)
-    url = "http://127.0.0.1:5000"
+    url = "http://127.0.0.1:8080"
     print(f"🌐 Abriendo navegador: {url}")
     try:
         webbrowser.open(url)
@@ -121,14 +121,14 @@ def main():
             sys.executable, "-m", "uvicorn",
             "web_app.server:app",
             "--host", "127.0.0.1",
-            "--port", "5000",
+            "--port", "8080",
             "--log-level", "info"
         ]
 
         print(f"\n🚀 Ejecutando: {' '.join(cmd)}")
         print("\n" + "🟢" * 20 + " SERVIDOR INICIADO " + "🟢" * 20)
-        print("📍 URL: http://127.0.0.1:5000")
-        print("📊 API Docs: http://127.0.0.1:5000/api/docs")
+        print("📍 URL: http://127.0.0.1:8080")
+        print("📊 API Docs: http://127.0.0.1:8080/api/docs")
         print("🟢" * 60 + "\n")
         
         # Ejecutar servidor

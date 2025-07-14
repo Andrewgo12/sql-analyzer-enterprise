@@ -1,397 +1,485 @@
-/* ============================================================================
-   SQL ANALYZER ENTERPRISE - WEBSOCKET MANAGER
-   Comprehensive WebSocket client for real-time communication
-   ============================================================================ */
+/**
+ * Enterprise WebSocket Manager
+ * Handles WebSocket connections with automatic reconnection, error handling, and fallback mechanisms
+ */
 
 class WebSocketManager {
     constructor() {
-        this.socket = null;
-        this.sessionId = null;
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
-        this.reconnectDelay = 1000;
+        this.ws = null;
         this.isConnected = false;
-        this.messageQueue = [];
-        this.subscriptions = new Set();
-        this.eventHandlers = new Map();
+        this.isConnecting = false;
+        this.shouldReconnect = true;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 10;
+        this.reconnectIntervals = [1000, 2000, 4000, 8000, 16000]; // Exponential backoff
+        this.reconnectTimer = null;
+        this.pingTimer = null;
+        this.lastPong = Date.now();
         
-        // Heartbeat configuration
-        this.heartbeatInterval = null;
-        this.heartbeatTimeout = null;
-        this.heartbeatDelay = 30000; // 30 seconds
+        // Message queues
+        this.messageQueue = [];
+        this.pendingMessages = new Map();
+        this.messageId = 0;
+        
+        // Event handlers
+        this.eventHandlers = {
+            open: [],
+            message: [],
+            error: [],
+            close: [],
+            reconnect: [],
+            fallback: []
+        };
+        
+        // Configuration
+        this.config = {
+            pingInterval: 30000,        // 30 seconds
+            pongTimeout: 10000,         // 10 seconds
+            maxMessageQueue: 100,       // Maximum queued messages
+            messageTimeout: 30000,      // Message response timeout
+            fallbackEnabled: true,      // Enable HTTP polling fallback
+            fallbackInterval: 5000      // HTTP polling interval
+        };
+        
+        // Fallback mechanism
+        this.fallbackActive = false;
+        this.fallbackTimer = null;
+        this.httpPollingEndpoint = '/api/events/poll';
         
         this.init();
     }
     
-    init() {
-        this.sessionId = this.generateSessionId();
-        this.setupEventHandlers();
-        if (window.Utils) Utils.log('🔌 WebSocket Manager initialized with session:', this.sessionId);
+    async init() {
+        // Listen for session events
+        window.addEventListener('sqlAnalyzer:session-created', (event) => {
+            this.connect();
+        });
+        
+        window.addEventListener('sqlAnalyzer:session-cleared', (event) => {
+            this.disconnect();
+        });
+        
+        // Start connection if session exists
+        if (window.SessionManager && window.SessionManager.sessionId) {
+            this.connect();
+        }
     }
     
-    generateSessionId() {
-        return 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
-    }
-    
-    connect() {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            if (window.Utils) Utils.log('🔌 WebSocket already connected');
+    /**
+     * Connect to WebSocket server
+     */
+    async connect() {
+        if (this.isConnecting || this.isConnected) {
             return;
         }
         
         try {
+            this.isConnecting = true;
+            
+            // Ensure we have a valid session
+            await window.SessionManager.ensureValidSession();
+            
+            const sessionId = window.SessionManager.sessionId;
+            if (!sessionId) {
+                throw new Error('No valid session available');
+            }
+            
+            // Construct WebSocket URL
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws/${this.sessionId}`;
+            const wsUrl = `${protocol}//${window.location.host}/ws/${sessionId}`;
             
-            if (window.Utils) Utils.log('🔌 Connecting to WebSocket:', wsUrl);
-            this.socket = new WebSocket(wsUrl);
+            if (window.Utils) {
+                Utils.log('🔌 Conectando WebSocket:', wsUrl.replace(sessionId, sessionId.substring(0, 8) + '...'));
+            }
             
-            this.socket.onopen = this.handleOpen.bind(this);
-            this.socket.onmessage = this.handleMessage.bind(this);
-            this.socket.onclose = this.handleClose.bind(this);
-            this.socket.onerror = this.handleError.bind(this);
+            // Create WebSocket connection
+            this.ws = new WebSocket(wsUrl);
+            this.setupEventHandlers();
             
         } catch (error) {
-            if (window.Utils) Utils.error('❌ WebSocket connection error:', error);
-            this.scheduleReconnect();
+            this.isConnecting = false;
+            this.handleConnectionError(error);
         }
     }
     
-    handleOpen(event) {
-        if (window.Utils) Utils.log('✅ WebSocket connected successfully');
-        this.isConnected = true;
-        this.reconnectAttempts = 0;
-        
-        // Process queued messages
-        this.processMessageQueue();
-        
-        // Start heartbeat
-        this.startHeartbeat();
-        
-        // Notify listeners
-        this.emit('connected', { sessionId: this.sessionId });
-        
-        // Show connection notification
-        if (window.showNotification) {
-            showNotification('Conexión en tiempo real establecida', 'success', 3000);
-        }
-    }
-    
-    handleMessage(event) {
-        try {
-            const message = JSON.parse(event.data);
-            if (window.Utils) Utils.log('📨 WebSocket message received:', message.type);
+    /**
+     * Setup WebSocket event handlers
+     */
+    setupEventHandlers() {
+        this.ws.onopen = (event) => {
+            this.isConnected = true;
+            this.isConnecting = false;
+            this.reconnectAttempts = 0;
+            this.lastPong = Date.now();
             
-            // Handle system messages
-            this.handleSystemMessage(message);
-            
-            // Emit to listeners
-            this.emit(message.type, message);
-            
-        } catch (error) {
-            if (window.Utils) Utils.error('❌ Error parsing WebSocket message:', error);
-        }
-    }
-    
-    handleSystemMessage(message) {
-        switch (message.type) {
-            case 'connection_established':
-                if (window.Utils) Utils.log('🎉 Connection established:', message.server_info);
-                break;
-                
-            case 'pong':
-                // Reset heartbeat timeout
-                if (this.heartbeatTimeout) {
-                    clearTimeout(this.heartbeatTimeout);
-                }
-                break;
-                
-            case 'analysis_progress':
-                this.handleAnalysisProgress(message);
-                break;
-                
-            case 'analysis_complete':
-                this.handleAnalysisComplete(message);
-                break;
-                
-            case 'system_status':
-                this.handleSystemStatus(message);
-                break;
-                
-            case 'error':
-                if (window.Utils) Utils.error('🚨 Server error:', message.message);
-                if (window.showNotification) {
-                    showNotification(`Error del servidor: ${message.message}`, 'error');
-                }
-                break;
-        }
-    }
-    
-    handleAnalysisProgress(message) {
-        const { analysis_id, progress, status, message: progressMessage } = message;
-        
-        // Update progress bars
-        const progressBar = document.querySelector(`[data-analysis-id="${analysis_id}"] .progress-bar`);
-        if (progressBar) {
-            progressBar.style.width = `${progress}%`;
-            progressBar.textContent = `${progress}%`;
-        }
-        
-        // Update status text
-        const statusElement = document.querySelector(`[data-analysis-id="${analysis_id}"] .status-text`);
-        if (statusElement) {
-            statusElement.textContent = progressMessage || `${progress}% completado`;
-        }
-        
-        // Show notification for major milestones
-        if (progress === 25 || progress === 50 || progress === 75) {
-            if (window.showNotification) {
-                showNotification(`Análisis ${progress}% completado`, 'info', 2000);
+            if (window.Utils) {
+                Utils.log('✅ WebSocket conectado exitosamente');
             }
-        }
-    }
-    
-    handleAnalysisComplete(message) {
-        const { analysis_id, results } = message;
-        
-        // Update UI to show completion
-        const analysisElement = document.querySelector(`[data-analysis-id="${analysis_id}"]`);
-        if (analysisElement) {
-            analysisElement.classList.add('analysis-complete');
             
-            const progressBar = analysisElement.querySelector('.progress-bar');
-            if (progressBar) {
-                progressBar.style.width = '100%';
-                progressBar.textContent = 'Completado';
-                progressBar.classList.add('bg-success');
-            }
-        }
-        
-        // Show completion notification
-        if (window.showNotification) {
-            showNotification('¡Análisis completado exitosamente!', 'success');
-        }
-        
-        // Auto-navigate to results if on upload page
-        if (window.appController && window.appController.currentView === 'upload') {
-            setTimeout(() => {
-                if (confirm('Análisis completado. ¿Deseas ver los resultados?')) {
-                    window.appController.navigateToView('results');
-                }
-            }, 2000);
-        }
-    }
-    
-    handleSystemStatus(message) {
-        const { data } = message;
-        
-        // Update system status indicators
-        const statusElements = {
-            'active-analyses': data.active_analyses,
-            'uploaded-files': data.uploaded_files,
-            'websocket-connections': data.websocket_connections
+            // Start ping/pong mechanism
+            this.startPingPong();
+            
+            // Process queued messages
+            this.processMessageQueue();
+            
+            // Stop fallback if active
+            this.stopFallback();
+            
+            // Notify handlers
+            this.notifyHandlers('open', event);
         };
         
-        Object.entries(statusElements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
+        this.ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Handle pong messages
+                if (data.type === 'pong') {
+                    this.lastPong = Date.now();
+                    return;
+                }
+                
+                // Handle message acknowledgments
+                if (data.type === 'ack' && data.messageId) {
+                    this.handleMessageAck(data.messageId);
+                    return;
+                }
+                
+                // Notify message handlers
+                this.notifyHandlers('message', data);
+                
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+                if (window.Utils) {
+                    Utils.error('Error al procesar mensaje WebSocket:', error);
+                }
             }
-        });
+        };
+        
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.handleConnectionError(error);
+        };
+        
+        this.ws.onclose = (event) => {
+            this.isConnected = false;
+            this.isConnecting = false;
+            
+            if (window.Utils) {
+                Utils.log('🔌 WebSocket desconectado:', event.code, event.reason);
+            }
+            
+            // Stop ping/pong
+            this.stopPingPong();
+            
+            // Notify handlers
+            this.notifyHandlers('close', event);
+            
+            // Attempt reconnection if needed
+            if (this.shouldReconnect && event.code !== 1000) {
+                this.scheduleReconnect();
+            }
+        };
     }
     
-    handleClose(event) {
-        if (window.Utils) Utils.log('🔌 WebSocket connection closed:', event.code, event.reason);
+    /**
+     * Handle connection errors
+     */
+    handleConnectionError(error) {
         this.isConnected = false;
+        this.isConnecting = false;
         
-        // Stop heartbeat
-        this.stopHeartbeat();
+        console.error('WebSocket connection error:', error);
         
-        // Notify listeners
-        this.emit('disconnected', { code: event.code, reason: event.reason });
+        // Notify error handlers
+        this.notifyHandlers('error', error);
         
-        // Show disconnection notification
-        if (window.showNotification) {
-            showNotification('Conexión en tiempo real perdida', 'warning');
+        // Start fallback mechanism if enabled
+        if (this.config.fallbackEnabled && !this.fallbackActive) {
+            this.startFallback();
         }
         
-        // Schedule reconnection if not intentional
-        if (event.code !== 1000) {
+        // Schedule reconnection
+        if (this.shouldReconnect) {
             this.scheduleReconnect();
         }
     }
     
-    handleError(error) {
-        if (window.Utils) Utils.error('❌ WebSocket error:', error);
-        this.emit('error', error);
-    }
-    
+    /**
+     * Schedule reconnection with exponential backoff
+     */
     scheduleReconnect() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+        }
+        
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            if (window.Utils) Utils.error('❌ Max reconnection attempts reached');
-            if (window.showNotification) {
-                showNotification('No se pudo restablecer la conexión en tiempo real', 'error');
+            if (window.Utils) {
+                Utils.error('❌ Máximo número de intentos de reconexión alcanzado');
             }
+            this.startFallback();
             return;
         }
         
-        this.reconnectAttempts++;
-        const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+        const intervalIndex = Math.min(this.reconnectAttempts, this.reconnectIntervals.length - 1);
+        const delay = this.reconnectIntervals[intervalIndex];
         
-        if (window.Utils) Utils.log(`🔄 Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`);
+        if (window.Utils) {
+            Utils.log(`🔄 Reintentando conexión en ${delay}ms (intento ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+        }
         
-        setTimeout(() => {
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectAttempts++;
+            this.notifyHandlers('reconnect', { attempt: this.reconnectAttempts });
             this.connect();
         }, delay);
     }
     
-    send(message) {
-        if (this.isConnected && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify(message));
-        } else {
-            // Queue message for later
-            this.messageQueue.push(message);
-            if (window.Utils) Utils.log('📤 Message queued (not connected):', message.type);
-        }
-    }
-    
-    processMessageQueue() {
-        while (this.messageQueue.length > 0) {
-            const message = this.messageQueue.shift();
-            this.send(message);
-        }
-    }
-    
-    startHeartbeat() {
-        this.heartbeatInterval = setInterval(() => {
+    /**
+     * Start ping/pong mechanism
+     */
+    startPingPong() {
+        this.stopPingPong();
+        
+        this.pingTimer = setInterval(() => {
             if (this.isConnected) {
-                this.send({ type: 'ping', timestamp: new Date().toISOString() });
+                // Check if last pong was received within timeout
+                if (Date.now() - this.lastPong > this.config.pongTimeout) {
+                    if (window.Utils) {
+                        Utils.error('❌ Ping timeout - reconectando...');
+                    }
+                    this.ws.close(1000, 'Ping timeout');
+                    return;
+                }
                 
-                // Set timeout for pong response
-                this.heartbeatTimeout = setTimeout(() => {
-                    if (window.Utils) Utils.warn('⚠️ Heartbeat timeout - connection may be lost');
-                    this.socket.close();
-                }, 5000);
+                // Send ping
+                this.sendMessage({ type: 'ping', timestamp: Date.now() }, false);
             }
-        }, this.heartbeatDelay);
+        }, this.config.pingInterval);
     }
     
-    stopHeartbeat() {
-        if (this.heartbeatInterval) {
-            clearInterval(this.heartbeatInterval);
-            this.heartbeatInterval = null;
+    /**
+     * Stop ping/pong mechanism
+     */
+    stopPingPong() {
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = null;
+        }
+    }
+    
+    /**
+     * Send message through WebSocket
+     */
+    sendMessage(message, requireAck = true) {
+        if (!this.isConnected) {
+            // Queue message for later
+            if (this.messageQueue.length < this.config.maxMessageQueue) {
+                this.messageQueue.push({ message, requireAck, timestamp: Date.now() });
+            }
+            return false;
         }
         
-        if (this.heartbeatTimeout) {
-            clearTimeout(this.heartbeatTimeout);
-            this.heartbeatTimeout = null;
+        try {
+            // Add message ID if acknowledgment is required
+            if (requireAck) {
+                message.messageId = ++this.messageId;
+                this.pendingMessages.set(message.messageId, {
+                    message,
+                    timestamp: Date.now(),
+                    timeout: setTimeout(() => {
+                        this.handleMessageTimeout(message.messageId);
+                    }, this.config.messageTimeout)
+                });
+            }
+            
+            this.ws.send(JSON.stringify(message));
+            return true;
+            
+        } catch (error) {
+            console.error('Error sending WebSocket message:', error);
+            return false;
         }
     }
     
-    // Event system
+    /**
+     * Process queued messages
+     */
+    processMessageQueue() {
+        while (this.messageQueue.length > 0 && this.isConnected) {
+            const { message, requireAck } = this.messageQueue.shift();
+            this.sendMessage(message, requireAck);
+        }
+    }
+    
+    /**
+     * Handle message acknowledgment
+     */
+    handleMessageAck(messageId) {
+        const pending = this.pendingMessages.get(messageId);
+        if (pending) {
+            clearTimeout(pending.timeout);
+            this.pendingMessages.delete(messageId);
+        }
+    }
+    
+    /**
+     * Handle message timeout
+     */
+    handleMessageTimeout(messageId) {
+        const pending = this.pendingMessages.get(messageId);
+        if (pending) {
+            console.error('Message timeout:', pending.message);
+            this.pendingMessages.delete(messageId);
+            
+            // Optionally retry the message
+            this.sendMessage(pending.message, true);
+        }
+    }
+    
+    /**
+     * Start HTTP polling fallback
+     */
+    startFallback() {
+        if (this.fallbackActive || !this.config.fallbackEnabled) {
+            return;
+        }
+        
+        this.fallbackActive = true;
+        
+        if (window.Utils) {
+            Utils.log('🔄 Iniciando mecanismo de respaldo HTTP polling');
+        }
+        
+        this.notifyHandlers('fallback', { active: true });
+        
+        this.fallbackTimer = setInterval(async () => {
+            try {
+                const response = await fetch(this.httpPollingEndpoint, {
+                    method: 'GET',
+                    headers: window.SessionManager.getSessionHeaders()
+                });
+                
+                if (response.ok) {
+                    const events = await response.json();
+                    if (events && events.length > 0) {
+                        events.forEach(event => {
+                            this.notifyHandlers('message', event);
+                        });
+                    }
+                }
+                
+            } catch (error) {
+                console.error('HTTP polling error:', error);
+            }
+        }, this.config.fallbackInterval);
+    }
+    
+    /**
+     * Stop HTTP polling fallback
+     */
+    stopFallback() {
+        if (!this.fallbackActive) {
+            return;
+        }
+        
+        this.fallbackActive = false;
+        
+        if (this.fallbackTimer) {
+            clearInterval(this.fallbackTimer);
+            this.fallbackTimer = null;
+        }
+        
+        if (window.Utils) {
+            Utils.log('✅ Mecanismo de respaldo desactivado');
+        }
+        
+        this.notifyHandlers('fallback', { active: false });
+    }
+    
+    /**
+     * Disconnect WebSocket
+     */
+    disconnect() {
+        this.shouldReconnect = false;
+        
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        
+        this.stopPingPong();
+        this.stopFallback();
+        
+        if (this.ws) {
+            this.ws.close(1000, 'Manual disconnect');
+            this.ws = null;
+        }
+        
+        this.isConnected = false;
+        this.isConnecting = false;
+        this.reconnectAttempts = 0;
+        
+        // Clear message queues
+        this.messageQueue = [];
+        this.pendingMessages.clear();
+    }
+    
+    /**
+     * Add event handler
+     */
     on(event, handler) {
-        if (!this.eventHandlers.has(event)) {
-            this.eventHandlers.set(event, []);
+        if (this.eventHandlers[event]) {
+            this.eventHandlers[event].push(handler);
         }
-        this.eventHandlers.get(event).push(handler);
     }
     
+    /**
+     * Remove event handler
+     */
     off(event, handler) {
-        if (this.eventHandlers.has(event)) {
-            const handlers = this.eventHandlers.get(event);
-            const index = handlers.indexOf(handler);
+        if (this.eventHandlers[event]) {
+            const index = this.eventHandlers[event].indexOf(handler);
             if (index > -1) {
-                handlers.splice(index, 1);
+                this.eventHandlers[event].splice(index, 1);
             }
         }
     }
     
-    emit(event, data) {
-        if (this.eventHandlers.has(event)) {
-            this.eventHandlers.get(event).forEach(handler => {
+    /**
+     * Notify event handlers
+     */
+    notifyHandlers(event, data) {
+        if (this.eventHandlers[event]) {
+            this.eventHandlers[event].forEach(handler => {
                 try {
                     handler(data);
                 } catch (error) {
-                    if (window.Utils) Utils.error(`❌ Error in event handler for ${event}:`, error);
+                    console.error(`Error in ${event} handler:`, error);
                 }
             });
         }
     }
     
-    // Convenience methods
-    subscribeToAnalysis(analysisId) {
-        this.subscriptions.add(analysisId);
-        this.send({
-            type: 'subscribe_analysis',
-            analysis_id: analysisId
-        });
-    }
-    
-    unsubscribeFromAnalysis(analysisId) {
-        this.subscriptions.delete(analysisId);
-        this.send({
-            type: 'unsubscribe_analysis',
-            analysis_id: analysisId
-        });
-    }
-    
-    requestSystemStatus() {
-        this.send({ type: 'get_system_status' });
-    }
-    
-    requestAnalysisHistory() {
-        this.send({ type: 'get_analysis_history' });
-    }
-    
-    requestFileList() {
-        this.send({ type: 'request_file_list' });
-    }
-    
-    setupEventHandlers() {
-        // Setup default event handlers
-        this.on('connected', () => {
-            if (window.Utils) Utils.log('🎉 WebSocket event: Connected');
-        });
-        
-        this.on('disconnected', () => {
-            if (window.Utils) Utils.log('👋 WebSocket event: Disconnected');
-        });
-        
-        this.on('error', (error) => {
-            if (window.Utils) Utils.error('🚨 WebSocket event: Error', error);
-        });
-    }
-    
-    disconnect() {
-        if (this.socket) {
-            this.socket.close(1000, 'Client disconnect');
-        }
-    }
-    
-    getConnectionStatus() {
+    /**
+     * Get connection status
+     */
+    getStatus() {
         return {
             isConnected: this.isConnected,
-            sessionId: this.sessionId,
+            isConnecting: this.isConnecting,
             reconnectAttempts: this.reconnectAttempts,
-            subscriptions: Array.from(this.subscriptions),
-            queuedMessages: this.messageQueue.length
+            fallbackActive: this.fallbackActive,
+            queuedMessages: this.messageQueue.length,
+            pendingMessages: this.pendingMessages.size
         };
     }
 }
 
-// Make WebSocketManager globally available
-window.WebSocketManager = WebSocketManager;
+// Create global WebSocket manager instance
+window.WebSocketManager = new WebSocketManager();
 
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.wsManager) {
-        window.wsManager = new WebSocketManager();
-        
-        // Auto-connect after a brief delay
-        setTimeout(() => {
-            window.wsManager.connect();
-        }, 1000);
-        
-        if (window.Utils) Utils.log('✅ WebSocket Manager auto-initialized');
-    }
-});
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = WebSocketManager;
+}

@@ -58,7 +58,8 @@ class AnalysisManager {
     // ========================================================================
 
     setupWebSocket() {
-        if (!authManager.isAuthenticated()) {
+        // Simplified - no authentication required for basic functionality
+        if (false) { // Disable WebSocket for simplified version
             return;
         }
 
@@ -124,7 +125,7 @@ class AnalysisManager {
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
 
         setTimeout(() => {
-            if (!this.websocket && authManager.isAuthenticated()) {
+            if (!this.websocket) {
                 this.setupWebSocket();
             }
         }, delay);
@@ -141,9 +142,7 @@ class AnalysisManager {
                 throw Utils.createError('File ID is required', 'VALIDATION_ERROR');
             }
 
-            if (!authManager.isAuthenticated()) {
-                throw Utils.createError('Authentication required', 'AUTH_ERROR');
-            }
+            // Simplified - no authentication required for basic functionality
 
             // Prepare analysis options
             const defaultOptions = {

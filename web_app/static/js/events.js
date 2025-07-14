@@ -601,6 +601,121 @@ class EventManager {
     }
 
     // ========================================================================
+    // MISSING METHODS - ADDED FOR COMPATIBILITY
+    // ========================================================================
+
+    hideLoadingScreens() {
+        // Hide all loading screens
+        const loadingScreens = document.querySelectorAll('.loading-screen, .loading-overlay, .spinner-overlay');
+        loadingScreens.forEach(screen => {
+            screen.style.display = 'none';
+            screen.classList.add('hidden');
+        });
+
+        // Remove loading class from body
+        document.body.classList.remove('loading');
+
+        if (window.Utils) Utils.log('Loading screens hidden');
+    }
+
+    handleFormFocus(e) {
+        const element = e.target;
+
+        // Add focus styling
+        if (element.matches('input, textarea, select')) {
+            element.classList.add('focused');
+
+            // Handle specific input types
+            if (element.type === 'file') {
+                element.closest('.file-input-wrapper')?.classList.add('focused');
+            }
+        }
+    }
+
+    handleFormBlur(e) {
+        const element = e.target;
+
+        // Remove focus styling
+        if (element.matches('input, textarea, select')) {
+            element.classList.remove('focused');
+
+            // Handle specific input types
+            if (element.type === 'file') {
+                element.closest('.file-input-wrapper')?.classList.remove('focused');
+            }
+        }
+    }
+
+    handleFileInputChange(e) {
+        const input = e.target;
+        const files = input.files;
+
+        if (files && files.length > 0) {
+            // Update file input display
+            const wrapper = input.closest('.file-input-wrapper');
+            if (wrapper) {
+                const label = wrapper.querySelector('.file-input-label');
+                if (label) {
+                    label.textContent = files.length === 1 ? files[0].name : `${files.length} files selected`;
+                }
+            }
+
+            // Emit file change event
+            this.emit('file-input-change', {
+                input: input,
+                files: Array.from(files)
+            });
+        }
+    }
+
+    updateScrollComponents() {
+        // Update scroll-dependent components
+        const scrollY = window.scrollY;
+        const scrollX = window.scrollX;
+
+        // Update sticky headers
+        const stickyHeaders = document.querySelectorAll('.sticky-header');
+        stickyHeaders.forEach(header => {
+            if (scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Update scroll progress indicators
+        const progressBars = document.querySelectorAll('.scroll-progress');
+        progressBars.forEach(bar => {
+            const progress = (scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+            bar.style.width = `${Math.min(progress, 100)}%`;
+        });
+    }
+
+    updateResponsiveComponents() {
+        // Update responsive components based on window size
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Update mobile/desktop classes
+        document.body.classList.toggle('mobile', width < 768);
+        document.body.classList.toggle('tablet', width >= 768 && width < 1024);
+        document.body.classList.toggle('desktop', width >= 1024);
+
+        // Update responsive tables
+        const tables = document.querySelectorAll('.responsive-table');
+        tables.forEach(table => {
+            if (width < 768) {
+                table.classList.add('mobile-view');
+            } else {
+                table.classList.remove('mobile-view');
+            }
+        });
+
+        // Emit resize event
+        this.emit('responsive-update', { width, height });
+    }
+
+    // ========================================================================
     // CLEANUP
     // ========================================================================
 
