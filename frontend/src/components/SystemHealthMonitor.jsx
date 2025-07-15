@@ -7,7 +7,7 @@ import {
   Cpu,
   Database,
   HardDrive,
-  Memory,
+  MemoryStick,
   Monitor,
   RefreshCw,
   Server,
@@ -20,10 +20,10 @@ import {
 } from 'lucide-react';
 import { checkHealth, getSystemMetrics } from '../utils/api';
 
-const SystemHealthMonitor = ({ 
-  isVisible = true, 
+const SystemHealthMonitor = ({
+  isVisible = true,
   refreshInterval = 3000,
-  showDetailed = false 
+  showDetailed = false
 }) => {
   const [healthData, setHealthData] = useState(null);
   const [systemMetrics, setSystemMetrics] = useState(null);
@@ -161,7 +161,7 @@ const SystemHealthMonitor = ({
     if (healthHistory.length < 2) return null;
     const recent = healthHistory[0];
     const previous = healthHistory[1];
-    
+
     if (recent.responseTime < previous.responseTime) {
       return { direction: 'up', icon: TrendingUp, color: '#10b981' };
     } else if (recent.responseTime > previous.responseTime) {
@@ -192,7 +192,7 @@ const SystemHealthMonitor = ({
       <div className="health-header">
         <div className="health-status">
           <StatusIcon size={20} color={statusColor} />
-          <span 
+          <span
             className="status-text"
             style={{ color: statusColor }}
           >
@@ -202,12 +202,12 @@ const SystemHealthMonitor = ({
             <trend.icon size={16} color={trend.color} />
           )}
         </div>
-        
+
         <div className="health-connection">
           {getConnectionIcon()}
           <span className="connection-text">
-            {connectionStatus === 'connected' ? 'Conectado' : 
-             connectionStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
+            {connectionStatus === 'connected' ? 'Conectado' :
+              connectionStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
           </span>
         </div>
 
@@ -241,15 +241,15 @@ const SystemHealthMonitor = ({
                     {(healthData.performance.avg_response_time * 1000).toFixed(0)}ms
                   </span>
                 </div>
-                
+
                 <div className="metric-item">
-                  <Memory size={16} />
+                  <MemoryStick size={16} />
                   <span className="metric-label">Memoria:</span>
                   <span className="metric-value">
                     {Math.round(healthData.performance.memory_usage)}%
                   </span>
                 </div>
-                
+
                 <div className="metric-item">
                   <Activity size={16} />
                   <span className="metric-label">Solicitudes:</span>
@@ -269,7 +269,7 @@ const SystemHealthMonitor = ({
                     {formatUptime(healthData.system.uptime)}
                   </span>
                 </div>
-                
+
                 <div className="metric-item">
                   <HardDrive size={16} />
                   <span className="metric-label">Disco:</span>
@@ -298,12 +298,12 @@ const SystemHealthMonitor = ({
                 {Object.entries(healthData.components).map(([component, status]) => {
                   const ComponentIcon = getStatusIcon(status);
                   const componentColor = getStatusColor(status);
-                  
+
                   return (
                     <div key={component} className="component-item">
                       <ComponentIcon size={14} color={componentColor} />
                       <span className="component-name">{component}</span>
-                      <span 
+                      <span
                         className="component-status"
                         style={{ color: componentColor }}
                       >

@@ -193,7 +193,67 @@ class CompressionCache:
             'compression_ratio': 0.0,
             'size': 0
         }
-    
+
+    def _compress_data(self, data: Any) -> tuple:
+        """
+        Compress data if beneficial
+
+        Args:
+            data: Data to compress
+
+        Returns:
+            Tuple of (compressed_data, is_compressed)
+        """
+        try:
+            import pickle
+            import gzip
+
+            # Serialize the data
+            serialized = pickle.dumps(data)
+
+            # Only compress if data is large enough to benefit
+            if len(serialized) > 1024:  # 1KB threshold
+                compressed = gzip.compress(serialized)
+
+                # Only use compression if it actually reduces size
+                if len(compressed) < len(serialized):
+                    self.stats['compressed_items'] += 1
+                    return compressed, True
+
+            return serialized, False
+
+        except Exception:
+            # If compression fails, return original data
+            return data, False
+
+    def _decompress_data(self, data: Any, is_compressed: bool) -> Any:
+        """
+        Decompress data if needed
+
+        Args:
+            data: Data to decompress
+            is_compressed: Whether data is compressed
+
+        Returns:
+            Decompressed data
+        """
+        try:
+            import pickle
+            import gzip
+
+            if is_compressed:
+                decompressed = gzip.decompress(data)
+                return pickle.loads(decompressed)
+            else:
+                if isinstance(data, bytes):
+                    return pickle.loads(data)
+                else:
+                    return data
+
+        except Exception:
+            # If decompression fails, return original data
+            return data
+
     def get(self, key: str) -> Optional[Any]:
         """Get item from cache"""
         with self.lock:
@@ -250,7 +310,40 @@ class CacheManager:
         }
         
         logger.info("Advanced cache manager initialized")
-    
+
+    def _generate_key(self, prefix: str, *args, **kwargs) -> str:
+        """
+        Generate a cache key from prefix and arguments
+
+        Args:
+            prefix: Key prefix
+            *args: Positional arguments
+            **kwargs: Keyword arguments
+
+        Returns:
+            Generated cache key
+        """
+        import hashlib
+
+        # Convert all arguments to strings
+        key_parts = [prefix]
+
+        for arg in args:
+            if isinstance(arg, (str, int, float, bool)):
+                key_parts.append(str(arg))
+            else:
+                # For complex objects, use their string representation
+                key_parts.append(str(arg))
+
+        for key, value in sorted(kwargs.items()):
+            key_parts.append(f"{key}={value}")
+
+        # Create a hash of the combined key parts
+        key_string = "|".join(key_parts)
+        key_hash = hashlib.md5(key_string.encode('utf-8')).hexdigest()
+
+        return f"{prefix}_{key_hash}"
+
     def cache_sql_analysis(self, sql_content: str, database_engine: str, result: Any):
         """Cache SQL analysis result"""
         key = self._generate_key(

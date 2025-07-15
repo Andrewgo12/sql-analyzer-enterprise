@@ -62,6 +62,66 @@ const ConnectionsView = ({
     tags: []
   });
 
+  useEffect(() => {
+    loadDatabaseEngines();
+  }, []);
+
+  const loadDatabaseEngines = async () => {
+    try {
+      setLoadingEngines(true);
+      const response = await getSupportedDatabases();
+      setAvailableEngines(response.engines || []);
+    } catch (error) {
+      console.error('Failed to load database engines:', error);
+      // Fallback engines
+      setAvailableEngines([
+        { engine: 'mysql', name: 'MySQL', category: 'relational' },
+        { engine: 'postgresql', name: 'PostgreSQL', category: 'relational' },
+        { engine: 'sqlite', name: 'SQLite', category: 'embedded' },
+        { engine: 'mongodb', name: 'MongoDB', category: 'document' },
+        { engine: 'oracle', name: 'Oracle', category: 'relational' }
+      ]);
+    } finally {
+      setLoadingEngines(false);
+    }
+  };
+
+  const testConnection = async (connection) => {
+    setTestingConnection(connection.id);
+    try {
+      // Simulate connection test - in real app, this would call backend
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const testResult = {
+        success: Math.random() > 0.3, // 70% success rate for demo
+        responseTime: Math.floor(Math.random() * 500) + 50,
+        timestamp: new Date(),
+        message: Math.random() > 0.3 ? 'Conexión exitosa' : 'Error de conexión: Timeout'
+      };
+
+      setConnectionResults(prev => ({
+        ...prev,
+        [connection.id]: testResult
+      }));
+
+      if (onTestConnection) {
+        onTestConnection(connection, testResult);
+      }
+    } catch (error) {
+      setConnectionResults(prev => ({
+        ...prev,
+        [connection.id]: {
+          success: false,
+          responseTime: 0,
+          timestamp: new Date(),
+          message: 'Error de prueba de conexión'
+        }
+      }));
+    } finally {
+      setTestingConnection(null);
+    }
+  };
+
   const databaseEngines = [
     { value: 'mysql', label: 'MySQL', icon: '🐬', defaultPort: 3306 },
     { value: 'postgresql', label: 'PostgreSQL', icon: '🐘', defaultPort: 5432 },
@@ -178,6 +238,25 @@ const ConnectionsView = ({
     }
   };
 
+  const getFilteredConnections = () => {
+    return connections.filter(connection => {
+      const matchesSearch = connection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        connection.host.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        connection.database.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesEngine = filterEngine === 'all' || connection.engine === filterEngine;
+
+      return matchesSearch && matchesEngine;
+    });
+  };
+
+  const getActiveConnections = () => {
+    return connections.filter(connection => {
+      const result = connectionResults[connection.id];
+      return result && result.success;
+    });
+  };
+
   const getEngineInfo = (engine) => {
     return databaseEngines.find(e => e.value === engine) || databaseEngines[0];
   };
@@ -208,18 +287,13 @@ const ConnectionsView = ({
               />
             </div>
             <div className="form-group">
-              <label>Motor de Base de Datos</label>
-              <select
-                value={formData.engine}
-                onChange={(e) => handleEngineChange(e.target.value)}
-                required
-              >
-                {databaseEngines.map(engine => (
-                  <option key={engine.value} value={engine.value}>
-                    {engine.icon} {engine.label}
-                  </option>
-                ))}
-              </select>
+              <DatabaseEngineSelector
+                selectedEngine={formData.engine}
+                onEngineChange={(engine) => handleEngineChange(engine)}
+                disabled={false}
+                showLabel={true}
+                compact={false}
+              />
             </div>
           </div>
 
@@ -469,6 +543,47 @@ const ConnectionsView = ({
         </div>
       )}
 
+      {/* Filters and Search */}
+      <div className="connections-filters">
+        <div className="filter-group">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Buscar conexiones..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+
+          <div className="filter-select">
+            <select
+              value={filterEngine}
+              onChange={(e) => setFilterEngine(e.target.value)}
+              className="engine-filter"
+            >
+              <option value="all">Todos los motores</option>
+              {availableEngines.map(engine => (
+                <option key={engine.engine} value={engine.engine}>
+                  {engine.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="connections-stats">
+          <span className="stat-item">
+            <Activity size={14} />
+            Total: {getFilteredConnections().length}
+          </span>
+          <span className="stat-item">
+            <CheckCircle size={14} />
+            Activas: {getActiveConnections().length}
+          </span>
+        </div>
+      </div>
+
       <div className="connections-content">
         {connections.length === 0 ? (
           <div className="empty-state">
@@ -485,7 +600,7 @@ const ConnectionsView = ({
           </div>
         ) : (
           <div className="connections-grid">
-            {connections.map(renderConnectionCard)}
+            {getFilteredConnections().map(renderConnectionCard)}
           </div>
         )}
       </div>

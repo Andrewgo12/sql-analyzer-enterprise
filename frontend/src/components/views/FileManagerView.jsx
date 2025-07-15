@@ -22,7 +22,19 @@ import {
   Move,
   Star,
   StarOff,
-  Info
+  Info,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Zap,
+  Database,
+  Archive,
+  RefreshCw,
+  Settings,
+  Tag,
+  Share,
+  Lock,
+  Unlock
 } from 'lucide-react';
 
 const FileManagerView = ({
@@ -45,14 +57,23 @@ const FileManagerView = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all', 'sql', 'txt'
   const [showFileInfo, setShowFileInfo] = useState(null);
+  const [batchMode, setBatchMode] = useState(false);
+  const [selectedForBatch, setSelectedForBatch] = useState([]);
+  const [validationResults, setValidationResults] = useState({});
+  const [processingFiles, setProcessingFiles] = useState([]);
+  const [showBatchActions, setShowBatchActions] = useState(false);
+  const [filePreview, setFilePreview] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [tags, setTags] = useState({});
+  const [showTagEditor, setShowTagEditor] = useState(null);
 
   const filteredFiles = uploadedFiles
     .filter(file => {
       const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           file.content.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = filterType === 'all' || 
-                           (filterType === 'sql' && file.name.endsWith('.sql')) ||
-                           (filterType === 'txt' && file.name.endsWith('.txt'));
+        file.content.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = filterType === 'all' ||
+        (filterType === 'sql' && file.name.endsWith('.sql')) ||
+        (filterType === 'txt' && file.name.endsWith('.txt'));
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -106,9 +127,116 @@ const FileManagerView = ({
 
   const getFileIcon = (fileName) => {
     if (fileName.endsWith('.sql')) {
-      return <FileText className="file-icon sql" size={24} />;
+      return <Database className="file-icon sql" size={24} />;
     }
     return <FileText className="file-icon txt" size={24} />;
+  };
+
+  const validateFile = async (file) => {
+    setProcessingFiles(prev => [...prev, file.id]);
+
+    try {
+      // Simulate file validation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const validation = {
+        isValid: Math.random() > 0.2, // 80% success rate
+        errors: [],
+        warnings: [],
+        suggestions: [],
+        stats: {
+          lines: Math.floor(Math.random() * 1000) + 10,
+          size: file.size,
+          encoding: 'UTF-8',
+          sqlStatements: Math.floor(Math.random() * 50) + 1
+        }
+      };
+
+      if (!validation.isValid) {
+        validation.errors.push('Sintaxis SQL inválida en línea 45');
+        validation.errors.push('Tabla no encontrada: usuarios_temp');
+      } else {
+        validation.warnings.push('Consulta compleja detectada');
+        validation.suggestions.push('Considera agregar índices para mejorar rendimiento');
+      }
+
+      setValidationResults(prev => ({
+        ...prev,
+        [file.id]: validation
+      }));
+
+    } catch (error) {
+      setValidationResults(prev => ({
+        ...prev,
+        [file.id]: {
+          isValid: false,
+          errors: ['Error al validar archivo'],
+          warnings: [],
+          suggestions: []
+        }
+      }));
+    } finally {
+      setProcessingFiles(prev => prev.filter(id => id !== file.id));
+    }
+  };
+
+  const handleBatchValidation = async () => {
+    const filesToValidate = uploadedFiles.filter(file =>
+      selectedForBatch.includes(file.id) && !validationResults[file.id]
+    );
+
+    for (const file of filesToValidate) {
+      await validateFile(file);
+    }
+  };
+
+  const handleBatchAnalysis = () => {
+    const filesToAnalyze = uploadedFiles.filter(file =>
+      selectedForBatch.includes(file.id)
+    );
+
+    filesToAnalyze.forEach(file => {
+      onFileSelect(file);
+    });
+  };
+
+  const toggleBatchSelection = (fileId) => {
+    if (selectedForBatch.includes(fileId)) {
+      setSelectedForBatch(prev => prev.filter(id => id !== fileId));
+    } else {
+      setSelectedForBatch(prev => [...prev, fileId]);
+    }
+  };
+
+  const toggleFavorite = (fileId) => {
+    if (favorites.includes(fileId)) {
+      setFavorites(prev => prev.filter(id => id !== fileId));
+    } else {
+      setFavorites(prev => [...prev, fileId]);
+    }
+  };
+
+  const addTag = (fileId, tag) => {
+    setTags(prev => ({
+      ...prev,
+      [fileId]: [...(prev[fileId] || []), tag]
+    }));
+  };
+
+  const removeTag = (fileId, tagToRemove) => {
+    setTags(prev => ({
+      ...prev,
+      [fileId]: (prev[fileId] || []).filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const getFileStats = () => {
+    const total = filteredFiles.length;
+    const validated = Object.keys(validationResults).length;
+    const valid = Object.values(validationResults).filter(r => r.isValid).length;
+    const totalSize = filteredFiles.reduce((sum, file) => sum + file.size, 0);
+
+    return { total, validated, valid, totalSize };
   };
 
   const renderToolbar = () => (
@@ -122,17 +250,25 @@ const FileManagerView = ({
           onChange={(e) => onFileUpload(e.target.files)}
           style={{ display: 'none' }}
         />
-        <button 
+        <button
           className="btn-primary"
           onClick={() => document.getElementById('file-upload-input').click()}
         >
           <Upload size={16} />
           Cargar Archivos
         </button>
-        
+
+        <button
+          className={`btn-secondary ${batchMode ? 'active' : ''}`}
+          onClick={() => setBatchMode(!batchMode)}
+        >
+          <CheckSquare size={16} />
+          Modo Lote
+        </button>
+
         {selectedFiles.length > 0 && (
           <>
-            <button 
+            <button
               className="btn-danger"
               onClick={handleBulkDelete}
             >
@@ -145,8 +281,27 @@ const FileManagerView = ({
             </button>
           </>
         )}
+
+        {batchMode && selectedForBatch.length > 0 && (
+          <>
+            <button
+              className="btn-primary"
+              onClick={handleBatchValidation}
+            >
+              <CheckCircle size={16} />
+              Validar ({selectedForBatch.length})
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={handleBatchAnalysis}
+            >
+              <Zap size={16} />
+              Analizar Lote
+            </button>
+          </>
+        )}
       </div>
-      
+
       <div className="toolbar-center">
         <div className="search-box">
           <Search size={16} className="search-icon" />
@@ -159,10 +314,10 @@ const FileManagerView = ({
           />
         </div>
       </div>
-      
+
       <div className="toolbar-right">
-        <select 
-          value={filterType} 
+        <select
+          value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
           className="filter-select"
         >
@@ -170,9 +325,9 @@ const FileManagerView = ({
           <option value="sql">Archivos SQL</option>
           <option value="txt">Archivos de texto</option>
         </select>
-        
-        <select 
-          value={`${sortBy}-${sortOrder}`} 
+
+        <select
+          value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [field, order] = e.target.value.split('-');
             setSortBy(field);
@@ -187,15 +342,37 @@ const FileManagerView = ({
           <option value="size-desc">Mayor tamaño</option>
           <option value="size-asc">Menor tamaño</option>
         </select>
-        
+
+        <div className="file-stats">
+          {(() => {
+            const stats = getFileStats();
+            return (
+              <div className="stats-display">
+                <span className="stat-item">
+                  <FileText size={14} />
+                  {stats.total} archivos
+                </span>
+                <span className="stat-item">
+                  <CheckCircle size={14} />
+                  {stats.valid}/{stats.validated} válidos
+                </span>
+                <span className="stat-item">
+                  <HardDrive size={14} />
+                  {formatFileSize(stats.totalSize)}
+                </span>
+              </div>
+            );
+          })()}
+        </div>
+
         <div className="view-toggle">
-          <button 
+          <button
             className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}
           >
             <Grid size={16} />
           </button>
-          <button 
+          <button
             className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
           >
@@ -206,81 +383,190 @@ const FileManagerView = ({
     </div>
   );
 
-  const renderFileCard = (file) => (
-    <div 
-      key={file.id}
-      className={`file-card ${selectedFiles.includes(file.id) ? 'selected' : ''} ${viewMode}`}
-      onClick={() => handleFileSelect(file.id)}
-    >
-      <div className="file-card-header">
-        <div className="file-select">
-          {selectedFiles.includes(file.id) ? (
-            <CheckSquare size={16} className="select-icon selected" />
-          ) : (
-            <Square size={16} className="select-icon" />
+  const renderFileCard = (file) => {
+    const validation = validationResults[file.id];
+    const isProcessing = processingFiles.includes(file.id);
+    const isFavorite = favorites.includes(file.id);
+    const fileTags = tags[file.id] || [];
+
+    return (
+      <div
+        key={file.id}
+        className={`file-card ${selectedFiles.includes(file.id) ? 'selected' : ''} ${viewMode} ${validation?.isValid === false ? 'invalid' : ''}`}
+        onClick={() => handleFileSelect(file.id)}
+      >
+        <div className="file-card-header">
+          <div className="file-select">
+            {selectedFiles.includes(file.id) ? (
+              <CheckSquare size={16} className="select-icon selected" />
+            ) : (
+              <Square size={16} className="select-icon" />
+            )}
+          </div>
+
+          {batchMode && (
+            <div className="batch-select">
+              <input
+                type="checkbox"
+                checked={selectedForBatch.includes(file.id)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleBatchSelection(file.id);
+                }}
+                className="batch-checkbox"
+              />
+            </div>
           )}
-        </div>
-        <div className="file-actions">
-          <button 
-            className="action-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onFileEdit(file);
-            }}
-            title="Editar archivo"
-          >
-            <Edit size={14} />
-          </button>
-          <button 
-            className="action-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowFileInfo(file);
-            }}
-            title="Información del archivo"
-          >
-            <Info size={14} />
-          </button>
-          <button 
-            className="action-btn danger"
-            onClick={(e) => {
-              e.stopPropagation();
-              onFileDelete(file.id);
-            }}
-            title="Eliminar archivo"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </div>
-      
-      <div className="file-card-content">
-        <div className="file-icon-container">
-          {getFileIcon(file.name)}
-        </div>
-        <div className="file-info">
-          <div className="file-name" title={file.name}>{file.name}</div>
-          <div className="file-meta">
-            <span className="file-size">{formatFileSize(file.size)}</span>
-            <span className="file-date">
-              {new Date(file.uploadDate).toLocaleDateString()}
-            </span>
+
+          <div className="file-status">
+            {isProcessing && (
+              <RefreshCw size={14} className="processing-icon spinning" />
+            )}
+            {validation && (
+              <div className={`validation-status ${validation.isValid ? 'valid' : 'invalid'}`}>
+                {validation.isValid ? (
+                  <CheckCircle size={14} />
+                ) : (
+                  <AlertTriangle size={14} />
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="file-actions">
+            <button
+              className="action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(file.id);
+              }}
+              title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+            >
+              {isFavorite ? <Star size={14} /> : <StarOff size={14} />}
+            </button>
+
+            <button
+              className="action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                validateFile(file);
+              }}
+              title="Validar archivo"
+              disabled={isProcessing}
+            >
+              {isProcessing ? <RefreshCw size={14} className="spinning" /> : <CheckCircle size={14} />}
+            </button>
+
+            <button
+              className="action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFileEdit(file);
+              }}
+              title="Editar archivo"
+            >
+              <Edit size={14} />
+            </button>
+
+            <button
+              className="action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFileInfo(file);
+              }}
+              title="Información del archivo"
+            >
+              <Info size={14} />
+            </button>
+
+            <button
+              className="action-btn danger"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFileDelete(file.id);
+              }}
+              title="Eliminar archivo"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
         </div>
-      </div>
-      
-      {viewMode === 'list' && (
-        <div className="file-card-details">
-          <div className="file-preview">
-            {file.content.substring(0, 100)}...
+
+        <div className="file-card-content">
+          <div className="file-icon-container">
+            {getFileIcon(file.name)}
+          </div>
+          <div className="file-info">
+            <div className="file-name" title={file.name}>{file.name}</div>
+            <div className="file-meta">
+              <span className="file-size">{formatFileSize(file.size)}</span>
+              <span className="file-date">
+                {new Date(file.uploadDate).toLocaleDateString()}
+              </span>
+            </div>
+
+            {fileTags.length > 0 && (
+              <div className="file-tags">
+                {fileTags.map((tag, index) => (
+                  <span key={index} className="file-tag">
+                    <Tag size={10} />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  );
+
+        {validation && (
+          <div className={`validation-summary ${validation.isValid ? 'valid' : 'invalid'}`}>
+            <div className="validation-header">
+              {validation.isValid ? (
+                <CheckCircle size={14} />
+              ) : (
+                <AlertTriangle size={14} />
+              )}
+              <span>{validation.isValid ? 'Válido' : 'Errores encontrados'}</span>
+            </div>
+
+            {validation.stats && (
+              <div className="validation-stats">
+                <span>{validation.stats.lines} líneas</span>
+                <span>{validation.stats.sqlStatements} consultas</span>
+              </div>
+            )}
+
+            {validation.errors.length > 0 && (
+              <div className="validation-errors">
+                {validation.errors.slice(0, 2).map((error, index) => (
+                  <div key={index} className="error-item">
+                    <AlertTriangle size={10} />
+                    {error}
+                  </div>
+                ))}
+                {validation.errors.length > 2 && (
+                  <div className="more-errors">
+                    +{validation.errors.length - 2} más
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {viewMode === 'list' && (
+          <div className="file-card-details">
+            <div className="file-preview">
+              {file.content.substring(0, 100)}...
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderEmptyState = () => (
-    <div 
+    <div
       className={`empty-state ${dragActive ? 'drag-active' : ''}`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -289,14 +575,14 @@ const FileManagerView = ({
       <FolderOpen size={64} className="empty-icon" />
       <h3>No hay archivos cargados</h3>
       <p>Arrastra archivos SQL aquí o usa el botón "Cargar Archivos"</p>
-      <button 
+      <button
         className="btn-primary"
         onClick={() => document.getElementById('file-upload-input').click()}
       >
         <Upload size={16} />
         Seleccionar Archivos
       </button>
-      
+
       {dragActive && (
         <div className="drag-overlay">
           <Upload size={48} />
@@ -308,14 +594,14 @@ const FileManagerView = ({
 
   const renderFileInfo = () => {
     if (!showFileInfo) return null;
-    
+
     return (
       <div className="file-info-modal">
         <div className="modal-backdrop" onClick={() => setShowFileInfo(null)}></div>
         <div className="modal-content">
           <div className="modal-header">
             <h3>Información del Archivo</h3>
-            <button 
+            <button
               className="modal-close"
               onClick={() => setShowFileInfo(null)}
             >
@@ -349,7 +635,7 @@ const FileManagerView = ({
             </div>
           </div>
           <div className="modal-footer">
-            <button 
+            <button
               className="btn-primary"
               onClick={() => {
                 onFileEdit(showFileInfo);
@@ -359,7 +645,7 @@ const FileManagerView = ({
               <Edit size={16} />
               Editar
             </button>
-            <button 
+            <button
               className="btn-secondary"
               onClick={() => setShowFileInfo(null)}
             >

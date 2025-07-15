@@ -75,7 +75,123 @@ class FileValidator:
                 'message': f'Error en validación: {str(e)}',
                 'details': {}
             }
-    
+
+    def _validate_basic_file_properties(self, file) -> Dict[str, Any]:
+        """
+        Validación básica de propiedades del archivo
+
+        Args:
+            file: Archivo a validar
+
+        Returns:
+            Resultado de validación básica
+        """
+        try:
+            # Verificar que el archivo tenga nombre
+            if not file.filename:
+                return {
+                    'valid': False,
+                    'message': 'El archivo debe tener un nombre',
+                    'details': {}
+                }
+
+            # Verificar extensión
+            allowed_extensions = ['.sql', '.txt']
+            file_ext = '.' + file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+
+            if file_ext not in allowed_extensions:
+                return {
+                    'valid': False,
+                    'message': f'Extensión no permitida. Extensiones válidas: {", ".join(allowed_extensions)}',
+                    'details': {'extension': file_ext}
+                }
+
+            # Verificar tamaño (máximo 10MB)
+            file.seek(0, 2)  # Ir al final del archivo
+            file_size = file.tell()
+            file.seek(0)  # Volver al inicio
+
+            max_size = 10 * 1024 * 1024  # 10MB
+            if file_size > max_size:
+                return {
+                    'valid': False,
+                    'message': f'Archivo demasiado grande. Tamaño máximo: {max_size // (1024*1024)}MB',
+                    'details': {'size': file_size}
+                }
+
+            return {
+                'valid': True,
+                'message': 'Propiedades básicas válidas',
+                'details': {
+                    'filename': file.filename,
+                    'size': file_size,
+                    'extension': file_ext
+                }
+            }
+
+        except Exception as e:
+            return {
+                'valid': False,
+                'message': f'Error validando propiedades básicas: {str(e)}',
+                'details': {}
+            }
+
+    def _validate_file_content(self, file) -> Dict[str, Any]:
+        """
+        Validación del contenido del archivo
+
+        Args:
+            file: Archivo a validar
+
+        Returns:
+            Resultado de validación de contenido
+        """
+        try:
+            # Leer contenido del archivo
+            file.seek(0)
+            content = file.read()
+
+            # Si es bytes, decodificar
+            if isinstance(content, bytes):
+                try:
+                    content = content.decode('utf-8')
+                except UnicodeDecodeError:
+                    try:
+                        content = content.decode('latin-1')
+                    except UnicodeDecodeError:
+                        return {
+                            'valid': False,
+                            'message': 'No se puede decodificar el contenido del archivo',
+                            'details': {}
+                        }
+
+            # Verificar que no esté vacío
+            if not content.strip():
+                return {
+                    'valid': False,
+                    'message': 'El archivo está vacío',
+                    'details': {}
+                }
+
+            # Validación básica de SQL
+            sql_validation = self.validate_sql_syntax_basic(content)
+
+            return {
+                'valid': True,
+                'message': 'Contenido válido',
+                'details': {
+                    'content_length': len(content),
+                    'sql_validation': sql_validation
+                }
+            }
+
+        except Exception as e:
+            return {
+                'valid': False,
+                'message': f'Error validando contenido: {str(e)}',
+                'details': {}
+            }
+
     def validate_sql_syntax_basic(self, content: str) -> Dict[str, Any]:
         """
         Validación básica de sintaxis SQL

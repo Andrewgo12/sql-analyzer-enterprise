@@ -6,7 +6,7 @@ import {
   Cpu,
   Database,
   HardDrive,
-  Memory,
+  MemoryStick,
   Monitor,
   RefreshCw,
   Server,
@@ -190,7 +190,7 @@ const MetricsSystem = ({ isVisible = true, refreshInterval = 5000 }) => {
                   size: 24,
                   color: getStatusColor(healthData.status)
                 })}
-                <span 
+                <span
                   className="status-text"
                   style={{ color: getStatusColor(healthData.status) }}
                 >
@@ -204,7 +204,7 @@ const MetricsSystem = ({ isVisible = true, refreshInterval = 5000 }) => {
                     <span>Tiempo respuesta: {formatDuration(healthData.performance.avg_response_time * 1000)}</span>
                   </div>
                   <div className="perf-item">
-                    <Memory size={14} />
+                    <MemoryStick size={14} />
                     <span>Memoria: {formatPercentage(healthData.performance.memory_usage)}</span>
                   </div>
                   <div className="perf-item">
@@ -239,7 +239,7 @@ const MetricsSystem = ({ isVisible = true, refreshInterval = 5000 }) => {
 
             <div className="metric-card">
               <div className="card-header">
-                <Memory size={18} />
+                <MemoryStick size={18} />
                 <h3>Memoria</h3>
               </div>
               <div className="metric-value">
@@ -248,12 +248,12 @@ const MetricsSystem = ({ isVisible = true, refreshInterval = 5000 }) => {
               </div>
               {systemMetrics.memory && (
                 <div className="progress-bar">
-                  <div 
+                  <div
                     className="progress-fill"
-                    style={{ 
+                    style={{
                       width: `${systemMetrics.memory.usage}%`,
-                      backgroundColor: systemMetrics.memory.usage > 80 ? '#ef4444' : 
-                                     systemMetrics.memory.usage > 60 ? '#f59e0b' : '#10b981'
+                      backgroundColor: systemMetrics.memory.usage > 80 ? '#ef4444' :
+                        systemMetrics.memory.usage > 60 ? '#f59e0b' : '#10b981'
                     }}
                   />
                 </div>
@@ -324,8 +324,8 @@ const MetricsSystem = ({ isVisible = true, refreshInterval = 5000 }) => {
               {dashboardData.trends.map((trend, index) => (
                 <div key={index} className="trend-item">
                   <div className="trend-metric">{trend.metric}</div>
-                  <div className="trend-change" style={{ 
-                    color: trend.change > 0 ? '#10b981' : trend.change < 0 ? '#ef4444' : '#6b7280' 
+                  <div className="trend-change" style={{
+                    color: trend.change > 0 ? '#10b981' : trend.change < 0 ? '#ef4444' : '#6b7280'
                   }}>
                     {trend.change > 0 ? '+' : ''}{trend.change}%
                   </div>

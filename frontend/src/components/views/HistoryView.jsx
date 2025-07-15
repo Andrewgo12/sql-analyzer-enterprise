@@ -21,8 +21,13 @@ import {
   Minus,
   RefreshCw,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Share,
+  Archive,
+  Tag,
+  Zap
 } from 'lucide-react';
+import ExportSystem from '../ExportSystem';
 
 const HistoryView = ({
   analysisHistory,
@@ -40,11 +45,15 @@ const HistoryView = ({
   const [selectedItems, setSelectedItems] = useState([]);
   const [showDetails, setShowDetails] = useState(null);
   const [favorites, setFavorites] = useState([]);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportData, setExportData] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', 'timeline'
+  const [groupBy, setGroupBy] = useState('none'); // 'none', 'date', 'status', 'engine'
 
   const getDateFilter = (date) => {
     const now = new Date();
     const itemDate = new Date(date);
-    
+
     switch (filterDate) {
       case 'today':
         return itemDate.toDateString() === now.toDateString();
@@ -62,7 +71,7 @@ const HistoryView = ({
   const getStatusFilter = (item) => {
     const errors = item.summary?.total_errors || 0;
     const warnings = item.summary?.total_warnings || 0;
-    
+
     switch (filterStatus) {
       case 'success':
         return errors === 0 && warnings === 0;
@@ -78,16 +87,16 @@ const HistoryView = ({
   const filteredHistory = analysisHistory
     .filter(item => {
       const matchesSearch = item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           item.connection?.toLowerCase().includes(searchQuery.toLowerCase());
+        item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.connection?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = getStatusFilter(item);
       const matchesDate = getDateFilter(item.timestamp);
-      
+
       return matchesSearch && matchesStatus && matchesDate;
     })
     .sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'date':
           comparison = new Date(a.timestamp) - new Date(b.timestamp);
@@ -104,7 +113,7 @@ const HistoryView = ({
         default:
           comparison = 0;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -139,10 +148,102 @@ const HistoryView = ({
     }
   };
 
+  const handleExportSelected = () => {
+    if (selectedItems.length === 0) {
+      alert('Selecciona al menos un análisis para exportar');
+      return;
+    }
+
+    const selectedAnalyses = analysisHistory.filter(item => selectedItems.includes(item.id));
+    const exportPayload = {
+      export_type: 'history_batch',
+      analyses: selectedAnalyses,
+      metadata: {
+        exported_at: new Date().toISOString(),
+        total_analyses: selectedAnalyses.length,
+        date_range: {
+          from: Math.min(...selectedAnalyses.map(a => new Date(a.timestamp))),
+          to: Math.max(...selectedAnalyses.map(a => new Date(a.timestamp)))
+        }
+      }
+    };
+
+    setExportData(exportPayload);
+    setShowExportModal(true);
+  };
+
+  const handleExportSingle = (analysis) => {
+    const exportPayload = {
+      export_type: 'single_analysis',
+      analysis: analysis,
+      metadata: {
+        exported_at: new Date().toISOString(),
+        analysis_id: analysis.id,
+        analysis_date: analysis.timestamp
+      }
+    };
+
+    setExportData(exportPayload);
+    setShowExportModal(true);
+  };
+
+  const handleExportComplete = (exportRecord) => {
+    console.log('Export completed:', exportRecord);
+    setShowExportModal(false);
+    setExportData(null);
+  };
+
+  const getAnalysisStats = () => {
+    const total = filteredHistory.length;
+    const withErrors = filteredHistory.filter(item => (item.summary?.total_errors || 0) > 0).length;
+    const withWarnings = filteredHistory.filter(item => (item.summary?.total_warnings || 0) > 0).length;
+    const avgScore = total > 0 ?
+      filteredHistory.reduce((sum, item) => sum + (item.summary?.performance_score || 0), 0) / total : 0;
+
+    return { total, withErrors, withWarnings, avgScore };
+  };
+
+  const groupAnalyses = (analyses) => {
+    if (groupBy === 'none') return { 'Todos los análisis': analyses };
+
+    const groups = {};
+
+    analyses.forEach(analysis => {
+      let groupKey;
+
+      switch (groupBy) {
+        case 'date':
+          groupKey = new Date(analysis.timestamp).toLocaleDateString();
+          break;
+        case 'status':
+          if ((analysis.summary?.total_errors || 0) > 0) {
+            groupKey = 'Con errores';
+          } else if ((analysis.summary?.total_warnings || 0) > 0) {
+            groupKey = 'Con advertencias';
+          } else {
+            groupKey = 'Sin problemas';
+          }
+          break;
+        case 'engine':
+          groupKey = analysis.database_engine || 'Sin especificar';
+          break;
+        default:
+          groupKey = 'Otros';
+      }
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(analysis);
+    });
+
+    return groups;
+  };
+
   const getStatusBadge = (item) => {
     const errors = item.summary?.total_errors || 0;
     const warnings = item.summary?.total_warnings || 0;
-    
+
     if (errors > 0) {
       return <span className="status-badge error">Errores: {errors}</span>;
     } else if (warnings > 0) {
@@ -171,9 +272,9 @@ const HistoryView = ({
             className="search-input"
           />
         </div>
-        
-        <select 
-          value={filterStatus} 
+
+        <select
+          value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           className="filter-select"
         >
@@ -182,9 +283,9 @@ const HistoryView = ({
           <option value="errors">Con errores</option>
           <option value="warnings">Con advertencias</option>
         </select>
-        
-        <select 
-          value={filterDate} 
+
+        <select
+          value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
           className="filter-select"
         >
@@ -193,27 +294,89 @@ const HistoryView = ({
           <option value="week">Última semana</option>
           <option value="month">Último mes</option>
         </select>
+
+        <select
+          value={groupBy}
+          onChange={(e) => setGroupBy(e.target.value)}
+          className="filter-select"
+        >
+          <option value="none">Sin agrupar</option>
+          <option value="date">Agrupar por fecha</option>
+          <option value="status">Agrupar por estado</option>
+          <option value="engine">Agrupar por motor</option>
+        </select>
       </div>
-      
+
+      <div className="toolbar-center">
+        <div className="view-mode-toggle">
+          <button
+            className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+            title="Vista de cuadrícula"
+          >
+            <BarChart3 size={16} />
+          </button>
+          <button
+            className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+            title="Vista de lista"
+          >
+            <FileText size={16} />
+          </button>
+          <button
+            className={`view-btn ${viewMode === 'timeline' ? 'active' : ''}`}
+            onClick={() => setViewMode('timeline')}
+            title="Vista cronológica"
+          >
+            <Clock size={16} />
+          </button>
+        </div>
+      </div>
+
       <div className="toolbar-right">
+        <div className="analysis-stats">
+          {(() => {
+            const stats = getAnalysisStats();
+            return (
+              <div className="stats-summary">
+                <span className="stat-item">
+                  <BarChart3 size={14} />
+                  {stats.total} análisis
+                </span>
+                <span className="stat-item">
+                  <AlertTriangle size={14} />
+                  {stats.withErrors} errores
+                </span>
+                <span className="stat-item">
+                  <Zap size={14} />
+                  {Math.round(stats.avgScore)}% promedio
+                </span>
+              </div>
+            );
+          })()}
+        </div>
+
         {selectedItems.length > 0 && (
           <>
-            <button 
+            <button
               className="btn-danger"
               onClick={handleBulkDelete}
             >
               <Trash2 size={16} />
               Eliminar ({selectedItems.length})
             </button>
-            <button className="btn-secondary">
+            <button
+              className="btn-secondary"
+              onClick={handleExportSelected}
+            >
               <Download size={16} />
               Exportar Seleccionados
             </button>
           </>
         )}
-        
-        <select 
-          value={`${sortBy}-${sortOrder}`} 
+
+        <select
+          value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [field, order] = e.target.value.split('-');
             setSortBy(field);
@@ -235,7 +398,7 @@ const HistoryView = ({
   );
 
   const renderHistoryItem = (item) => (
-    <div 
+    <div
       key={item.id}
       className={`history-item ${selectedItems.includes(item.id) ? 'selected' : ''}`}
     >
@@ -247,7 +410,7 @@ const HistoryView = ({
             onChange={() => handleSelectItem(item.id)}
           />
         </div>
-        
+
         <div className="item-info">
           <div className="item-title">
             <Code size={16} className="item-icon" />
@@ -263,7 +426,7 @@ const HistoryView = ({
               )}
             </button>
           </div>
-          
+
           <div className="item-meta">
             <span className="meta-item">
               <Calendar size={12} />
@@ -279,7 +442,7 @@ const HistoryView = ({
             </span>
           </div>
         </div>
-        
+
         <div className="item-status">
           {getStatusBadge(item)}
           <div className="performance-score">
@@ -287,7 +450,7 @@ const HistoryView = ({
             <span>{item.summary?.performance_score || 100}%</span>
           </div>
         </div>
-        
+
         <div className="item-actions">
           <button
             className="action-btn"
@@ -305,7 +468,7 @@ const HistoryView = ({
           </button>
           <button
             className="action-btn"
-            onClick={() => onExportAnalysis(item)}
+            onClick={() => handleExportSingle(item)}
             title="Exportar"
           >
             <Download size={16} />
@@ -326,7 +489,7 @@ const HistoryView = ({
           </button>
         </div>
       </div>
-      
+
       <div className="item-preview">
         <div className="sql-preview">
           <code>{item.content?.substring(0, 150)}...</code>
@@ -337,14 +500,14 @@ const HistoryView = ({
 
   const renderDetailsModal = () => {
     if (!showDetails) return null;
-    
+
     return (
       <div className="details-modal">
         <div className="modal-backdrop" onClick={() => setShowDetails(null)}></div>
         <div className="modal-content">
           <div className="modal-header">
             <h3>Detalles del Análisis</h3>
-            <button 
+            <button
               className="modal-close"
               onClick={() => setShowDetails(null)}
             >
@@ -386,14 +549,14 @@ const HistoryView = ({
                 <span>{showDetails.summary?.performance_score || 100}%</span>
               </div>
             </div>
-            
+
             <div className="sql-content">
               <h4>Contenido SQL:</h4>
               <pre><code>{showDetails.content}</code></pre>
             </div>
           </div>
           <div className="modal-footer">
-            <button 
+            <button
               className="btn-primary"
               onClick={() => {
                 onViewAnalysis(showDetails);
@@ -403,7 +566,7 @@ const HistoryView = ({
               <Eye size={16} />
               Ver Análisis Completo
             </button>
-            <button 
+            <button
               className="btn-secondary"
               onClick={() => setShowDetails(null)}
             >
@@ -457,13 +620,36 @@ const HistoryView = ({
             </div>
           )
         ) : (
-          <div className="history-list">
-            {filteredHistory.map(renderHistoryItem)}
+          <div className={`history-content-${viewMode}`}>
+            {(() => {
+              const groupedAnalyses = groupAnalyses(filteredHistory);
+
+              return Object.entries(groupedAnalyses).map(([groupName, analyses]) => (
+                <div key={groupName} className="analysis-group">
+                  {groupBy !== 'none' && (
+                    <div className="group-header">
+                      <h3>{groupName}</h3>
+                      <span className="group-count">({analyses.length})</span>
+                    </div>
+                  )}
+                  <div className={`history-list ${viewMode}`}>
+                    {analyses.map(renderHistoryItem)}
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
         )}
       </div>
 
       {renderDetailsModal()}
+
+      <ExportSystem
+        analysisData={exportData}
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExportComplete={handleExportComplete}
+      />
     </div>
   );
 };

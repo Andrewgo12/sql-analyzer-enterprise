@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Analyzer Enterprise - Browser Compatibility Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .test-result {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-left: 1rem;
+        }
+        
+        .test-result.pass {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .test-result.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .test-result.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .browser-info {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .feature-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #f9fafb;
+        }
+        
+        .summary {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin: 0.5rem;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        .log {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 SQL Analyzer Enterprise</h1>
+            <h2>Cross-Browser Compatibility Test</h2>
+            <p>Comprehensive testing of browser features and compatibility</p>
+        </div>
+
+        <div class="browser-info" id="browserInfo">
+            <h3>🔍 Browser Information</h3>
+            <div id="browserDetails"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Core JavaScript Features</h3>
+            <button onclick="testJavaScriptFeatures()">Run JavaScript Tests</button>
+            <div id="jsResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎨 CSS Features</h3>
+            <button onclick="testCSSFeatures()">Run CSS Tests</button>
+            <div id="cssResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Web APIs</h3>
+            <button onclick="testWebAPIs()">Run Web API Tests</button>
+            <div id="apiResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Responsive Design</h3>
+            <button onclick="testResponsiveFeatures()">Run Responsive Tests</button>
+            <div id="responsiveResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚡ Performance Features</h3>
+            <button onclick="testPerformanceFeatures()">Run Performance Tests</button>
+            <div id="performanceResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔒 Security Features</h3>
+            <button onclick="testSecurityFeatures()">Run Security Tests</button>
+            <div id="securityResults"></div>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h3>📊 Test Summary</h3>
+            <div id="summaryContent"></div>
+        </div>
+
+        <div class="log" id="testLog" style="display: none;"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let logMessages = [];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            logMessages.push(logMessage);
+            
+            const logElement = document.getElementById('testLog');
+            logElement.style.display = 'block';
+            logElement.innerHTML = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function addResult(category, test, passed, message = '') {
+            testResults.push({ category, test, passed, message });
+            log(`${category} - ${test}: ${passed ? 'PASS' : 'FAIL'} ${message}`);
+        }
+
+        function displayResults(containerId, results) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = results.map(result => 
+                `<div>${result.test} <span class="test-result ${result.passed ? 'pass' : 'fail'}">${result.passed ? 'PASS' : 'FAIL'}</span> ${result.message}</div>`
+            ).join('');
+        }
+
+        function getBrowserInfo() {
+            const nav = navigator;
+            const screen = window.screen;
+            
+            const info = {
+                userAgent: nav.userAgent,
+                browser: getBrowserName(),
+                version: getBrowserVersion(),
+                platform: nav.platform,
+                language: nav.language,
+                cookieEnabled: nav.cookieEnabled,
+                onLine: nav.onLine,
+                screenResolution: `${screen.width}x${screen.height}`,
+                colorDepth: screen.colorDepth,
+                pixelRatio: window.devicePixelRatio || 1,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+
+            document.getElementById('browserDetails').innerHTML = `
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <strong>Browser:</strong> ${info.browser} ${info.version}<br>
+                        <strong>Platform:</strong> ${info.platform}<br>
+                        <strong>Language:</strong> ${info.language}
+                    </div>
+                    <div class="feature-card">
+                        <strong>Screen:</strong> ${info.screenResolution}<br>
+                        <strong>Viewport:</strong> ${info.viewport}<br>
+                        <strong>Pixel Ratio:</strong> ${info.pixelRatio}
+                    </div>
+                    <div class="feature-card">
+                        <strong>Color Depth:</strong> ${info.colorDepth}-bit<br>
+                        <strong>Cookies:</strong> ${info.cookieEnabled ? 'Enabled' : 'Disabled'}<br>
+                        <strong>Online:</strong> ${info.onLine ? 'Yes' : 'No'}
+                    </div>
+                </div>
+            `;
+
+            return info;
+        }
+
+        function getBrowserName() {
+            const ua = navigator.userAgent;
+            if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+            if (ua.includes('Edg')) return 'Edge';
+            if (ua.includes('Opera')) return 'Opera';
+            return 'Unknown';
+        }
+
+        function getBrowserVersion() {
+            const ua = navigator.userAgent;
+            const browser = getBrowserName();
+            
+            let version = 'Unknown';
+            switch (browser) {
+                case 'Chrome':
+                    version = ua.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+                    break;
+                case 'Firefox':
+                    version = ua.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+                    break;
+                case 'Safari':
+                    version = ua.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+                    break;
+                case 'Edge':
+                    version = ua.match(/Edg\/(\d+)/)?.[1] || 'Unknown';
+                    break;
+            }
+            
+            return version;
+        }
+
+        function testJavaScriptFeatures() {
+            log('Testing JavaScript features...');
+            const results = [];
+
+            // ES6+ Features
+            try {
+                const arrow = () => true;
+                addResult('JavaScript', 'Arrow Functions', arrow());
+                results.push({ test: 'Arrow Functions', passed: arrow() });
+            } catch (e) {
+                addResult('JavaScript', 'Arrow Functions', false, e.message);
+                results.push({ test: 'Arrow Functions', passed: false, message: e.message });
+            }
+
+            // Template Literals
+            try {
+                const name = 'Test';
+                const template = `Hello ${name}`;
+                const passed = template === 'Hello Test';
+                addResult('JavaScript', 'Template Literals', passed);
+                results.push({ test: 'Template Literals', passed });
+            } catch (e) {
+                addResult('JavaScript', 'Template Literals', false, e.message);
+                results.push({ test: 'Template Literals', passed: false, message: e.message });
+            }
+
+            // Promises
+            try {
+                const promiseSupport = typeof Promise !== 'undefined';
+                addResult('JavaScript', 'Promises', promiseSupport);
+                results.push({ test: 'Promises', passed: promiseSupport });
+            } catch (e) {
+                addResult('JavaScript', 'Promises', false, e.message);
+                results.push({ test: 'Promises', passed: false, message: e.message });
+            }
+
+            // Async/Await
+            try {
+                const asyncSupport = (async () => true).constructor.name === 'AsyncFunction';
+                addResult('JavaScript', 'Async/Await', asyncSupport);
+                results.push({ test: 'Async/Await', passed: asyncSupport });
+            } catch (e) {
+                addResult('JavaScript', 'Async/Await', false, e.message);
+                results.push({ test: 'Async/Await', passed: false, message: e.message });
+            }
+
+            // Modules
+            try {
+                const moduleSupport = typeof import !== 'undefined';
+                addResult('JavaScript', 'ES Modules', moduleSupport);
+                results.push({ test: 'ES Modules', passed: moduleSupport });
+            } catch (e) {
+                addResult('JavaScript', 'ES Modules', false, e.message);
+                results.push({ test: 'ES Modules', passed: false, message: e.message });
+            }
+
+            displayResults('jsResults', results);
+            updateSummary();
+        }
+
+        function testCSSFeatures() {
+            log('Testing CSS features...');
+            const results = [];
+
+            // CSS Grid
+            const gridSupport = CSS.supports('display', 'grid');
+            addResult('CSS', 'CSS Grid', gridSupport);
+            results.push({ test: 'CSS Grid', passed: gridSupport });
+
+            // Flexbox
+            const flexSupport = CSS.supports('display', 'flex');
+            addResult('CSS', 'Flexbox', flexSupport);
+            results.push({ test: 'Flexbox', passed: flexSupport });
+
+            // CSS Variables
+            const variableSupport = CSS.supports('color', 'var(--test)');
+            addResult('CSS', 'CSS Variables', variableSupport);
+            results.push({ test: 'CSS Variables', passed: variableSupport });
+
+            // CSS Transforms
+            const transformSupport = CSS.supports('transform', 'translateX(10px)');
+            addResult('CSS', 'CSS Transforms', transformSupport);
+            results.push({ test: 'CSS Transforms', passed: transformSupport });
+
+            // CSS Animations
+            const animationSupport = CSS.supports('animation', 'test 1s');
+            addResult('CSS', 'CSS Animations', animationSupport);
+            results.push({ test: 'CSS Animations', passed: animationSupport });
+
+            displayResults('cssResults', results);
+            updateSummary();
+        }
+
+        function testWebAPIs() {
+            log('Testing Web APIs...');
+            const results = [];
+
+            // Fetch API
+            const fetchSupport = typeof fetch !== 'undefined';
+            addResult('Web APIs', 'Fetch API', fetchSupport);
+            results.push({ test: 'Fetch API', passed: fetchSupport });
+
+            // Local Storage
+            const localStorageSupport = typeof localStorage !== 'undefined';
+            addResult('Web APIs', 'Local Storage', localStorageSupport);
+            results.push({ test: 'Local Storage', passed: localStorageSupport });
+
+            // Session Storage
+            const sessionStorageSupport = typeof sessionStorage !== 'undefined';
+            addResult('Web APIs', 'Session Storage', sessionStorageSupport);
+            results.push({ test: 'Session Storage', passed: sessionStorageSupport });
+
+            // File API
+            const fileAPISupport = typeof FileReader !== 'undefined';
+            addResult('Web APIs', 'File API', fileAPISupport);
+            results.push({ test: 'File API', passed: fileAPISupport });
+
+            // WebSocket
+            const webSocketSupport = typeof WebSocket !== 'undefined';
+            addResult('Web APIs', 'WebSocket', webSocketSupport);
+            results.push({ test: 'WebSocket', passed: webSocketSupport });
+
+            displayResults('apiResults', results);
+            updateSummary();
+        }
+
+        function testResponsiveFeatures() {
+            log('Testing responsive features...');
+            const results = [];
+
+            // Media Queries
+            const mediaQuerySupport = window.matchMedia && window.matchMedia('(min-width: 768px)').matches !== undefined;
+            addResult('Responsive', 'Media Queries', mediaQuerySupport);
+            results.push({ test: 'Media Queries', passed: mediaQuerySupport });
+
+            // Viewport Meta
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            const viewportSupport = viewportMeta !== null;
+            addResult('Responsive', 'Viewport Meta', viewportSupport);
+            results.push({ test: 'Viewport Meta', passed: viewportSupport });
+
+            // Touch Events
+            const touchSupport = 'ontouchstart' in window;
+            addResult('Responsive', 'Touch Events', touchSupport);
+            results.push({ test: 'Touch Events', passed: touchSupport });
+
+            // Device Pixel Ratio
+            const pixelRatioSupport = window.devicePixelRatio !== undefined;
+            addResult('Responsive', 'Device Pixel Ratio', pixelRatioSupport);
+            results.push({ test: 'Device Pixel Ratio', passed: pixelRatioSupport });
+
+            displayResults('responsiveResults', results);
+            updateSummary();
+        }
+
+        function testPerformanceFeatures() {
+            log('Testing performance features...');
+            const results = [];
+
+            // Performance API
+            const performanceSupport = typeof performance !== 'undefined';
+            addResult('Performance', 'Performance API', performanceSupport);
+            results.push({ test: 'Performance API', passed: performanceSupport });
+
+            // RequestAnimationFrame
+            const rafSupport = typeof requestAnimationFrame !== 'undefined';
+            addResult('Performance', 'RequestAnimationFrame', rafSupport);
+            results.push({ test: 'RequestAnimationFrame', passed: rafSupport });
+
+            // Web Workers
+            const workerSupport = typeof Worker !== 'undefined';
+            addResult('Performance', 'Web Workers', workerSupport);
+            results.push({ test: 'Web Workers', passed: workerSupport });
+
+            displayResults('performanceResults', results);
+            updateSummary();
+        }
+
+        function testSecurityFeatures() {
+            log('Testing security features...');
+            const results = [];
+
+            // HTTPS
+            const httpsSupport = location.protocol === 'https:';
+            addResult('Security', 'HTTPS', httpsSupport);
+            results.push({ test: 'HTTPS', passed: httpsSupport });
+
+            // Content Security Policy
+            const cspSupport = document.querySelector('meta[http-equiv="Content-Security-Policy"]') !== null;
+            addResult('Security', 'CSP Meta Tag', cspSupport);
+            results.push({ test: 'CSP Meta Tag', passed: cspSupport });
+
+            // Secure Context
+            const secureContext = window.isSecureContext;
+            addResult('Security', 'Secure Context', secureContext);
+            results.push({ test: 'Secure Context', passed: secureContext });
+
+            displayResults('securityResults', results);
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            if (testResults.length === 0) return;
+
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(r => r.passed).length;
+            const failedTests = totalTests - passedTests;
+            const successRate = (passedTests / totalTests * 100).toFixed(1);
+
+            const categories = [...new Set(testResults.map(r => r.category))];
+            const categoryStats = categories.map(category => {
+                const categoryTests = testResults.filter(r => r.category === category);
+                const categoryPassed = categoryTests.filter(r => r.passed).length;
+                const categoryTotal = categoryTests.length;
+                const categoryRate = (categoryPassed / categoryTotal * 100).toFixed(1);
+                
+                return {
+                    category,
+                    passed: categoryPassed,
+                    total: categoryTotal,
+                    rate: categoryRate
+                };
+            });
+
+            summaryContent.innerHTML = `
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>Overall Results</h4>
+                        <p><strong>Total Tests:</strong> ${totalTests}</p>
+                        <p><strong>Passed:</strong> ${passedTests}</p>
+                        <p><strong>Failed:</strong> ${failedTests}</p>
+                        <p><strong>Success Rate:</strong> ${successRate}%</p>
+                    </div>
+                    ${categoryStats.map(stat => `
+                        <div class="feature-card">
+                            <h4>${stat.category}</h4>
+                            <p><strong>Tests:</strong> ${stat.passed}/${stat.total}</p>
+                            <p><strong>Success Rate:</strong> ${stat.rate}%</p>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <h4>Browser Compatibility: ${successRate >= 90 ? '✅ Excellent' : successRate >= 75 ? '⚠️ Good' : '❌ Needs Attention'}</h4>
+                    <p>This browser ${successRate >= 90 ? 'fully supports' : successRate >= 75 ? 'mostly supports' : 'has limited support for'} the SQL Analyzer Enterprise application.</p>
+                </div>
+            `;
+
+            summary.style.display = 'block';
+        }
+
+        // Initialize browser info on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            getBrowserInfo();
+            log('Browser compatibility test initialized');
+        });
+    </script>
+</body>
+</html>
