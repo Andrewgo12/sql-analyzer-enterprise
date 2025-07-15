@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Analyzer Enterprise - Prueba de Funcionalidad</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border-left: 5px solid #2563eb;
+        }
+
+        .test-section h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-card h3 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-error { background-color: #ef4444; }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #f8fafc;
+        }
+
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SQL Analyzer Enterprise</h1>
+            <p>Prueba de Funcionalidad Completa - Versión 2.0.0</p>
+        </div>
+
+        <div class="content">
+            <!-- Estado del Sistema -->
+            <div class="test-section">
+                <h2>📊 Estado del Sistema</h2>
+                <div class="status-grid">
+                    <div class="status-card">
+                        <h3><span class="status-indicator status-success"></span>Backend Server</h3>
+                        <div class="metric-value" id="server-status">Conectando...</div>
+                        <div class="metric-label">Estado del servidor</div>
+                    </div>
+                    <div class="status-card">
+                        <h3><span class="status-indicator status-success"></span>Motores de BD</h3>
+                        <div class="metric-value" id="db-engines">Cargando...</div>
+                        <div class="metric-label">Motores soportados</div>
+                    </div>
+                    <div class="status-card">
+                        <h3><span class="status-indicator status-success"></span>Formatos Export</h3>
+                        <div class="metric-value" id="export-formats">Cargando...</div>
+                        <div class="metric-label">Formatos disponibles</div>
+                    </div>
+                    <div class="status-card">
+                        <h3><span class="status-indicator status-warning"></span>Uso de Memoria</h3>
+                        <div class="metric-value" id="memory-usage">Cargando...</div>
+                        <div class="metric-label">Porcentaje de memoria</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Análisis de SQL -->
+            <div class="test-section">
+                <h2>🔍 Análisis de SQL</h2>
+                <div class="upload-area" onclick="document.getElementById('sqlFile').click()">
+                    <div class="upload-icon">📄</div>
+                    <h3>Arrastra un archivo SQL aquí o haz clic para seleccionar</h3>
+                    <p>Formatos soportados: .sql (máximo 100MB)</p>
+                    <input type="file" id="sqlFile" class="file-input" accept=".sql" onchange="handleFileSelect(event)">
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label for="dbEngine">Motor de Base de Datos:</label>
+                    <select id="dbEngine" style="margin-left: 10px; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                        <option value="mysql">MySQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="sqlite">SQLite</option>
+                        <option value="mongodb">MongoDB</option>
+                        <option value="oracle">Oracle</option>
+                    </select>
+                </div>
+
+                <button class="btn" id="analyzeBtn" onclick="analyzeSQL()" disabled>
+                    <span>🔍</span> Analizar SQL
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analizando archivo SQL...</p>
+                </div>
+
+                <div class="results-area" id="results" style="display: none;">
+                    <h3>Resultados del Análisis</h3>
+                    <pre id="analysis-results"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 SQL Analyzer Enterprise - Optimizado para Producción</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // Cargar estado del sistema al iniciar
+        window.onload = function() {
+            loadSystemStatus();
+        };
+
+        async function loadSystemStatus() {
+            try {
+                // Health check
+                const healthResponse = await fetch('http://localhost:5000/api/health');
+                const healthData = await healthResponse.json();
+                
+                document.getElementById('server-status').textContent = healthData.status.toUpperCase();
+                document.getElementById('memory-usage').textContent = healthData.system_metrics.memory_usage.toFixed(1) + '%';
+
+                // Database engines
+                const dbResponse = await fetch('http://localhost:5000/api/databases/supported');
+                const dbData = await dbResponse.json();
+                document.getElementById('db-engines').textContent = dbData.total_engines;
+
+                // Export formats
+                const exportResponse = await fetch('http://localhost:5000/api/export/formats');
+                const exportData = await exportResponse.json();
+                document.getElementById('export-formats').textContent = exportData.total_formats;
+
+            } catch (error) {
+                console.error('Error loading system status:', error);
+                document.getElementById('server-status').textContent = 'ERROR';
+            }
+        }
+
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.querySelector('.upload-area h3').textContent = `Archivo seleccionado: ${selectedFile.name}`;
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                document.querySelector('.upload-area h3').textContent = `Archivo seleccionado: ${selectedFile.name}`;
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        });
+
+        async function analyzeSQL() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('database_engine', document.getElementById('dbEngine').value);
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('analysis-results').textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('analysis-results').textContent = `Error: ${error.message}`;
+            } finally {
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        // Actualizar estado cada 30 segundos
+        setInterval(loadSystemStatus, 30000);
+    </script>
+</body>
+</html>

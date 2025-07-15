@@ -131,7 +131,46 @@ class AdvancedExportSystem:
         self.executor = ThreadPoolExecutor(max_workers=4)
         self._export_cache = {}
         logger.info(f"Optimized export system initialized with {len(self.formats)} formats")
-    
+
+    def _initialize_export_formats(self) -> Dict[ExportFormat, Any]:
+        """Initialize all supported export formats"""
+        formats = {}
+
+        # Add all export formats with their information
+        format_configs = [
+            (ExportFormat.JSON, "JSON", ExportCategory.DATA, "application/json", "json", True, True, False, False),
+            (ExportFormat.HTML, "HTML", ExportCategory.DOCUMENT, "text/html", "html", True, True, True, False),
+            (ExportFormat.PDF, "PDF", ExportCategory.DOCUMENT, "application/pdf", "pdf", True, True, True, True),
+            (ExportFormat.CSV, "CSV", ExportCategory.DATA, "text/csv", "csv", False, False, False, False),
+            (ExportFormat.XLSX, "Excel", ExportCategory.SPREADSHEET, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx", True, True, True, True),
+            (ExportFormat.XML, "XML", ExportCategory.DATA, "application/xml", "xml", False, False, False, False),
+            (ExportFormat.YAML, "YAML", ExportCategory.DATA, "application/x-yaml", "yaml", False, False, False, False),
+            (ExportFormat.SQL, "SQL", ExportCategory.DATABASE, "text/plain", "sql", False, False, False, False),
+            (ExportFormat.DOCX, "Word Document", ExportCategory.DOCUMENT, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx", True, True, True, True),
+            (ExportFormat.PPTX, "PowerPoint", ExportCategory.PRESENTATION, "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx", True, True, True, True),
+            (ExportFormat.MARKDOWN, "Markdown", ExportCategory.DOCUMENT, "text/markdown", "md", False, False, False, False),
+            (ExportFormat.TXT, "Text", ExportCategory.DOCUMENT, "text/plain", "txt", False, False, False, False),
+            (ExportFormat.ZIP, "ZIP Archive", ExportCategory.ARCHIVE, "application/zip", "zip", False, False, False, True),
+            (ExportFormat.LATEX, "LaTeX", ExportCategory.DOCUMENT, "application/x-latex", "tex", False, False, False, False),
+            (ExportFormat.RTF, "Rich Text Format", ExportCategory.DOCUMENT, "application/rtf", "rtf", True, False, True, False)
+        ]
+
+        for format_enum, name, category, mime_type, extension, supports_charts, supports_images, supports_styling, is_binary in format_configs:
+            # Create a simple format info object
+            formats[format_enum] = type('FormatInfo', (), {
+                'name': name,
+                'category': category,
+                'mime_type': mime_type,
+                'file_extension': extension,
+                'supports_charts': supports_charts,
+                'supports_images': supports_images,
+                'supports_styling': supports_styling,
+                'is_binary': is_binary,
+                'description': f"{name} export format"
+            })()
+
+        return formats
+
     def get_supported_formats(self, category: ExportCategory = None) -> List[ExportFormat]:
         """Get list of supported formats, optionally filtered by category"""
         if category:

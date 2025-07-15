@@ -150,6 +150,34 @@ class TTLCache:
                 'total_requests': total_requests
             }
 
+    def _cleanup_expired(self):
+        """Background cleanup of expired items"""
+        while True:
+            try:
+                current_time = time.time()
+                expired_keys = []
+
+                with self.lock:
+                    for key, expiry_time in self.expiry_times.items():
+                        if current_time >= expiry_time:
+                            expired_keys.append(key)
+
+                    for key in expired_keys:
+                        if key in self.cache:
+                            del self.cache[key]
+                            del self.expiry_times[key]
+                            self.stats['expired'] += 1
+
+                    if expired_keys:
+                        self.stats['size'] = len(self.cache)
+                        logger.debug(f"Cleaned up {len(expired_keys)} expired cache entries")
+
+                time.sleep(60)  # Cleanup every minute
+
+            except Exception as e:
+                logger.error(f"Cache cleanup error: {e}")
+                time.sleep(60)
+
 class CompressionCache:
     """Cache with compression for large objects"""
     
@@ -318,6 +346,15 @@ class CacheManager:
             'ttl_cache': self.ttl_cache.get_stats(),
             'compression_cache': self.compression_cache.get_stats(),
             'total_memory_usage': self._estimate_memory_usage()
+        }
+
+    def _estimate_memory_usage(self) -> Dict[str, int]:
+        """Estimate memory usage of caches"""
+        # This is a rough estimation
+        return {
+            'lru_cache_items': len(self.lru_cache.cache),
+            'ttl_cache_items': len(self.ttl_cache.cache),
+            'compression_cache_items': len(self.compression_cache.cache)
         }
     
 cache_manager = CacheManager()

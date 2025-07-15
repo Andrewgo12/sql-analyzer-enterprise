@@ -103,7 +103,26 @@ class MemoryMonitor:
         )
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
-    
+
+    def _monitor_loop(self, interval: float):
+        """Memory monitoring loop"""
+        while self.monitoring:
+            try:
+                memory_info = psutil.virtual_memory()
+                usage_percent = memory_info.percent
+
+                # Call registered callbacks
+                for callback in self.callbacks:
+                    try:
+                        callback(usage_percent)
+                    except Exception as e:
+                        logger.error(f"Memory callback error: {e}")
+
+                time.sleep(interval)
+            except Exception as e:
+                logger.error(f"Memory monitoring error: {e}")
+                time.sleep(interval)
+
     def stop_monitoring(self):
         """Stop memory monitoring"""
         self.monitoring = False
@@ -133,7 +152,30 @@ class MemoryManager:
         self.monitor.start_monitoring(interval=5.0)
         
         logger.info("Advanced memory manager initialized")
-    
+
+    def _handle_memory_alert(self, usage_percent: float):
+        """Handle memory usage alerts"""
+        if usage_percent > 90:
+            logger.critical(f"Critical memory usage: {usage_percent:.1f}%")
+            self.force_cleanup()
+        elif usage_percent > 80:
+            logger.warning(f"High memory usage: {usage_percent:.1f}%")
+            self.cleanup_analyzers()
+        elif usage_percent > 70:
+            logger.info(f"Moderate memory usage: {usage_percent:.1f}%")
+
+    def force_cleanup(self):
+        """Force aggressive memory cleanup"""
+        logger.info("Performing force cleanup")
+        self.cleanup_analyzers()
+        gc.collect()
+
+    def cleanup_analyzers(self):
+        """Clean up analyzer instances"""
+        logger.info("Cleaning up analyzers")
+        # Force garbage collection
+        gc.collect()
+
     def get_analyzer(self, analyzer_type: str, *args, **kwargs):
         """Get analyzer instance with memory optimization"""
         from .sql_analyzer import SQLAnalyzer

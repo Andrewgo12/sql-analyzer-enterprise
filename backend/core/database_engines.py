@@ -199,7 +199,71 @@ class DatabaseRegistry:
     def __init__(self):
         self.databases = self._initialize_database_registry()
         logger.info(f"DatabaseRegistry initialized with {len(self.databases)} database engines")
-    
+
+    def _initialize_database_registry(self) -> Dict[DatabaseEngine, DatabaseInfo]:
+        """Initialize the database registry with all supported engines"""
+        databases = {}
+
+        # Add all database engines with their information
+        database_configs = [
+            (DatabaseEngine.MYSQL, "MySQL", "Popular open-source relational database", ["ACID", "Replication"]),
+            (DatabaseEngine.POSTGRESQL, "PostgreSQL", "Advanced open-source relational database", ["ACID", "JSON"]),
+            (DatabaseEngine.SQLITE, "SQLite", "Lightweight embedded database", ["Embedded", "Serverless"]),
+            (DatabaseEngine.MONGODB, "MongoDB", "Popular NoSQL document database", ["Document", "Sharding"]),
+            (DatabaseEngine.REDIS, "Redis", "In-memory data structure store", ["In-memory", "Pub/Sub"]),
+            (DatabaseEngine.ORACLE, "Oracle Database", "Enterprise relational database", ["Enterprise", "ACID"]),
+            (DatabaseEngine.SQL_SERVER, "Microsoft SQL Server", "Microsoft's relational database", ["Enterprise", "T-SQL"]),
+            (DatabaseEngine.BIGQUERY, "Google BigQuery", "Cloud data warehouse", ["Cloud", "Analytics"]),
+            (DatabaseEngine.H2, "H2 Database", "Java embedded database", ["Embedded", "Java"]),
+            (DatabaseEngine.MARIADB, "MariaDB", "MySQL-compatible database", ["Open-source", "Compatible"]),
+            (DatabaseEngine.COUCHDB, "CouchDB", "Document database", ["Document", "JSON"]),
+            (DatabaseEngine.CASSANDRA, "Apache Cassandra", "Wide-column database", ["Distributed", "NoSQL"]),
+            (DatabaseEngine.SNOWFLAKE, "Snowflake", "Cloud data warehouse", ["Cloud", "Analytics"]),
+            (DatabaseEngine.REDSHIFT, "Amazon Redshift", "AWS data warehouse", ["Cloud", "Analytics"]),
+            (DatabaseEngine.COCKROACHDB, "CockroachDB", "Distributed SQL database", ["Distributed", "ACID"]),
+            (DatabaseEngine.YUGABYTEDB, "YugabyteDB", "Distributed SQL database", ["Distributed", "Multi-cloud"]),
+            (DatabaseEngine.TIDB, "TiDB", "Distributed SQL database", ["Distributed", "MySQL-compatible"]),
+            (DatabaseEngine.COUCHBASE, "Couchbase", "NoSQL document database", ["Document", "Caching"]),
+            (DatabaseEngine.AMAZON_DYNAMODB, "Amazon DynamoDB", "NoSQL key-value database", ["Key-value", "Serverless"]),
+            (DatabaseEngine.HBASE, "Apache HBase", "Wide-column database", ["Big-data", "Hadoop"]),
+            (DatabaseEngine.MEMCACHED, "Memcached", "In-memory caching system", ["Caching", "Performance"]),
+            (DatabaseEngine.RIAK, "Riak", "Distributed NoSQL database", ["Distributed", "Key-value"])
+        ]
+
+        for engine, name, description, features in database_configs:
+            databases[engine] = DatabaseInfo(
+                engine=engine,
+                name=name,
+                category=DatabaseCategory.RELATIONAL_SQL,  # Default category
+                vendor=name.split()[0],  # First word as vendor
+                description=description,
+                features=DatabaseFeatures(
+                    supports_transactions=True,
+                    supports_joins=True,
+                    supports_subqueries=True,
+                    supports_window_functions=True,
+                    supports_cte=True,
+                    supports_json=engine in [DatabaseEngine.POSTGRESQL, DatabaseEngine.MYSQL],
+                    supports_arrays=engine == DatabaseEngine.POSTGRESQL,
+                    supports_stored_procedures=True,
+                    supports_triggers=True,
+                    supports_views=True,
+                    supports_indexes=True,
+                    case_sensitive=False,
+                    quote_character='"',
+                    escape_character='\\',
+                    comment_styles=['--', '/**/'],
+                    max_identifier_length=64,
+                    reserved_words=['SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE']
+                ),
+                syntax_patterns=[f"{engine.value}_syntax"],
+                connection_patterns=[f"Connection pattern for {name}"],
+                file_extensions=['.sql'],
+                documentation_url=f"https://docs.{name.lower().replace(' ', '')}.com"
+            )
+
+        return databases
+
     def get_database_info(self, engine: DatabaseEngine) -> Optional[DatabaseInfo]:
         """Get database information by engine"""
         return self.databases.get(engine)
@@ -239,10 +303,14 @@ class DatabaseRegistry:
     def get_supported_engines(self, category: DatabaseCategory = None) -> List[DatabaseEngine]:
         """Get list of supported engines, optionally filtered by category"""
         if category:
-            return [engine for engine, info in self.databases.items() 
+            return [engine for engine, info in self.databases.items()
                    if info.category == category]
         return list(self.databases.keys())
-    
+
+    def get_all_supported_engines(self) -> List[DatabaseEngine]:
+        """Get all supported engines (alias for get_supported_engines)"""
+        return self.get_supported_engines()
+
     def get_database_categories(self) -> List[DatabaseCategory]:
         """Get all database categories"""
         return list(DatabaseCategory)
