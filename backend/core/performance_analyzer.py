@@ -93,46 +93,6 @@ class PerformanceAnalyzer:
         
         return issues
     
-    def _analyze_structure(self, content: str) -> List[Dict[str, Any]]:
-        """Analizar estructura general para problemas de rendimiento"""
-        issues = []
-        content_upper = content.upper()
-        
-        # Verificar subconsultas anidadas
-        subquery_count = content_upper.count('SELECT')
-        if subquery_count > 3:
-            issues.append({
-                'line': 1,
-                'type': 'structure',
-                'message': f'Múltiples subconsultas ({subquery_count}) pueden impactar el rendimiento',
-                'severity': 'medium',
-                'code': 'Estructura general'
-            })
-        
-        # Verificar JOINs múltiples
-        join_count = len(re.findall(r'\bJOIN\b', content_upper))
-        if join_count > 5:
-            issues.append({
-                'line': 1,
-                'type': 'structure',
-                'message': f'Múltiples JOINs ({join_count}) pueden ser costosos',
-                'severity': 'medium',
-                'code': 'Estructura general'
-            })
-        
-        # Verificar funciones agregadas sin GROUP BY
-        if 'COUNT(' in content_upper or 'SUM(' in content_upper or 'AVG(' in content_upper:
-            if 'GROUP BY' not in content_upper:
-                issues.append({
-                    'line': 1,
-                    'type': 'structure',
-                    'message': 'Funciones agregadas sin GROUP BY pueden ser ineficientes',
-                    'severity': 'low',
-                    'code': 'Estructura general'
-                })
-        
-        return issues
-    
     def _calculate_performance_score(self, issues: List[Dict[str, Any]]) -> int:
         """Calcular score de rendimiento basado en problemas encontrados"""
         if not issues:
@@ -152,50 +112,6 @@ class PerformanceAnalyzer:
         # Score mínimo de 0
         score = max(0, 100 - penalty)
         return int(score)
-    
-    def _generate_performance_recommendations(self, issues: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-        """Generar recomendaciones de rendimiento"""
-        recommendations = []
-        
-        # Agrupar problemas por tipo
-        issue_types = {}
-        for issue in issues:
-            issue_type = issue.get('type', 'general')
-            if issue_type not in issue_types:
-                issue_types[issue_type] = []
-            issue_types[issue_type].append(issue)
-        
-        # Generar recomendaciones específicas
-        if 'performance' in issue_types:
-            perf_issues = issue_types['performance']
-            high_severity = [i for i in perf_issues if i.get('severity') == 'high']
-            
-            if high_severity:
-                recommendations.append({
-                    'title': 'Optimizar consultas SELECT',
-                    'description': 'Evite SELECT * y especifique solo las columnas necesarias',
-                    'priority': 'HIGH',
-                    'type': 'performance'
-                })
-        
-        if 'structure' in issue_types:
-            recommendations.append({
-                'title': 'Revisar estructura de consultas',
-                'description': 'Considere simplificar subconsultas y optimizar JOINs',
-                'priority': 'MEDIUM',
-                'type': 'structure'
-            })
-        
-        # Recomendación general si hay muchos problemas
-        if len(issues) > 5:
-            recommendations.append({
-                'title': 'Revisión general de rendimiento',
-                'description': 'Se detectaron múltiples problemas de rendimiento que requieren atención',
-                'priority': 'HIGH',
-                'type': 'general'
-            })
-        
-        return recommendations
     
     def get_performance_summary(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Obtener resumen del análisis de rendimiento"""

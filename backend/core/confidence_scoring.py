@@ -71,114 +71,6 @@ class ConfidenceScorer:
         self.historical_data = self._initialize_historical_data()
         self.validation_rules = self._initialize_validation_rules()
     
-    def _initialize_pattern_database(self) -> Dict[str, Dict[str, Any]]:
-        """Initialize pattern database with known SQL patterns and their confidence factors."""
-        return {
-            # Syntax patterns
-            "missing_semicolon": {
-                "confidence_base": 0.95,
-                "pattern_strength": 0.9,
-                "false_positive_rate": 0.02
-            },
-            "unmatched_parentheses": {
-                "confidence_base": 0.98,
-                "pattern_strength": 0.95,
-                "false_positive_rate": 0.01
-            },
-            "invalid_keyword": {
-                "confidence_base": 0.92,
-                "pattern_strength": 0.85,
-                "false_positive_rate": 0.05
-            },
-            
-            # Security patterns
-            "sql_injection_concat": {
-                "confidence_base": 0.85,
-                "pattern_strength": 0.8,
-                "false_positive_rate": 0.15
-            },
-            "dynamic_sql_execution": {
-                "confidence_base": 0.78,
-                "pattern_strength": 0.75,
-                "false_positive_rate": 0.20
-            },
-            "privilege_escalation": {
-                "confidence_base": 0.88,
-                "pattern_strength": 0.82,
-                "false_positive_rate": 0.10
-            },
-            
-            # Performance patterns
-            "missing_index_hint": {
-                "confidence_base": 0.65,
-                "pattern_strength": 0.6,
-                "false_positive_rate": 0.30
-            },
-            "inefficient_join": {
-                "confidence_base": 0.70,
-                "pattern_strength": 0.65,
-                "false_positive_rate": 0.25
-            },
-            "select_star_usage": {
-                "confidence_base": 0.75,
-                "pattern_strength": 0.7,
-                "false_positive_rate": 0.20
-            },
-            
-            # Schema patterns
-            "foreign_key_violation": {
-                "confidence_base": 0.90,
-                "pattern_strength": 0.88,
-                "false_positive_rate": 0.08
-            },
-            "data_type_mismatch": {
-                "confidence_base": 0.85,
-                "pattern_strength": 0.8,
-                "false_positive_rate": 0.12
-            },
-            "constraint_violation": {
-                "confidence_base": 0.92,
-                "pattern_strength": 0.9,
-                "false_positive_rate": 0.06
-            }
-        }
-    
-    def _initialize_historical_data(self) -> Dict[str, float]:
-        """Initialize historical accuracy data for different error types."""
-        return {
-            "syntax_errors": 0.94,
-            "security_vulnerabilities": 0.82,
-            "performance_issues": 0.68,
-            "schema_problems": 0.86,
-            "logic_errors": 0.71,
-            "semantic_errors": 0.79
-        }
-    
-    def _initialize_validation_rules(self) -> Dict[str, Dict[str, Any]]:
-        """Initialize validation rules for different analysis types."""
-        return {
-            AnalysisType.SYNTAX.value: {
-                "min_pattern_matches": 1,
-                "context_window": 5,
-                "validation_checks": ["parser_validation", "ast_validation"]
-            },
-            AnalysisType.SECURITY.value: {
-                "min_pattern_matches": 2,
-                "context_window": 10,
-                "validation_checks": ["pattern_validation", "context_validation", "severity_validation"]
-            },
-            AnalysisType.PERFORMANCE.value: {
-                "min_pattern_matches": 1,
-                "context_window": 15,
-                "validation_checks": ["complexity_validation", "impact_validation"]
-            },
-            AnalysisType.SCHEMA.value: {
-                "min_pattern_matches": 1,
-                "context_window": 8,
-                "validation_checks": ["schema_validation", "relationship_validation"]
-            }
-        }
-    
     def calculate_confidence(
         self,
         error_type: str,
@@ -218,32 +110,6 @@ class ConfidenceScorer:
         
         return overall_confidence, metrics
     
-    def _calculate_pattern_match_score(self, error_type: str, context: Dict[str, Any]) -> float:
-        """Calculate pattern match confidence score."""
-        pattern_info = self.pattern_database.get(error_type, {})
-        
-        if not pattern_info:
-            return 0.5  # Default medium confidence for unknown patterns
-        
-        base_confidence = pattern_info.get("confidence_base", 0.5)
-        pattern_strength = pattern_info.get("pattern_strength", 0.5)
-        false_positive_rate = pattern_info.get("false_positive_rate", 0.2)
-        
-        # Adjust based on pattern matches
-        pattern_matches = context.get("pattern_matches", 1)
-        match_bonus = min(0.2, (pattern_matches - 1) * 0.05)
-        
-        # Adjust based on false positive rate
-        fp_penalty = false_positive_rate * 0.3
-        
-        score = base_confidence * pattern_strength + match_bonus - fp_penalty
-        return max(0.0, min(1.0, score))
-    
-    def _calculate_context_relevance_score(
-        self,
-        error_type: str,
-        analysis_type: AnalysisType,
-        context: Dict[str, Any]
     ) -> float:
         """Calculate context relevance score."""
         
@@ -286,10 +152,6 @@ class ConfidenceScorer:
         
         return min(1.0, base_score + context_richness)
     
-    def _calculate_historical_accuracy_score(
-        self,
-        analysis_type: AnalysisType,
-        context: Dict[str, Any]
     ) -> float:
         """Calculate historical accuracy score."""
         
@@ -314,45 +176,6 @@ class ConfidenceScorer:
         
         return min(1.0, base_accuracy)
     
-    def _calculate_complexity_penalty(self, context: Dict[str, Any]) -> float:
-        """Calculate complexity penalty (higher complexity = lower confidence)."""
-        
-        complexity_factors = {
-            "nested_queries": context.get("nested_queries", 0),
-            "join_count": context.get("join_count", 0),
-            "function_complexity": context.get("function_complexity", 0),
-            "condition_complexity": context.get("condition_complexity", 0),
-            "statement_length": context.get("statement_length", 0)
-        }
-        
-        # Calculate complexity score
-        complexity_score = 0.0
-        
-        # Nested queries penalty
-        if complexity_factors["nested_queries"] > 2:
-            complexity_score += (complexity_factors["nested_queries"] - 2) * 0.1
-        
-        # Join complexity penalty
-        if complexity_factors["join_count"] > 3:
-            complexity_score += (complexity_factors["join_count"] - 3) * 0.05
-        
-        # Function complexity penalty
-        complexity_score += complexity_factors["function_complexity"] * 0.02
-        
-        # Condition complexity penalty
-        complexity_score += complexity_factors["condition_complexity"] * 0.03
-        
-        # Statement length penalty
-        if complexity_factors["statement_length"] > 500:
-            complexity_score += (complexity_factors["statement_length"] - 500) / 10000
-        
-        return min(0.5, complexity_score)  # Cap penalty at 0.5
-    
-    def _calculate_validation_score(
-        self,
-        error_type: str,
-        analysis_type: AnalysisType,
-        context: Dict[str, Any]
     ) -> float:
         """Calculate validation score based on validation checks."""
         
@@ -371,40 +194,6 @@ class ConfidenceScorer:
                 passed_checks += 1
         
         return passed_checks / total_checks if total_checks > 0 else 0.5
-    
-    def _simulate_validation_check(self, check: str, context: Dict[str, Any]) -> bool:
-        """Simulate validation check (in real implementation, this would perform actual validation)."""
-        
-        # Simulate different validation checks
-        validation_results = {
-            "parser_validation": context.get("parser_valid", True),
-            "ast_validation": context.get("ast_valid", True),
-            "pattern_validation": context.get("pattern_matches", 0) > 0,
-            "context_validation": len(context.get("surrounding_code", "")) > 10,
-            "severity_validation": context.get("severity", "MEDIUM") in ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
-            "complexity_validation": context.get("complexity_score", 0.5) < 0.8,
-            "impact_validation": context.get("impact_score", 0.5) > 0.2,
-            "schema_validation": context.get("schema_valid", True),
-            "relationship_validation": len(context.get("table_references", [])) > 0
-        }
-        
-        return validation_results.get(check, True)
-    
-    def _calculate_consensus_score(self, error_type: str, context: Dict[str, Any]) -> float:
-        """Calculate consensus score from multiple analysis methods."""
-        
-        # Simulate multiple analysis methods agreeing on the result
-        analysis_methods = context.get("analysis_methods", ["primary"])
-        
-        if len(analysis_methods) <= 1:
-            return 0.5  # No consensus possible with single method
-        
-        # Simulate agreement between methods
-        agreement_count = context.get("method_agreement_count", len(analysis_methods))
-        consensus_ratio = agreement_count / len(analysis_methods)
-        
-        # Higher consensus = higher confidence
-        return consensus_ratio
     
     def get_confidence_level(self, confidence_score: float) -> ConfidenceLevel:
         """Convert confidence score to confidence level."""

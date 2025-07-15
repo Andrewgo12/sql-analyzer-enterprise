@@ -149,12 +149,6 @@ class GeneradorReportesEmpresarial:
         self.metricas_historicas = []
         self._cargar_metricas_historicas()
     
-    def _cargar_plantillas(self) -> Dict[str, str]:
-        """Cargar plantillas de reportes."""
-        plantillas = {}
-        
-        # Plantilla HTML básica
-        plantillas['html_base'] = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -210,30 +204,6 @@ class GeneradorReportesEmpresarial:
         """
         
         return plantillas
-    
-    def _cargar_metricas_historicas(self):
-        """Cargar métricas históricas desde archivo."""
-        archivo_metricas = self.directorio_reportes / "metricas_historicas.json"
-        if archivo_metricas.exists():
-            try:
-                with open(archivo_metricas, 'r', encoding='utf-8') as f:
-                    datos = json.load(f)
-                    self.metricas_historicas = datos.get('metricas', [])
-            except Exception as e:
-                logger.warning(f"No se pudieron cargar métricas históricas: {e}")
-    
-    def _guardar_metricas_historicas(self):
-        """Guardar métricas históricas a archivo."""
-        archivo_metricas = self.directorio_reportes / "metricas_historicas.json"
-        try:
-            datos = {
-                'ultima_actualizacion': datetime.now().isoformat(),
-                'metricas': self.metricas_historicas
-            }
-            with open(archivo_metricas, 'w', encoding='utf-8') as f:
-                json.dump(datos, f, indent=2, default=str, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Error guardando métricas históricas: {e}")
     
     def generar_resumen_ejecutivo(self, resultados_analisis: Dict[str, Any]) -> ResumenEjecutivo:
         """Generar resumen ejecutivo para directivos."""
@@ -339,84 +309,6 @@ class GeneradorReportesEmpresarial:
         
         logger.info(f"Reporte HTML generado: {archivo_salida}")
         return archivo_salida
-    
-    def _generar_contenido_resumen_ejecutivo_html(self, datos: Dict[str, Any]) -> str:
-        """Generar contenido HTML para resumen ejecutivo."""
-        resumen = datos.get('resumen_ejecutivo', ResumenEjecutivo())
-        
-        contenido = f"""
-        <div class="section">
-            <h2>📊 Métricas Clave</h2>
-            <div class="metric">
-                <h3>Archivos Analizados</h3>
-                <p style="font-size: 2em; margin: 0;">{resumen.archivos_analizados}</p>
-            </div>
-            <div class="metric">
-                <h3>Puntuación de Salud</h3>
-                <p style="font-size: 2em; margin: 0;" class="{'success' if resumen.puntuacion_salud_general >= 80 else 'warning' if resumen.puntuacion_salud_general >= 60 else 'critical'}">
-                    {resumen.puntuacion_salud_general:.1f}/100
-                </p>
-            </div>
-            <div class="metric">
-                <h3>Problemas Críticos</h3>
-                <p style="font-size: 2em; margin: 0;" class="{'critical' if resumen.problemas_criticos > 0 else 'success'}">
-                    {resumen.problemas_criticos}
-                </p>
-            </div>
-            <div class="metric">
-                <h3>ROI Estimado</h3>
-                <p style="font-size: 1.5em; margin: 0;" class="success">{resumen.roi_estimado}</p>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>🎯 Recomendaciones Principales</h2>
-            {''.join([f'<div class="recommendation">• {rec}</div>' for rec in resumen.recomendaciones_principales])}
-        </div>
-        
-        <div class="section">
-            <h2>⚠️ Riesgos Identificados</h2>
-            {''.join([f'<div class="risk">• {riesgo}</div>' for riesgo in resumen.riesgos_identificados]) if resumen.riesgos_identificados else '<p class="success">No se identificaron riesgos críticos.</p>'}
-        </div>
-        
-        <div class="section">
-            <h2>📋 Próximos Pasos</h2>
-            <ol>
-                {''.join([f'<li>{paso}</li>' for paso in resumen.proximos_pasos])}
-            </ol>
-        </div>
-        """
-        
-        return contenido
-    
-    def _generar_contenido_analisis_detallado_html(self, datos: Dict[str, Any]) -> str:
-        """Generar contenido HTML para análisis detallado."""
-        return """
-        <div class="section">
-            <h2>🔍 Análisis Técnico Detallado</h2>
-            <p>Análisis comprehensivo de la calidad del código SQL...</p>
-            <!-- Contenido detallado aquí -->
-        </div>
-        """
-    
-    def _generar_contenido_seguridad_html(self, datos: Dict[str, Any]) -> str:
-        """Generar contenido HTML para reporte de seguridad."""
-        return """
-        <div class="section">
-            <h2>🔒 Análisis de Seguridad</h2>
-            <p>Evaluación de vulnerabilidades y riesgos de seguridad...</p>
-            <!-- Contenido de seguridad aquí -->
-        </div>
-        """
-    
-    def _generar_contenido_generico_html(self, datos: Dict[str, Any]) -> str:
-        """Generar contenido HTML genérico."""
-        return """
-        <div class="section">
-            <h2>📈 Análisis General</h2>
-            <p>Reporte de análisis SQL...</p>
-        </div>
-        """
     
     def generar_dashboard_tiempo_real(self, metricas_actuales: Dict[str, Any]) -> str:
         """Generar dashboard en tiempo real (retorna HTML)."""

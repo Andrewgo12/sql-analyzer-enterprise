@@ -1,0 +1,3635 @@
+{
+  "dead_code_analysis": {
+    "total_functions": 1009,
+    "dead_functions": [
+      {
+        "file": "backend_server.py",
+        "name": "add_security_headers",
+        "line": 77,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": false
+      },
+      {
+        "file": "backend_server.py",
+        "name": "health_check",
+        "line": 109,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend_server.py",
+        "name": "get_dashboard_metrics",
+        "line": 142,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend_server.py",
+        "name": "download_results",
+        "line": 315,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend_server.py",
+        "name": "get_supported_databases",
+        "line": 345,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend_server.py",
+        "name": "get_export_formats",
+        "line": 403,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend_server.py",
+        "name": "internal_error",
+        "line": 474,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "add_security_headers",
+        "line": 40,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": false
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "serve_frontend",
+        "line": 113,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "serve_static",
+        "line": 121,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "health_check",
+        "line": 129,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "get_supported_databases",
+        "line": 143,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "get_export_formats",
+        "line": 148,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "get_dashboard_metrics",
+        "line": 153,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "internal_error",
+        "line": 262,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": false
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "name": "request_entity_too_large",
+        "line": 266,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": false
+      },
+      {
+        "file": "backend\\core\\confidence_scoring.py",
+        "name": "calculate_error_confidence",
+        "line": 446,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "name": "actualizar_configuracion",
+        "line": 285,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "name": "crear_perfil",
+        "line": 291,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "name": "listar_perfiles",
+        "line": 319,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "name": "validar_configuracion",
+        "line": 323,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "name": "obtener_configuracion_por_entorno",
+        "line": 346,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "suggest_data_type",
+        "line": 1575,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "get_conversion_path",
+        "line": 1698,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "validate_data_type_usage",
+        "line": 1729,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "get_all_categories",
+        "line": 1803,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "get_all_databases",
+        "line": 1807,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "name": "get_statistics",
+        "line": 1811,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "name": "generate_documentation",
+        "line": 56,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_analyzer.py",
+        "name": "analyze_comprehensive",
+        "line": 86,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "name": "cronometrar_operacion",
+        "line": 324,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "name": "buscar_eventos",
+        "line": 361,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "name": "generar_reporte_auditoria",
+        "line": 374,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "name": "archivar_logs_antiguos",
+        "line": 398,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "name": "finalizar",
+        "line": 428,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "_guardar_metricas_historicas",
+        "line": 225,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "generar_resumen_ejecutivo",
+        "line": 238,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "generar_reporte_html",
+        "line": 297,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "generar_dashboard_tiempo_real",
+        "line": 421,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "exportar_metricas_csv",
+        "line": 453,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "name": "programar_reporte_automatico",
+        "line": 471,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "name": "create_error_detector",
+        "line": 1381,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\exceptions.py",
+        "name": "handle_exception",
+        "line": 342,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "name": "submit_task",
+        "line": 287,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "name": "batch_process_files",
+        "line": 1813,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "name": "convert_database_format",
+        "line": 372,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "name": "get_supported_conversions",
+        "line": 886,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "name": "validate_conversion",
+        "line": 895,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "name": "generate_conversion_report",
+        "line": 914,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "name": "get_error_severity_text",
+        "line": 404,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "name": "get_status_text",
+        "line": 415,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "name": "format_time_ago",
+        "line": 429,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "name": "get_available_languages",
+        "line": 359,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "name": "get_language_name",
+        "line": 363,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "name": "add_comments",
+        "line": 48,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "name": "analyze_sql_structure",
+        "line": 101,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "name": "_is_table_name",
+        "line": 191,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "name": "_is_column_name",
+        "line": 199,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "create_digraph",
+        "line": 357,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "remove_node",
+        "line": 75,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "has_node",
+        "line": 102,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "has_edge",
+        "line": 106,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "out_degree",
+        "line": 142,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "number_of_nodes",
+        "line": 146,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "number_of_edges",
+        "line": 150,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "name": "is_directed",
+        "line": 191,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "name": "time_operation",
+        "line": 284,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "name": "set_gauge",
+        "line": 87,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "name": "record_export",
+        "line": 145,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\performance_analyzer.py",
+        "name": "get_performance_summary",
+        "line": 200,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "name": "analyze_sql_content",
+        "line": 106,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "name": "generate_diagram",
+        "line": 60,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "name": "generate_sample_data",
+        "line": 52,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\security_analyzer.py",
+        "name": "get_security_summary",
+        "line": 228,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "name": "get_schema_summary",
+        "line": 621,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "name": "get_table_details",
+        "line": 646,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "ejecutar_interactivo",
+        "line": 244,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "_analyze_file_wizard",
+        "line": 423,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "_load_user_preferences",
+        "line": 1647,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "_load_session_history",
+        "line": 1676,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "_handle_exit",
+        "line": 1725,
+        "is_private": true,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "name": "run_interactive",
+        "line": 1789,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "name": "validate_file_size",
+        "line": 43,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "name": "save_temp_file",
+        "line": 93,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "name": "validate_sql_content",
+        "line": 193,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "name": "cleanup_temp_directory",
+        "line": 252,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "get_file_hash",
+        "line": 22,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "detect_file_encoding",
+        "line": 60,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "safe_file_copy",
+        "line": 82,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "create_backup",
+        "line": 114,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "find_files_by_pattern",
+        "line": 145,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "get_directory_size",
+        "line": 168,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "clean_filename",
+        "line": 192,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "get_file_stats",
+        "line": 272,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "ensure_directory",
+        "line": 309,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "name": "temp_file_path",
+        "line": 326,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "format_sql",
+        "line": 42,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "extract_table_names",
+        "line": 86,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "extract_column_names",
+        "line": 125,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "is_valid_identifier",
+        "line": 188,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "normalize_whitespace",
+        "line": 218,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "remove_comments",
+        "line": 237,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "extract_create_table_info",
+        "line": 256,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "get_sql_complexity_score",
+        "line": 321,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "name": "validate_sql_syntax",
+        "line": 366,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_file_path",
+        "line": 36,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_directory_path",
+        "line": 64,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_json_structure",
+        "line": 181,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_yaml_structure",
+        "line": 214,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_file_size",
+        "line": 269,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_encoding",
+        "line": 294,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_sql_statement_structure",
+        "line": 330,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "name": "validate_database_connection_params",
+        "line": 377,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\utils\\validators.py",
+        "name": "validate_sql_syntax_basic",
+        "line": 242,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_generators\\__init__.py",
+        "name": "get_format_generator",
+        "line": 72,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      },
+      {
+        "file": "backend\\core\\format_generators\\__init__.py",
+        "name": "get_available_formats",
+        "line": 119,
+        "is_private": false,
+        "is_dunder": false,
+        "docstring": true
+      }
+    ],
+    "unused_imports": [
+      {
+        "file": "backend_server.py",
+        "import": "json",
+        "line": 9
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "import": "os",
+        "line": 7
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "import": "time",
+        "line": 10
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "import": "re",
+        "line": 9
+      },
+      {
+        "file": "ui_enhancement_analysis.py",
+        "import": "re",
+        "line": 8
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\backend_server.py",
+        "import": "sys",
+        "line": 8
+      },
+      {
+        "file": "backend\\config\\__init__.py",
+        "import": "json",
+        "line": 9
+      },
+      {
+        "file": "backend\\core\\advanced_export_system.py",
+        "import": "xml.etree.ElementTree",
+        "line": 9
+      },
+      {
+        "file": "backend\\core\\confidence_scoring.py",
+        "import": "math",
+        "line": 6
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "import": "os",
+        "line": 8
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "import": "json",
+        "line": 9
+      },
+      {
+        "file": "backend\\core\\config_manager.py",
+        "import": "configparser",
+        "line": 11
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "import": "json",
+        "line": 15
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "import": "nltk",
+        "line": 23
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "import": "os",
+        "line": 8
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "import": "logging.handlers",
+        "line": 11
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "import": "os",
+        "line": 8
+      },
+      {
+        "file": "backend\\core\\enterprise_reporting.py",
+        "import": "statistics",
+        "line": 17
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "import": "json",
+        "line": 15
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "import": "hashlib",
+        "line": 16
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "import": "difflib",
+        "line": 24
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "mmap",
+        "line": 10
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "asyncio",
+        "line": 13
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "aiofiles",
+        "line": 14
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "multiprocessing",
+        "line": 15
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "signal",
+        "line": 24
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "csv",
+        "line": 65
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "zipfile",
+        "line": 67
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "tarfile",
+        "line": 68
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "pickle",
+        "line": 72
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "weakref",
+        "line": 75
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "mimetypes",
+        "line": 76
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "resource",
+        "line": 34
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "import": "pandas",
+        "line": 46
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "import": "json",
+        "line": 6
+      },
+      {
+        "file": "backend\\core\\i18n.py",
+        "import": "os",
+        "line": 7
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "import": "json",
+        "line": 9
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "import": "re",
+        "line": 8
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "import": "json",
+        "line": 9
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "import": "json",
+        "line": 7
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "import": "networkx",
+        "line": 16
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "sys",
+        "line": 14
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "yaml",
+        "line": 17
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "pickle",
+        "line": 18
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "click",
+        "line": 23
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "configparser",
+        "line": 42
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "import": "threading",
+        "line": 43
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "import": "os",
+        "line": 6
+      },
+      {
+        "file": "backend\\core\\format_generators\\base_generator.py",
+        "import": "os",
+        "line": 7
+      },
+      {
+        "file": "backend\\conclusions_arc\\reports\\analysis_report_generator.py",
+        "import": "os",
+        "line": 7
+      }
+    ],
+    "dead_code_percentage": 11.496531219028741
+  },
+  "efficiency_analysis": {
+    "inefficient_patterns": [
+      {
+        "file": "comprehensive_code_review.py",
+        "function": "_discover_files",
+        "line": 66,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "function": "_analyze_python_code",
+        "line": 87,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "function": "_analyze_python_code",
+        "line": 87,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "function": "_has_inefficient_patterns",
+        "line": 146,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "comprehensive_code_review.py",
+        "function": "_has_inefficient_patterns",
+        "line": 146,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_analyze_dead_code",
+        "line": 50,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 7)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_check_function_efficiency",
+        "line": 170,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_check_function_efficiency",
+        "line": 170,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_check_function_efficiency",
+        "line": 170,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_analyze_code_utilization",
+        "line": 234,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "python_optimization_analysis.py",
+        "function": "_analyze_code_utilization",
+        "line": 234,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "ui_enhancement_analysis.py",
+        "function": "_analyze_styling_approach",
+        "line": 127,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "ui_enhancement_analysis.py",
+        "function": "_analyze_responsiveness",
+        "line": 206,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "sql-analyzer-enterprise-final\\core\\database_engines.py",
+        "function": "get_supported_engines",
+        "line": 3,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\advanced_export_system.py",
+        "function": "_generate_html_errors",
+        "line": 742,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\advanced_export_system.py",
+        "function": "_generate_html_recommendations",
+        "line": 765,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\confidence_scoring.py",
+        "function": "_calculate_historical_accuracy_score",
+        "line": 289,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\confidence_scoring.py",
+        "function": "_calculate_validation_score",
+        "line": 351,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\database_engines.py",
+        "function": "_add_cloud_databases",
+        "line": 381,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\database_engines.py",
+        "function": "_add_search_databases",
+        "line": 611,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\database_engines.py",
+        "function": "_add_vector_databases",
+        "line": 858,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\database_engines.py",
+        "function": "detect_database_engine",
+        "line": 901,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\database_engines.py",
+        "function": "detect_database_engine",
+        "line": 901,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\data_quality_analyzer.py",
+        "function": "_check_data_types",
+        "line": 360,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\data_quality_analyzer.py",
+        "function": "_calculate_referential_integrity_score",
+        "line": 555,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\data_quality_analyzer.py",
+        "function": "_find_repeated_patterns",
+        "line": 575,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "function": "_initialize_mysql_types",
+        "line": 298,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "function": "_initialize_sqlserver_types",
+        "line": 799,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "function": "_initialize_specialized_types",
+        "line": 1004,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "function": "_build_indexes",
+        "line": 1509,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\data_types.py",
+        "function": "_calculate_type_confidence",
+        "line": 1592,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_split_column_definitions",
+        "line": 278,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_parse_table_constraints",
+        "line": 327,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_business_rules",
+        "line": 494,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_toc_tables",
+        "line": 675,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_toc_views",
+        "line": 686,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_toc_procedures",
+        "line": 697,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_tables_html",
+        "line": 708,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_columns_html",
+        "line": 757,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_constraints_html",
+        "line": 794,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_relationships_html",
+        "line": 826,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_business_rules_html",
+        "line": 854,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_views_html",
+        "line": 868,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_procedures_html",
+        "line": 897,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_parameters_html",
+        "line": 928,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_tables_markdown",
+        "line": 972,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_tables_markdown",
+        "line": 972,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_views_markdown",
+        "line": 1016,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\documentation_generator.py",
+        "function": "_generate_procedures_markdown",
+        "line": 1037,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_initialize_technology_patterns",
+        "line": 402,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_build_pattern_indexes",
+        "line": 554,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "analyze_table_domain",
+        "line": 573,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "analyze_table_domain",
+        "line": 573,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_table_name",
+        "line": 651,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 7)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_table_name",
+        "line": 651,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_column_names",
+        "line": 682,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 6)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_column_names",
+        "line": 682,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_context",
+        "line": 708,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_analyze_context",
+        "line": 708,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "_generate_domain_suggestions",
+        "line": 725,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "analyze_schema_domain",
+        "line": 893,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\domain_recognition.py",
+        "function": "analyze_schema_domain",
+        "line": 893,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\enterprise_analyzer.py",
+        "function": "_calculate_confidence_score",
+        "line": 564,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "function": "_procesar_eventos",
+        "line": 234,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\enterprise_logging.py",
+        "function": "archivar_logs_antiguos",
+        "line": 398,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\error_detector_advanced.py",
+        "function": "_validate_data_type",
+        "line": 61,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\error_detector_advanced.py",
+        "function": "_detect_logical_errors",
+        "line": 316,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\error_detector_advanced.py",
+        "function": "_detect_security_vulnerabilities",
+        "line": 335,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\error_detector_advanced.py",
+        "function": "_detect_performance_issues",
+        "line": 358,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "function": "_init_performance_patterns",
+        "line": 467,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "function": "_check_unmatched_quotes",
+        "line": 816,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\error_detector_complex.py",
+        "function": "_calculate_similarity",
+        "line": 999,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\exceptions.py",
+        "function": "handle_exception",
+        "line": 342,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_memory_monitor_loop",
+        "line": 566,
+        "type": "blocking_operations",
+        "severity": "medium",
+        "description": "Blocking operations detected",
+        "recommendation": "Consider using async/await for I/O operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_metrics_collection_loop",
+        "line": 593,
+        "type": "blocking_operations",
+        "severity": "medium",
+        "description": "Blocking operations detected",
+        "recommendation": "Consider using async/await for I/O operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_cache_maintenance_loop",
+        "line": 620,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_cache_maintenance_loop",
+        "line": 620,
+        "type": "blocking_operations",
+        "severity": "medium",
+        "description": "Blocking operations detected",
+        "recommendation": "Consider using async/await for I/O operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_handle_network_error",
+        "line": 766,
+        "type": "blocking_operations",
+        "severity": "medium",
+        "description": "Blocking operations detected",
+        "recommendation": "Consider using async/await for I/O operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_process_smaller_chunks",
+        "line": 829,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_use_alternative_parser",
+        "line": 879,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 6)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_fallback_binary_mode",
+        "line": 915,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "process_file_enterprise",
+        "line": 1046,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "process_file_enterprise",
+        "line": 1046,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_calculate_processing_priority",
+        "line": 1464,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "read_large_file_chunked",
+        "line": 1585,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "read_compressed_file",
+        "line": 1617,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "extract_sql_from_document",
+        "line": 1650,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 8)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "_extract_sql_from_json_data",
+        "line": 1712,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "process_file",
+        "line": 1743,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 5)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\file_processor.py",
+        "function": "process_file",
+        "line": 1743,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_generate_html_report",
+        "line": 293,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_convert_syntax",
+        "line": 479,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_json_to_sql",
+        "line": 640,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_json_to_sql",
+        "line": 640,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_parse_create_table_to_json",
+        "line": 698,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "_json_column_to_sql",
+        "line": 830,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "generate_conversion_report",
+        "line": 914,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_converter.py",
+        "function": "generate_conversion_report",
+        "line": 914,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_comment_select_query",
+        "line": 270,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_comment_table_columns",
+        "line": 320,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_comment_insert_query",
+        "line": 387,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_comment_update_query",
+        "line": 406,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_comment_delete_query",
+        "line": 432,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_insert_comments",
+        "line": 468,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_add_contextual_comments",
+        "line": 564,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_analyze_complex_queries",
+        "line": 635,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_get_column_description",
+        "line": 765,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\intelligent_commenter.py",
+        "function": "_generate_query_description",
+        "line": 845,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "function": "strongly_connected_components",
+        "line": 316,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\local_networkx.py",
+        "function": "strongly_connected_components",
+        "line": 316,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "levenshtein",
+        "line": 11,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "jaro",
+        "line": 86,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "jaro",
+        "line": 86,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "jaro_winkler",
+        "line": 146,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "cosine",
+        "line": 199,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\local_textdistance.py",
+        "function": "cosine",
+        "line": 199,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "function": "record_analysis_failure",
+        "line": 138,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\metrics_system.py",
+        "function": "record_export",
+        "line": 145,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\performance_analyzer.py",
+        "function": "_calculate_performance_score",
+        "line": 136,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\performance_analyzer.py",
+        "function": "get_performance_summary",
+        "line": 200,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_initialize_performance_patterns",
+        "line": 65,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "analyze_performance",
+        "line": 134,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_create_performance_issue",
+        "line": 192,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_generate_optimization_for_pattern",
+        "line": 224,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_generate_index_recommendations",
+        "line": 260,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_extract_table_column_usage",
+        "line": 307,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 5)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_generate_query_optimizations",
+        "line": 344,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\performance_optimizer.py",
+        "function": "_generate_general_recommendations",
+        "line": 421,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "function": "_split_column_definitions",
+        "line": 158,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "function": "_detect_circular_references",
+        "line": 384,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "function": "_calculate_normalization_score",
+        "line": 447,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_analyzer.py",
+        "function": "_generate_schema_recommendations",
+        "line": 488,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_parse_schema_for_diagram",
+        "line": 103,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_parse_schema_for_diagram",
+        "line": 103,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_split_column_definitions",
+        "line": 225,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_interactive_diagram",
+        "line": 273,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_interactive_diagram",
+        "line": 273,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_svg_relationships",
+        "line": 651,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_svg_tables",
+        "line": 675,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_svg_columns",
+        "line": 700,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_static_tables",
+        "line": 879,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_static_columns",
+        "line": 895,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\relationship_visualizer.py",
+        "function": "_generate_static_relationships",
+        "line": 912,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "function": "generate_sample_data",
+        "line": 52,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "function": "analyze_schema",
+        "line": 119,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "function": "_split_column_definitions",
+        "line": 267,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "function": "_sort_tables_by_dependencies",
+        "line": 339,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\sample_data_generator.py",
+        "function": "_create_insert_statements",
+        "line": 459,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_build_schema_graph",
+        "line": 194,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_detect_missing_relationships",
+        "line": 237,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_find_potential_foreign_keys",
+        "line": 265,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_identify_missing_tables",
+        "line": 348,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_check_normalization_issues",
+        "line": 511,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_calculate_normalization_score",
+        "line": 607,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_calculate_normalization_score",
+        "line": 607,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_calculate_performance_score",
+        "line": 644,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "_generate_recommendations",
+        "line": 674,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "generate_schema_report",
+        "line": 723,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 5)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\schema_analyzer.py",
+        "function": "generate_schema_report",
+        "line": 723,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\security_analyzer.py",
+        "function": "_calculate_security_score",
+        "line": 161,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\security_analyzer.py",
+        "function": "get_security_summary",
+        "line": 228,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sql_analyzer.py",
+        "function": "_analyze_schema",
+        "line": 117,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "function": "parse_sql_file",
+        "line": 187,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "function": "_parse_create_table",
+        "line": 324,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "function": "_validate_statement",
+        "line": 405,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "function": "_classify_business_domains",
+        "line": 558,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 5)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\sql_parser.py",
+        "function": "_classify_business_domains",
+        "line": 558,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_select_from_recent_files",
+        "line": 528,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_show_file_preview_content",
+        "line": 602,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_display_processing_summary",
+        "line": 794,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_calculate_total_steps",
+        "line": 972,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_create_conclusions_archive",
+        "line": 1157,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_generate_html_report",
+        "line": 1286,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_format_html_list",
+        "line": 1391,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_generate_markdown_report",
+        "line": 1402,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_display_quick_summary",
+        "line": 1612,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_perform_conversion",
+        "line": 2121,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\ui\\cli_interface.py",
+        "function": "_display_batch_results",
+        "line": 2296,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\utils\\file_handler.py",
+        "function": "cleanup_temp_directory",
+        "line": 252,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\utils\\file_utils.py",
+        "function": "get_directory_size",
+        "line": 168,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "function": "get_sql_complexity_score",
+        "line": 321,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "function": "get_sql_complexity_score",
+        "line": 321,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\utils\\sql_utils.py",
+        "function": "validate_sql_syntax",
+        "line": 366,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\utils\\validation_utils.py",
+        "function": "validate_sql_statement_structure",
+        "line": 330,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\format_generators\\excel_generator.py",
+        "function": "_create_summary_sheet",
+        "line": 94,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 4)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_generators\\excel_generator.py",
+        "function": "_create_errors_sheet",
+        "line": 165,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 5)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_generators\\excel_generator.py",
+        "function": "_create_statistics_sheet",
+        "line": 217,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 6)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_generators\\excel_generator.py",
+        "function": "_create_recommendations_sheet",
+        "line": 279,
+        "type": "nested_loops",
+        "severity": "high",
+        "description": "Nested loops detected (depth: 3)",
+        "recommendation": "Consider optimizing with list comprehensions or vectorized operations"
+      },
+      {
+        "file": "backend\\core\\format_generators\\html_generator.py",
+        "function": "_get_embedded_javascript",
+        "line": 534,
+        "type": "db_queries_in_loop",
+        "severity": "high",
+        "description": "Database queries in loop detected",
+        "recommendation": "Batch queries or use bulk operations"
+      },
+      {
+        "file": "backend\\core\\format_generators\\json_generator.py",
+        "function": "_estimate_complexity",
+        "line": 305,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_generators\\json_generator.py",
+        "function": "_estimate_nesting_depth",
+        "line": 317,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_generators\\markdown_generator.py",
+        "function": "_format_error_markdown",
+        "line": 229,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_generators\\pdf_generator.py",
+        "function": "_create_executive_summary",
+        "line": 264,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\format_generators\\pdf_generator.py",
+        "function": "_create_errors_section",
+        "line": 402,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\format_generators\\pdf_generator.py",
+        "function": "_create_recommendations_section",
+        "line": 446,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\core\\format_generators\\sql_generator.py",
+        "function": "_apply_corrections",
+        "line": 174,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\core\\format_generators\\sql_generator.py",
+        "function": "_generate_recommendations_comment",
+        "line": 224,
+        "type": "inefficient_append",
+        "severity": "medium",
+        "description": "Multiple append operations in loop",
+        "recommendation": "Consider list comprehension or pre-allocation"
+      },
+      {
+        "file": "backend\\conclusions_arc\\analytics\\dashboard_generator.py",
+        "function": "_generate_recommendations_html",
+        "line": 254,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      },
+      {
+        "file": "backend\\conclusions_arc\\reports\\analysis_report_generator.py",
+        "function": "_analyze_error_distribution",
+        "line": 227,
+        "type": "string_concatenation",
+        "severity": "medium",
+        "description": "String concatenation in loop detected",
+        "recommendation": "Use join() or f-strings for better performance"
+      }
+    ],
+    "total_issues": 199
+  },
+  "utilization_analysis": {
+    "overall_stats": {
+      "total_lines": 32959,
+      "comment_lines": 1761,
+      "blank_lines": 5255,
+      "code_lines": 12009,
+      "docstring_lines": 13400,
+      "import_lines": 534
+    },
+    "percentages": {
+      "code_percentage": 36.436178282108074,
+      "comment_percentage": 5.343001911465761,
+      "docstring_percentage": 40.65657331836524,
+      "blank_percentage": 15.944051700597711
+    },
+    "file_stats": {
+      "backend_server.py": {
+        "total_lines": 495,
+        "comment_lines": 38,
+        "blank_lines": 70,
+        "code_lines": 215,
+        "docstring_lines": 147,
+        "import_lines": 25
+      },
+      "comprehensive_code_review.py": {
+        "total_lines": 420,
+        "comment_lines": 42,
+        "blank_lines": 83,
+        "code_lines": 172,
+        "docstring_lines": 114,
+        "import_lines": 9
+      },
+      "python_optimization_analysis.py": {
+        "total_lines": 412,
+        "comment_lines": 21,
+        "blank_lines": 67,
+        "code_lines": 176,
+        "docstring_lines": 142,
+        "import_lines": 6
+      },
+      "ui_enhancement_analysis.py": {
+        "total_lines": 368,
+        "comment_lines": 19,
+        "blank_lines": 62,
+        "code_lines": 169,
+        "docstring_lines": 114,
+        "import_lines": 4
+      },
+      "backend\\__init__.py": {
+        "total_lines": 13,
+        "comment_lines": 0,
+        "blank_lines": 3,
+        "code_lines": 3,
+        "docstring_lines": 4,
+        "import_lines": 3
+      },
+      "sql-analyzer-enterprise-final\\backend_server.py": {
+        "total_lines": 271,
+        "comment_lines": 16,
+        "blank_lines": 42,
+        "code_lines": 111,
+        "docstring_lines": 86,
+        "import_lines": 16
+      },
+      "sql-analyzer-enterprise-final\\gunicorn.conf.py": {
+        "total_lines": 11,
+        "comment_lines": 0,
+        "blank_lines": 0,
+        "code_lines": 10,
+        "docstring_lines": 0,
+        "import_lines": 1
+      },
+      "sql-analyzer-enterprise-final\\config\\__init__.py": {
+        "total_lines": 1,
+        "comment_lines": 1,
+        "blank_lines": 0,
+        "code_lines": 0,
+        "docstring_lines": 0,
+        "import_lines": 0
+      },
+      "sql-analyzer-enterprise-final\\core\\advanced_export_system.py": {
+        "total_lines": 12,
+        "comment_lines": 0,
+        "blank_lines": 1,
+        "code_lines": 0,
+        "docstring_lines": 10,
+        "import_lines": 1
+      },
+      "sql-analyzer-enterprise-final\\core\\database_engines.py": {
+        "total_lines": 5,
+        "comment_lines": 0,
+        "blank_lines": 0,
+        "code_lines": 0,
+        "docstring_lines": 5,
+        "import_lines": 0
+      },
+      "sql-analyzer-enterprise-final\\core\\error_detector.py": {
+        "total_lines": 4,
+        "comment_lines": 0,
+        "blank_lines": 0,
+        "code_lines": 0,
+        "docstring_lines": 4,
+        "import_lines": 0
+      },
+      "sql-analyzer-enterprise-final\\core\\metrics_system.py": {
+        "total_lines": 15,
+        "comment_lines": 0,
+        "blank_lines": 2,
+        "code_lines": 0,
+        "docstring_lines": 12,
+        "import_lines": 1
+      },
+      "sql-analyzer-enterprise-final\\core\\sql_analyzer.py": {
+        "total_lines": 4,
+        "comment_lines": 0,
+        "blank_lines": 0,
+        "code_lines": 0,
+        "docstring_lines": 4,
+        "import_lines": 0
+      },
+      "sql-analyzer-enterprise-final\\utils\\__init__.py": {
+        "total_lines": 1,
+        "comment_lines": 1,
+        "blank_lines": 0,
+        "code_lines": 0,
+        "docstring_lines": 0,
+        "import_lines": 0
+      },
+      "backend\\config\\format_config.py": {
+        "total_lines": 269,
+        "comment_lines": 3,
+        "blank_lines": 11,
+        "code_lines": 237,
+        "docstring_lines": 17,
+        "import_lines": 1
+      },
+      "backend\\config\\__init__.py": {
+        "total_lines": 196,
+        "comment_lines": 7,
+        "blank_lines": 45,
+        "code_lines": 64,
+        "docstring_lines": 73,
+        "import_lines": 7
+      },
+      "backend\\core\\advanced_export_system.py": {
+        "total_lines": 1031,
+        "comment_lines": 50,
+        "blank_lines": 123,
+        "code_lines": 245,
+        "docstring_lines": 597,
+        "import_lines": 16
+      },
+      "backend\\core\\confidence_scoring.py": {
+        "total_lines": 457,
+        "comment_lines": 32,
+        "blank_lines": 78,
+        "code_lines": 184,
+        "docstring_lines": 159,
+        "import_lines": 4
+      },
+      "backend\\core\\config_manager.py": {
+        "total_lines": 385,
+        "comment_lines": 25,
+        "blank_lines": 75,
+        "code_lines": 120,
+        "docstring_lines": 154,
+        "import_lines": 11
+      },
+      "backend\\core\\database_engines.py": {
+        "total_lines": 945,
+        "comment_lines": 40,
+        "blank_lines": 66,
+        "code_lines": 516,
+        "docstring_lines": 318,
+        "import_lines": 5
+      },
+      "backend\\core\\data_quality_analyzer.py": {
+        "total_lines": 696,
+        "comment_lines": 30,
+        "blank_lines": 126,
+        "code_lines": 240,
+        "docstring_lines": 296,
+        "import_lines": 4
+      },
+      "backend\\core\\data_types.py": {
+        "total_lines": 1825,
+        "comment_lines": 94,
+        "blank_lines": 219,
+        "code_lines": 839,
+        "docstring_lines": 666,
+        "import_lines": 7
+      },
+      "backend\\core\\documentation_generator.py": {
+        "total_lines": 1124,
+        "comment_lines": 40,
+        "blank_lines": 186,
+        "code_lines": 305,
+        "docstring_lines": 586,
+        "import_lines": 7
+      },
+      "backend\\core\\domain_recognition.py": {
+        "total_lines": 1019,
+        "comment_lines": 54,
+        "blank_lines": 119,
+        "code_lines": 363,
+        "docstring_lines": 469,
+        "import_lines": 14
+      },
+      "backend\\core\\enterprise_analyzer.py": {
+        "total_lines": 726,
+        "comment_lines": 57,
+        "blank_lines": 130,
+        "code_lines": 303,
+        "docstring_lines": 224,
+        "import_lines": 12
+      },
+      "backend\\core\\enterprise_logging.py": {
+        "total_lines": 454,
+        "comment_lines": 39,
+        "blank_lines": 82,
+        "code_lines": 137,
+        "docstring_lines": 182,
+        "import_lines": 14
+      },
+      "backend\\core\\enterprise_reporting.py": {
+        "total_lines": 480,
+        "comment_lines": 21,
+        "blank_lines": 79,
+        "code_lines": 164,
+        "docstring_lines": 205,
+        "import_lines": 11
+      },
+      "backend\\core\\error_detector.py": {
+        "total_lines": 224,
+        "comment_lines": 6,
+        "blank_lines": 30,
+        "code_lines": 64,
+        "docstring_lines": 119,
+        "import_lines": 5
+      },
+      "backend\\core\\error_detector_advanced.py": {
+        "total_lines": 438,
+        "comment_lines": 42,
+        "blank_lines": 70,
+        "code_lines": 187,
+        "docstring_lines": 135,
+        "import_lines": 4
+      },
+      "backend\\core\\error_detector_complex.py": {
+        "total_lines": 1428,
+        "comment_lines": 112,
+        "blank_lines": 191,
+        "code_lines": 433,
+        "docstring_lines": 678,
+        "import_lines": 14
+      },
+      "backend\\core\\exceptions.py": {
+        "total_lines": 379,
+        "comment_lines": 3,
+        "blank_lines": 65,
+        "code_lines": 132,
+        "docstring_lines": 176,
+        "import_lines": 3
+      },
+      "backend\\core\\file_processor.py": {
+        "total_lines": 1863,
+        "comment_lines": 141,
+        "blank_lines": 314,
+        "code_lines": 508,
+        "docstring_lines": 860,
+        "import_lines": 40
+      },
+      "backend\\core\\format_converter.py": {
+        "total_lines": 944,
+        "comment_lines": 52,
+        "blank_lines": 149,
+        "code_lines": 365,
+        "docstring_lines": 367,
+        "import_lines": 11
+      },
+      "backend\\core\\i18n.py": {
+        "total_lines": 453,
+        "comment_lines": 37,
+        "blank_lines": 64,
+        "code_lines": 51,
+        "docstring_lines": 296,
+        "import_lines": 5
+      },
+      "backend\\core\\intelligent_commenter.py": {
+        "total_lines": 889,
+        "comment_lines": 44,
+        "blank_lines": 140,
+        "code_lines": 292,
+        "docstring_lines": 406,
+        "import_lines": 7
+      },
+      "backend\\core\\local_networkx.py": {
+        "total_lines": 370,
+        "comment_lines": 15,
+        "blank_lines": 86,
+        "code_lines": 130,
+        "docstring_lines": 136,
+        "import_lines": 3
+      },
+      "backend\\core\\local_nltk.py": {
+        "total_lines": 270,
+        "comment_lines": 17,
+        "blank_lines": 67,
+        "code_lines": 82,
+        "docstring_lines": 101,
+        "import_lines": 3
+      },
+      "backend\\core\\local_textdistance.py": {
+        "total_lines": 347,
+        "comment_lines": 14,
+        "blank_lines": 86,
+        "code_lines": 138,
+        "docstring_lines": 107,
+        "import_lines": 2
+      },
+      "backend\\core\\metrics_system.py": {
+        "total_lines": 291,
+        "comment_lines": 12,
+        "blank_lines": 41,
+        "code_lines": 76,
+        "docstring_lines": 153,
+        "import_lines": 9
+      },
+      "backend\\core\\performance_analyzer.py": {
+        "total_lines": 214,
+        "comment_lines": 12,
+        "blank_lines": 36,
+        "code_lines": 105,
+        "docstring_lines": 58,
+        "import_lines": 3
+      },
+      "backend\\core\\performance_optimizer.py": {
+        "total_lines": 475,
+        "comment_lines": 17,
+        "blank_lines": 72,
+        "code_lines": 204,
+        "docstring_lines": 177,
+        "import_lines": 5
+      },
+      "backend\\core\\relationship_analyzer.py": {
+        "total_lines": 568,
+        "comment_lines": 32,
+        "blank_lines": 109,
+        "code_lines": 236,
+        "docstring_lines": 186,
+        "import_lines": 5
+      },
+      "backend\\core\\relationship_visualizer.py": {
+        "total_lines": 934,
+        "comment_lines": 15,
+        "blank_lines": 149,
+        "code_lines": 410,
+        "docstring_lines": 353,
+        "import_lines": 7
+      },
+      "backend\\core\\sample_data_generator.py": {
+        "total_lines": 547,
+        "comment_lines": 35,
+        "blank_lines": 98,
+        "code_lines": 135,
+        "docstring_lines": 271,
+        "import_lines": 8
+      },
+      "backend\\core\\schema_analyzer.py": {
+        "total_lines": 796,
+        "comment_lines": 73,
+        "blank_lines": 131,
+        "code_lines": 277,
+        "docstring_lines": 304,
+        "import_lines": 11
+      },
+      "backend\\core\\security_analyzer.py": {
+        "total_lines": 243,
+        "comment_lines": 13,
+        "blank_lines": 41,
+        "code_lines": 92,
+        "docstring_lines": 94,
+        "import_lines": 3
+      },
+      "backend\\core\\sql_analyzer.py": {
+        "total_lines": 197,
+        "comment_lines": 15,
+        "blank_lines": 36,
+        "code_lines": 96,
+        "docstring_lines": 42,
+        "import_lines": 8
+      },
+      "backend\\core\\sql_parser.py": {
+        "total_lines": 672,
+        "comment_lines": 41,
+        "blank_lines": 97,
+        "code_lines": 280,
+        "docstring_lines": 239,
+        "import_lines": 15
+      },
+      "backend\\core\\__init__.py": {
+        "total_lines": 17,
+        "comment_lines": 0,
+        "blank_lines": 2,
+        "code_lines": 7,
+        "docstring_lines": 3,
+        "import_lines": 5
+      },
+      "backend\\ui\\cli_interface.py": {
+        "total_lines": 2529,
+        "comment_lines": 153,
+        "blank_lines": 416,
+        "code_lines": 912,
+        "docstring_lines": 998,
+        "import_lines": 50
+      },
+      "backend\\ui\\__init__.py": {
+        "total_lines": 7,
+        "comment_lines": 0,
+        "blank_lines": 2,
+        "code_lines": 1,
+        "docstring_lines": 3,
+        "import_lines": 1
+      },
+      "backend\\utils\\file_handler.py": {
+        "total_lines": 275,
+        "comment_lines": 9,
+        "blank_lines": 46,
+        "code_lines": 152,
+        "docstring_lines": 62,
+        "import_lines": 6
+      },
+      "backend\\utils\\file_utils.py": {
+        "total_lines": 344,
+        "comment_lines": 9,
+        "blank_lines": 72,
+        "code_lines": 75,
+        "docstring_lines": 176,
+        "import_lines": 12
+      },
+      "backend\\utils\\sql_utils.py": {
+        "total_lines": 411,
+        "comment_lines": 35,
+        "blank_lines": 86,
+        "code_lines": 60,
+        "docstring_lines": 225,
+        "import_lines": 5
+      },
+      "backend\\utils\\validation_utils.py": {
+        "total_lines": 418,
+        "comment_lines": 14,
+        "blank_lines": 92,
+        "code_lines": 64,
+        "docstring_lines": 241,
+        "import_lines": 7
+      },
+      "backend\\utils\\validators.py": {
+        "total_lines": 303,
+        "comment_lines": 15,
+        "blank_lines": 43,
+        "code_lines": 93,
+        "docstring_lines": 147,
+        "import_lines": 5
+      },
+      "backend\\utils\\__init__.py": {
+        "total_lines": 11,
+        "comment_lines": 0,
+        "blank_lines": 2,
+        "code_lines": 1,
+        "docstring_lines": 3,
+        "import_lines": 5
+      },
+      "backend\\core\\format_generators\\base_generator.py": {
+        "total_lines": 311,
+        "comment_lines": 0,
+        "blank_lines": 57,
+        "code_lines": 76,
+        "docstring_lines": 171,
+        "import_lines": 7
+      },
+      "backend\\core\\format_generators\\csv_generator.py": {
+        "total_lines": 101,
+        "comment_lines": 4,
+        "blank_lines": 22,
+        "code_lines": 17,
+        "docstring_lines": 53,
+        "import_lines": 5
+      },
+      "backend\\core\\format_generators\\excel_generator.py": {
+        "total_lines": 404,
+        "comment_lines": 29,
+        "blank_lines": 79,
+        "code_lines": 167,
+        "docstring_lines": 121,
+        "import_lines": 8
+      },
+      "backend\\core\\format_generators\\html_generator.py": {
+        "total_lines": 570,
+        "comment_lines": 1,
+        "blank_lines": 86,
+        "code_lines": 164,
+        "docstring_lines": 315,
+        "import_lines": 4
+      },
+      "backend\\core\\format_generators\\json_generator.py": {
+        "total_lines": 421,
+        "comment_lines": 13,
+        "blank_lines": 62,
+        "code_lines": 173,
+        "docstring_lines": 168,
+        "import_lines": 5
+      },
+      "backend\\core\\format_generators\\latex_generator.py": {
+        "total_lines": 25,
+        "comment_lines": 0,
+        "blank_lines": 1,
+        "code_lines": 0,
+        "docstring_lines": 22,
+        "import_lines": 2
+      },
+      "backend\\core\\format_generators\\markdown_generator.py": {
+        "total_lines": 417,
+        "comment_lines": 18,
+        "blank_lines": 104,
+        "code_lines": 143,
+        "docstring_lines": 149,
+        "import_lines": 3
+      },
+      "backend\\core\\format_generators\\pdf_generator.py": {
+        "total_lines": 489,
+        "comment_lines": 28,
+        "blank_lines": 102,
+        "code_lines": 208,
+        "docstring_lines": 136,
+        "import_lines": 15
+      },
+      "backend\\core\\format_generators\\remaining_generators.py": {
+        "total_lines": 243,
+        "comment_lines": 0,
+        "blank_lines": 23,
+        "code_lines": 151,
+        "docstring_lines": 67,
+        "import_lines": 2
+      },
+      "backend\\core\\format_generators\\sql_generator.py": {
+        "total_lines": 261,
+        "comment_lines": 14,
+        "blank_lines": 57,
+        "code_lines": 69,
+        "docstring_lines": 118,
+        "import_lines": 3
+      },
+      "backend\\core\\format_generators\\word_generator.py": {
+        "total_lines": 329,
+        "comment_lines": 28,
+        "blank_lines": 73,
+        "code_lines": 99,
+        "docstring_lines": 120,
+        "import_lines": 9
+      },
+      "backend\\core\\format_generators\\xml_generator.py": {
+        "total_lines": 39,
+        "comment_lines": 0,
+        "blank_lines": 6,
+        "code_lines": 8,
+        "docstring_lines": 23,
+        "import_lines": 2
+      },
+      "backend\\core\\format_generators\\__init__.py": {
+        "total_lines": 241,
+        "comment_lines": 3,
+        "blank_lines": 13,
+        "code_lines": 194,
+        "docstring_lines": 19,
+        "import_lines": 12
+      },
+      "backend\\conclusions_arc\\analytics\\dashboard_generator.py": {
+        "total_lines": 292,
+        "comment_lines": 2,
+        "blank_lines": 25,
+        "code_lines": 246,
+        "docstring_lines": 15,
+        "import_lines": 4
+      },
+      "backend\\conclusions_arc\\reports\\analysis_report_generator.py": {
+        "total_lines": 320,
+        "comment_lines": 8,
+        "blank_lines": 43,
+        "code_lines": 63,
+        "docstring_lines": 199,
+        "import_lines": 7
+      }
+    },
+    "code_density": 36.436178282108074
+  },
+  "optimization_recommendations": [
+    {
+      "category": "Dead Code Removal",
+      "priority": "HIGH",
+      "impact": "High",
+      "effort": "Low",
+      "description": "Remove 116 unused functions",
+      "actions": [
+        "Delete function \"add_security_headers\" from backend_server.py",
+        "Delete function \"health_check\" from backend_server.py",
+        "Delete function \"get_dashboard_metrics\" from backend_server.py",
+        "Delete function \"download_results\" from backend_server.py",
+        "Delete function \"get_supported_databases\" from backend_server.py"
+      ],
+      "benefits": [
+        "Reduced codebase size",
+        "Improved maintainability",
+        "Faster builds"
+      ]
+    },
+    {
+      "category": "Performance Optimization",
+      "priority": "HIGH",
+      "impact": "High",
+      "effort": "Medium",
+      "description": "Fix 86 high-priority performance issues",
+      "actions": [
+        "nested_loops: Consider optimizing with list comprehensions or vectorized operations",
+        "nested_loops: Consider optimizing with list comprehensions or vectorized operations",
+        "db_queries_in_loop: Batch queries or use bulk operations"
+      ],
+      "benefits": [
+        "Improved performance",
+        "Better scalability",
+        "Reduced resource usage"
+      ]
+    },
+    {
+      "category": "Code Density Improvement",
+      "priority": "MEDIUM",
+      "impact": "Medium",
+      "effort": "Medium",
+      "description": "Improve code density from 36.4% to >60%",
+      "actions": [
+        "Remove excessive blank lines",
+        "Consolidate related functions",
+        "Remove redundant comments",
+        "Optimize import statements"
+      ],
+      "benefits": [
+        "More focused codebase",
+        "Easier navigation",
+        "Better readability"
+      ]
+    }
+  ]
+}

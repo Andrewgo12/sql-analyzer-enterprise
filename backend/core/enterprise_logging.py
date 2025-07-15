@@ -71,12 +71,6 @@ class EventoAuditoria:
         if not self.hash_integridad:
             self.hash_integridad = self._calcular_hash()
     
-    def _calcular_hash(self) -> str:
-        """Calcular hash SHA-256 para integridad del evento."""
-        datos_evento = f"{self.timestamp.isoformat()}{self.tipo_evento.value}{self.usuario}{self.mensaje}"
-        return hashlib.sha256(datos_evento.encode('utf-8')).hexdigest()[:16]
-
-
 class GestorLoggingEmpresarial:
     """
     Gestor de logging y auditoría empresarial.
@@ -137,81 +131,6 @@ class GestorLoggingEmpresarial:
             detalles={'version': '2.0', 'sesion_id': self.sesion_actual}
         )
     
-    def _configurar_loggers(self):
-        """Configurar loggers especializados."""
-        # Logger de auditoría
-        self.logger_auditoria = logging.getLogger('auditoria')
-        self.logger_auditoria.setLevel(logging.INFO)
-        
-        handler_auditoria = logging.handlers.RotatingFileHandler(
-            self.dir_auditoria / 'auditoria.log',
-            maxBytes=50*1024*1024,  # 50MB
-            backupCount=10,
-            encoding='utf-8'
-        )
-        
-        formatter_auditoria = logging.Formatter(
-            '%(asctime)s | %(levelname)s | %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        handler_auditoria.setFormatter(formatter_auditoria)
-        self.logger_auditoria.addHandler(handler_auditoria)
-        
-        # Logger de seguridad
-        self.logger_seguridad = logging.getLogger('seguridad')
-        self.logger_seguridad.setLevel(logging.WARNING)
-        
-        handler_seguridad = logging.handlers.RotatingFileHandler(
-            self.dir_seguridad / 'seguridad.log',
-            maxBytes=100*1024*1024,  # 100MB
-            backupCount=20,
-            encoding='utf-8'
-        )
-        
-        formatter_seguridad = logging.Formatter(
-            '%(asctime)s | SEGURIDAD | %(levelname)s | %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        handler_seguridad.setFormatter(formatter_seguridad)
-        self.logger_seguridad.addHandler(handler_seguridad)
-        
-        # Logger de rendimiento
-        self.logger_rendimiento = logging.getLogger('rendimiento')
-        self.logger_rendimiento.setLevel(logging.INFO)
-        
-        handler_rendimiento = logging.handlers.TimedRotatingFileHandler(
-            self.dir_rendimiento / 'rendimiento.log',
-            when='midnight',
-            interval=1,
-            backupCount=30,
-            encoding='utf-8'
-        )
-        
-        formatter_rendimiento = logging.Formatter(
-            '%(asctime)s | RENDIMIENTO | %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        handler_rendimiento.setFormatter(formatter_rendimiento)
-        self.logger_rendimiento.addHandler(handler_rendimiento)
-        
-        # Logger de errores
-        self.logger_errores = logging.getLogger('errores')
-        self.logger_errores.setLevel(logging.ERROR)
-        
-        handler_errores = logging.handlers.RotatingFileHandler(
-            self.dir_errores / 'errores.log',
-            maxBytes=25*1024*1024,  # 25MB
-            backupCount=15,
-            encoding='utf-8'
-        )
-        
-        formatter_errores = logging.Formatter(
-            '%(asctime)s | ERROR | %(name)s | %(funcName)s:%(lineno)d | %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        handler_errores.setFormatter(formatter_errores)
-        self.logger_errores.addHandler(handler_errores)
-    
     def registrar_evento(self, nivel: NivelEvento, tipo_evento: TipoEvento,
                         mensaje: str, detalles: Optional[Dict[str, Any]] = None,
                         usuario: str = "sistema", archivo_origen: str = "",
@@ -230,95 +149,6 @@ class GestorLoggingEmpresarial:
         
         # Agregar a cola para procesamiento asíncrono
         self.cola_eventos.put(evento)
-    
-    def _procesar_eventos(self):
-        """Procesar eventos de auditoría de forma asíncrona."""
-        while self.procesando_eventos:
-            try:
-                # Obtener evento de la cola (timeout de 1 segundo)
-                evento = self.cola_eventos.get(timeout=1.0)
-                
-                inicio_procesamiento = datetime.now()
-                
-                # Procesar según el tipo de evento
-                self._procesar_evento_individual(evento)
-                
-                # Actualizar métricas
-                tiempo_procesamiento = (datetime.now() - inicio_procesamiento).total_seconds() * 1000
-                self._actualizar_metricas_rendimiento(tiempo_procesamiento)
-                
-                self.cola_eventos.task_done()
-                
-            except queue.Empty:
-                continue
-            except Exception as e:
-                self.metricas_rendimiento['errores_logging'] += 1
-                logger.error(f"Error procesando evento de auditoría: {e}")
-    
-    def _procesar_evento_individual(self, evento: EventoAuditoria):
-        """Procesar un evento individual."""
-        # Convertir evento a JSON para logging estructurado
-        evento_json = json.dumps(asdict(evento), default=str, ensure_ascii=False)
-        
-        # Registrar en logger apropiado según el nivel y tipo
-        if evento.nivel == NivelEvento.AUDITORIA:
-            self.logger_auditoria.info(evento_json)
-        
-        elif evento.tipo_evento in [TipoEvento.OPERACION_SEGURIDAD, TipoEvento.CAMBIO_PERMISOS]:
-            self.logger_seguridad.warning(evento_json)
-        
-        elif evento.nivel in [NivelEvento.ERROR, NivelEvento.CRITICO]:
-            self.logger_errores.error(evento_json)
-        
-        elif evento.duracion_ms is not None:
-            self.logger_rendimiento.info(evento_json)
-        
-        # Verificar si requiere alertas
-        self._verificar_alertas(evento)
-    
-    def _verificar_alertas(self, evento: EventoAuditoria):
-        """Verificar si el evento requiere alertas inmediatas."""
-        alertas_requeridas = []
-        
-        # Alertas críticas
-        if evento.nivel == NivelEvento.CRITICO:
-            alertas_requeridas.append("ALERTA CRÍTICA: Evento crítico registrado")
-        
-        # Alertas de seguridad
-        if evento.tipo_evento in [TipoEvento.OPERACION_SEGURIDAD, TipoEvento.CAMBIO_PERMISOS]:
-            alertas_requeridas.append("ALERTA SEGURIDAD: Operación de seguridad detectada")
-        
-        # Alertas de rendimiento
-        if evento.duracion_ms and evento.duracion_ms > 30000:  # Más de 30 segundos
-            alertas_requeridas.append("ALERTA RENDIMIENTO: Operación lenta detectada")
-        
-        # Procesar alertas
-        for alerta in alertas_requeridas:
-            self._enviar_alerta(alerta, evento)
-    
-    def _enviar_alerta(self, mensaje_alerta: str, evento: EventoAuditoria):
-        """Enviar alerta (implementación simplificada)."""
-        # En una implementación real, esto enviaría emails, SMS, o notificaciones push
-        logger.warning(f"🚨 {mensaje_alerta}: {evento.mensaje}")
-        
-        # Registrar la alerta como evento
-        self.registrar_evento(
-            nivel=NivelEvento.ADVERTENCIA,
-            tipo_evento=TipoEvento.OPERACION_SEGURIDAD,
-            mensaje=f"Alerta enviada: {mensaje_alerta}",
-            detalles={'evento_original_id': evento.id_evento}
-        )
-    
-    def _actualizar_metricas_rendimiento(self, tiempo_procesamiento_ms: float):
-        """Actualizar métricas de rendimiento."""
-        self.metricas_rendimiento['eventos_procesados'] += 1
-        
-        # Calcular tiempo promedio (media móvil simple)
-        eventos_procesados = self.metricas_rendimiento['eventos_procesados']
-        tiempo_promedio_actual = self.metricas_rendimiento['tiempo_promedio_procesamiento']
-        
-        nuevo_promedio = ((tiempo_promedio_actual * (eventos_procesados - 1)) + tiempo_procesamiento_ms) / eventos_procesados
-        self.metricas_rendimiento['tiempo_promedio_procesamiento'] = nuevo_promedio
     
     @contextmanager
     def cronometrar_operacion(self, tipo_evento: TipoEvento, descripcion: str, 

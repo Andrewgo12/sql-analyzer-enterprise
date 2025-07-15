@@ -102,18 +102,6 @@ class SQLAnalyzer:
                 'analysis_timestamp': datetime.now().isoformat()
             }
     
-    def _calculate_statistics(self, content: str) -> Dict[str, int]:
-        """Calcular estadísticas básicas del contenido"""
-        lines = content.split('\n')
-        
-        return {
-            'total_lines': len(lines),
-            'non_empty_lines': len([l for l in lines if l.strip()]),
-            'comment_lines': len([l for l in lines if l.strip().startswith('--')]),
-            'character_count': len(content),
-            'sql_statements': len(self.sql_utils.split_sql_statements(content))
-        }
-    
     def _analyze_schema(self, content: str) -> Dict[str, Any]:
         """Analizar esquema de base de datos"""
         tables = []
@@ -140,22 +128,6 @@ class SQLAnalyzer:
             'views': views,
             'view_count': len(views)
         }
-    
-    def _calculate_quality_score(self, errors: List, performance_info: Dict, security_info: Dict) -> int:
-        """Calcular score de calidad general"""
-        error_count = len([e for e in errors if e['severity'] == 'ERROR'])
-        warning_count = len([e for e in errors if e['severity'] == 'WARNING'])
-        
-        # Penalizaciones
-        error_penalty = error_count * 20
-        warning_penalty = warning_count * 10
-        performance_penalty = (100 - performance_info.get('performance_score', 100)) * 0.3
-        security_penalty = (100 - security_info.get('security_score', 100)) * 0.5
-        
-        total_penalty = error_penalty + warning_penalty + performance_penalty + security_penalty
-        quality_score = max(0, 100 - total_penalty)
-        
-        return int(quality_score)
     
     def _generate_recommendations(self, errors: List, performance_info: Dict, security_info: Dict) -> List[Dict[str, str]]:
         """Generar recomendaciones de mejora"""
@@ -190,8 +162,3 @@ class SQLAnalyzer:
         
         return recommendations
     
-    def _is_critical_error(self, error: Dict) -> bool:
-        """Determinar si un error es crítico"""
-        critical_keywords = ['DELETE', 'UPDATE', 'DROP', 'TRUNCATE']
-        message = error.get('message', '').upper()
-        return any(keyword in message for keyword in critical_keywords)

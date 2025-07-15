@@ -322,30 +322,6 @@ def strongly_connected_components(graph: DiGraph) -> List[List[str]]:
     on_stack = {}
     components = []
     
-    def strongconnect(node):
-        index[node] = index_counter[0]
-        lowlinks[node] = index_counter[0]
-        index_counter[0] += 1
-        stack.append(node)
-        on_stack[node] = True
-        
-        for successor in graph.successors(node):
-            if successor not in index:
-                strongconnect(successor)
-                lowlinks[node] = min(lowlinks[node], lowlinks[successor])
-            elif on_stack[successor]:
-                lowlinks[node] = min(lowlinks[node], index[successor])
-        
-        if lowlinks[node] == index[node]:
-            component = []
-            while True:
-                w = stack.pop()
-                on_stack[w] = False
-                component.append(w)
-                if w == node:
-                    break
-            components.append(component)
-    
     for node in graph:
         if node not in index:
             strongconnect(node)

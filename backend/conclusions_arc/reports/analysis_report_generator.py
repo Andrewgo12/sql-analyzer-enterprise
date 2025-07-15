@@ -165,25 +165,6 @@ class AnalysisReportGenerator:
 </html>
         """
     
-    def _generate_file_rows(self, files: List[Dict]) -> str:
-        """Generate table rows for file analysis results."""
-        if not files:
-            return '<tr><td colspan="5" style="text-align: center; color: #666;">No files analyzed</td></tr>'
-        
-        rows = []
-        for file_data in files:
-            status_class = "status-success" if file_data.get('status') == 'success' else "status-error"
-            rows.append(f"""
-                <tr>
-                    <td>{file_data.get('name', 'Unknown')}</td>
-                    <td>{file_data.get('size', 'N/A')}</td>
-                    <td class="{status_class}">{file_data.get('status', 'Unknown').title()}</td>
-                    <td>{file_data.get('errors', 0)}</td>
-                    <td>{file_data.get('processing_time', 'N/A')}</td>
-                </tr>
-            """)
-        return ''.join(rows)
-    
     def generate_analytics_dashboard(self, analysis_data: Dict[str, Any]) -> str:
         """Generate analytics dashboard data."""
         try:
@@ -215,35 +196,6 @@ class AnalysisReportGenerator:
         except Exception as e:
             self.logger.error(f"Error generating analytics dashboard: {e}")
             raise
-    
-    def _analyze_file_types(self, files: List[Dict]) -> Dict[str, int]:
-        """Analyze file type distribution."""
-        file_types = {}
-        for file_data in files:
-            ext = file_data.get('extension', 'unknown').lower()
-            file_types[ext] = file_types.get(ext, 0) + 1
-        return file_types
-    
-    def _analyze_error_distribution(self, files: List[Dict]) -> Dict[str, int]:
-        """Analyze error distribution across files."""
-        error_types = {"syntax": 0, "semantic": 0, "performance": 0, "security": 0}
-        for file_data in files:
-            for error_type in file_data.get('error_types', []):
-                if error_type in error_types:
-                    error_types[error_type] += 1
-        return error_types
-    
-    def _analyze_processing_timeline(self, files: List[Dict]) -> List[Dict]:
-        """Analyze processing timeline."""
-        timeline = []
-        for file_data in files:
-            timeline.append({
-                "file": file_data.get('name', 'Unknown'),
-                "start_time": file_data.get('start_time', ''),
-                "end_time": file_data.get('end_time', ''),
-                "duration": file_data.get('processing_time', 0)
-            })
-        return sorted(timeline, key=lambda x: x.get('start_time', ''))
     
     def _generate_recommendations(self, analysis_data: Dict[str, Any]) -> List[str]:
         """Generate improvement recommendations."""

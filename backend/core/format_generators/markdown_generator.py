@@ -52,23 +52,6 @@ class MarkdownDocumentationGenerator(BaseFormatGenerator):
         except Exception as e:
             return self.handle_generation_error(e, context)
 
-    def _generate_markdown_content(self, context: GenerationContext) -> str:
-        """Generate the complete Markdown content."""
-        template_vars = self.get_template_variables(context)
-
-        content_parts = [
-            self._generate_header(template_vars),
-            self._generate_toc(),
-            self._generate_overview(template_vars),
-            self._generate_summary_section(template_vars),
-            self._generate_errors_section(template_vars),
-            self._generate_recommendations_section(template_vars),
-            self._generate_technical_details(template_vars),
-            self._generate_footer(template_vars)
-        ]
-
-        return '\n\n'.join(content_parts)
-
     def _generate_header(self, template_vars: Dict[str, Any]) -> str:
         """Generate the document header."""
         return f"""# 📊 Análisis SQL - {template_vars['original_filename']}
@@ -83,22 +66,12 @@ class MarkdownDocumentationGenerator(BaseFormatGenerator):
 [![Calidad](https://img.shields.io/badge/Calidad-{template_vars['summary']['quality_score']}%25-{'green' if template_vars['summary']['quality_score'] >= 80 else 'yellow' if template_vars['summary']['quality_score'] >= 60 else 'red'}.svg)](#{template_vars['summary']['quality_score']})
 [![Errores](https://img.shields.io/badge/Errores-{template_vars['summary']['total_errors']}-{'red' if template_vars['summary']['total_errors'] > 10 else 'yellow' if template_vars['summary']['total_errors'] > 0 else 'green'}.svg)](#{template_vars['summary']['total_errors']})"""
 
-    def _generate_toc(self) -> str:
-        """Generate table of contents."""
-        return """## 📋 Tabla de Contenidos
-
 - [📊 Resumen Ejecutivo](#-resumen-ejecutivo)
 - [🐛 Errores Detectados](#-errores-detectados)
 - [💡 Recomendaciones](#-recomendaciones)
 - [🔧 Detalles Técnicos](#-detalles-técnicos)
 - [📈 Métricas de Calidad](#-métricas-de-calidad)
 - [🚀 Próximos Pasos](#-próximos-pasos)"""
-
-    def _generate_overview(self, template_vars: Dict[str, Any]) -> str:
-        """Generate overview section."""
-        summary = template_vars['summary']
-
-        return f"""## 🎯 Resumen General
 
 Este documento presenta el análisis completo del archivo SQL **`{template_vars['original_filename']}`**.
 
@@ -121,14 +94,6 @@ pie title Distribución de Errores por Severidad
     "Bajos" : {summary['low_errors']}
 ```"""
 
-    def _generate_summary_section(self, template_vars: Dict[str, Any]) -> str:
-        """Generate detailed summary section."""
-        summary = template_vars['summary']
-
-        return f"""## 📊 Resumen Ejecutivo
-
-### 🔍 Análisis Realizado
-
 El análisis del archivo **`{template_vars['original_filename']}`** ({summary['file_size']:,} bytes) ha sido completado exitosamente. Se procesaron **{summary['lines_analyzed']:,} líneas** de código SQL y se identificaron **{summary['total_errors']} errores** de diferentes niveles de severidad.
 
 ### 📈 Puntuación de Calidad: {summary['quality_score']}%
@@ -147,27 +112,6 @@ El análisis del archivo **`{template_vars['original_filename']}`** ({summary['f
 ### 🎯 Hallazgos Clave
 
 {self._generate_key_findings(summary)}"""
-
-    def _generate_key_findings(self, summary: Dict[str, Any]) -> str:
-        """Generate key findings list."""
-        findings = []
-
-        if summary['critical_errors'] > 0:
-            findings.append(f"- 🚨 **{summary['critical_errors']} errores críticos** requieren atención inmediata")
-
-        if summary['quality_score'] < 70:
-            findings.append(f"- 📉 **Puntuación de calidad baja** ({summary['quality_score']}%) indica necesidad de refactorización")
-
-        if summary['fixes_suggested'] > 0:
-            findings.append(f"- 🔧 **{summary['fixes_suggested']} correcciones automáticas** disponibles")
-
-        if summary['statements_analyzed'] > 0:
-            findings.append(f"- 📝 **{summary['statements_analyzed']} declaraciones SQL** analizadas")
-
-        if not findings:
-            findings.append("- ✅ **Código de alta calidad** sin problemas significativos")
-
-        return '\n'.join(findings)
 
     def _generate_errors_section(self, template_vars: Dict[str, Any]) -> str:
         """Generate errors section."""
@@ -225,19 +169,6 @@ A continuación se detallan todos los errores identificados durante el análisis
                 content.append(f"\n> **Nota:** Se muestran los primeros 10 errores. Total: {len(error_list)}")
 
         return '\n\n'.join(content)
-
-    def _format_error_markdown(self, error: Dict[str, Any], index: int) -> str:
-        """Format a single error in Markdown."""
-        severity_colors = {
-            'CRITICAL': 'red',
-            'HIGH': 'orange',
-            'MEDIUM': 'yellow',
-            'LOW': 'green'
-        }
-
-        color = severity_colors.get(error.get('severity', 'LOW'), 'gray')
-
-        content = f"""#### {index}. {error.get('title', 'Error sin título')}
 
 **📍 Ubicación:** Línea {error.get('line', 'N/A')}, Columna {error.get('column', 'N/A')}
 **🏷️ Severidad:** ![{error.get('severity', 'LOW')}](https://img.shields.io/badge/Severidad-{error.get('severity', 'LOW')}-{color}.svg)

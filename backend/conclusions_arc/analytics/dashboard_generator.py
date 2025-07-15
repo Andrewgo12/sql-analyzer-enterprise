@@ -28,9 +28,6 @@ class DashboardGenerator:
         
         return str(dashboard_file)
     
-    def _create_dashboard_html(self, data: Dict[str, Any]) -> str:
-        """Create complete HTML dashboard with interactive charts."""
-        return f"""
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -251,17 +248,6 @@ class DashboardGenerator:
 </html>
         """
     
-    def _generate_recommendations_html(self, recommendations: List[str]) -> str:
-        """Generate HTML for recommendations section."""
-        if not recommendations:
-            return '<div class="recommendation">No specific recommendations at this time. System is performing well!</div>'
-        
-        html = ""
-        for i, rec in enumerate(recommendations, 1):
-            html += f'<div class="recommendation"><strong>{i}.</strong> {rec}</div>'
-        
-        return html
-
 if __name__ == "__main__":
     # Example usage
     sample_analytics = {

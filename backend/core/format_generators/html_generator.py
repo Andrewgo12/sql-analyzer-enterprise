@@ -80,9 +80,6 @@ class HTMLReportGenerator(BaseFormatGenerator):
 </body>
 </html>"""
     
-    def _get_embedded_css(self) -> str:
-        """Get embedded CSS styles."""
-        return """
     <style>
         * {
             margin: 0;
@@ -351,19 +348,6 @@ class HTMLReportGenerator(BaseFormatGenerator):
             </div>
         </div>"""
     
-    def _generate_charts_section(self, template_vars: Dict[str, Any]) -> str:
-        """Generate charts section."""
-        return """
-        <div class="section">
-            <h2>📈 Análisis Visual</h2>
-            <div class="chart-container">
-                <canvas id="severityChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>"""
-    
     def _generate_errors_section(self, template_vars: Dict[str, Any]) -> str:
         """Generate errors section."""
         errors_html = []
@@ -395,24 +379,6 @@ class HTMLReportGenerator(BaseFormatGenerator):
             <h2>🐛 Errores Detectados</h2>
             {''.join(errors_html)}
         </div>"""
-    
-    def _generate_fixes_html(self, fixes: List[Dict[str, Any]]) -> str:
-        """Generate HTML for error fixes."""
-        fixes_html = []
-        
-        for fix in fixes[:3]:  # Limit to top 3 fixes
-            confidence = fix.get('confidence', 0) * 100
-            
-            fixes_html.append(f"""
-            <div class="fix-item">
-                <strong>{fix.get('description', '')}</strong>
-                <div class="confidence-bar">
-                    <div class="confidence-fill" style="width: {confidence}%"></div>
-                </div>
-                <small>Confianza: {confidence:.1f}%</small>
-            </div>""")
-        
-        return ''.join(fixes_html)
     
     def _generate_recommendations_section(self, template_vars: Dict[str, Any]) -> str:
         """Generate recommendations section."""
@@ -531,40 +497,3 @@ class InteractiveHTMLGenerator(HTMLReportGenerator):
     def format_name(self) -> str:
         return "Dashboard HTML Interactivo"
     
-    def _get_embedded_javascript(self, template_vars: Dict[str, Any]) -> str:
-        """Enhanced JavaScript with interactive features."""
-        base_js = super()._get_embedded_javascript(template_vars)
-        
-        interactive_js = """
-        // Interactive features
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click handlers for error items
-            document.querySelectorAll('.error-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    this.classList.toggle('expanded');
-                });
-            });
-            
-            // Add filter functionality
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const severity = this.dataset.severity;
-                    filterErrorsBySeverity(severity);
-                });
-            });
-        });
-        
-        function filterErrorsBySeverity(severity) {
-            const errors = document.querySelectorAll('.error-item');
-            errors.forEach(error => {
-                if (severity === 'all' || error.classList.contains(severity)) {
-                    error.style.display = 'block';
-                } else {
-                    error.style.display = 'none';
-                }
-            });
-        }
-        """
-        
-        return base_js + interactive_js

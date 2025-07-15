@@ -206,14 +206,7 @@ class Tokenize:
     """Tokenization functions."""
     
     @staticmethod
-    def word_tokenize(text):
-        return word_tokenize(text)
-    
     @staticmethod
-    def sent_tokenize(text):
-        return sent_tokenize(text)
-
-
 class Stem:
     """Stemming functions."""
     
