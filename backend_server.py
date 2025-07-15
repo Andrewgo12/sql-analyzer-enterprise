@@ -160,11 +160,26 @@ def get_supported_databases():
     """Get list of supported database engines"""
     try:
         if database_registry:
-            engines = database_registry.get_all_engines()
+            engines = database_registry.get_all_supported_engines()
+            # Convert enum engines to dict format for JSON serialization
+            engines_list = []
+            for engine in engines:
+                db_info = database_registry.get_database_info(engine)
+                if db_info:
+                    engines_list.append({
+                        'engine': engine.value,
+                        'name': db_info.name,
+                        'category': db_info.category.value,
+                        'vendor': db_info.vendor,
+                        'description': db_info.description
+                    })
+
+            categories = [cat.value for cat in database_registry.get_database_categories()]
+
             return jsonify({
-                'total_engines': len(engines),
-                'engines': engines,
-                'categories': database_registry.get_categories(),
+                'total_engines': len(engines_list),
+                'engines': engines_list,
+                'categories': categories,
                 'optimized': True
             })
         else:

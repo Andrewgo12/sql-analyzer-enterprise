@@ -2,6 +2,7 @@ import React from 'react'
 import EnterpriseApp from './components/EnterpriseApp'
 import './styles/index.css'
 import './styles/enterprise.css'
+import './styles/EnterpriseApp.css'
 
 function App() {
   return (

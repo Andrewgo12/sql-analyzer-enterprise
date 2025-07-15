@@ -204,37 +204,37 @@ class DatabaseRegistry:
         """Initialize the database registry with all supported engines"""
         databases = {}
 
-        # Add all database engines with their information
+        # Add all database engines with their information and proper categories
         database_configs = [
-            (DatabaseEngine.MYSQL, "MySQL", "Popular open-source relational database", ["ACID", "Replication"]),
-            (DatabaseEngine.POSTGRESQL, "PostgreSQL", "Advanced open-source relational database", ["ACID", "JSON"]),
-            (DatabaseEngine.SQLITE, "SQLite", "Lightweight embedded database", ["Embedded", "Serverless"]),
-            (DatabaseEngine.MONGODB, "MongoDB", "Popular NoSQL document database", ["Document", "Sharding"]),
-            (DatabaseEngine.REDIS, "Redis", "In-memory data structure store", ["In-memory", "Pub/Sub"]),
-            (DatabaseEngine.ORACLE, "Oracle Database", "Enterprise relational database", ["Enterprise", "ACID"]),
-            (DatabaseEngine.SQL_SERVER, "Microsoft SQL Server", "Microsoft's relational database", ["Enterprise", "T-SQL"]),
-            (DatabaseEngine.BIGQUERY, "Google BigQuery", "Cloud data warehouse", ["Cloud", "Analytics"]),
-            (DatabaseEngine.H2, "H2 Database", "Java embedded database", ["Embedded", "Java"]),
-            (DatabaseEngine.MARIADB, "MariaDB", "MySQL-compatible database", ["Open-source", "Compatible"]),
-            (DatabaseEngine.COUCHDB, "CouchDB", "Document database", ["Document", "JSON"]),
-            (DatabaseEngine.CASSANDRA, "Apache Cassandra", "Wide-column database", ["Distributed", "NoSQL"]),
-            (DatabaseEngine.SNOWFLAKE, "Snowflake", "Cloud data warehouse", ["Cloud", "Analytics"]),
-            (DatabaseEngine.REDSHIFT, "Amazon Redshift", "AWS data warehouse", ["Cloud", "Analytics"]),
-            (DatabaseEngine.COCKROACHDB, "CockroachDB", "Distributed SQL database", ["Distributed", "ACID"]),
-            (DatabaseEngine.YUGABYTEDB, "YugabyteDB", "Distributed SQL database", ["Distributed", "Multi-cloud"]),
-            (DatabaseEngine.TIDB, "TiDB", "Distributed SQL database", ["Distributed", "MySQL-compatible"]),
-            (DatabaseEngine.COUCHBASE, "Couchbase", "NoSQL document database", ["Document", "Caching"]),
-            (DatabaseEngine.AMAZON_DYNAMODB, "Amazon DynamoDB", "NoSQL key-value database", ["Key-value", "Serverless"]),
-            (DatabaseEngine.HBASE, "Apache HBase", "Wide-column database", ["Big-data", "Hadoop"]),
-            (DatabaseEngine.MEMCACHED, "Memcached", "In-memory caching system", ["Caching", "Performance"]),
-            (DatabaseEngine.RIAK, "Riak", "Distributed NoSQL database", ["Distributed", "Key-value"])
+            (DatabaseEngine.MYSQL, "MySQL", "Popular open-source relational database", DatabaseCategory.RELATIONAL_SQL, ["ACID", "Replication"]),
+            (DatabaseEngine.POSTGRESQL, "PostgreSQL", "Advanced open-source relational database", DatabaseCategory.RELATIONAL_SQL, ["ACID", "JSON"]),
+            (DatabaseEngine.SQLITE, "SQLite", "Lightweight embedded database", DatabaseCategory.EMBEDDED, ["Embedded", "Serverless"]),
+            (DatabaseEngine.MONGODB, "MongoDB", "Popular NoSQL document database", DatabaseCategory.NOSQL_DOCUMENT, ["Document", "Sharding"]),
+            (DatabaseEngine.REDIS, "Redis", "In-memory data structure store", DatabaseCategory.IN_MEMORY, ["In-memory", "Pub/Sub"]),
+            (DatabaseEngine.ORACLE, "Oracle Database", "Enterprise relational database", DatabaseCategory.RELATIONAL_SQL, ["Enterprise", "ACID"]),
+            (DatabaseEngine.SQL_SERVER, "Microsoft SQL Server", "Microsoft's relational database", DatabaseCategory.RELATIONAL_SQL, ["Enterprise", "T-SQL"]),
+            (DatabaseEngine.BIGQUERY, "Google BigQuery", "Cloud data warehouse", DatabaseCategory.DATA_WAREHOUSE, ["Cloud", "Analytics"]),
+            (DatabaseEngine.H2, "H2 Database", "Java embedded database", DatabaseCategory.EMBEDDED, ["Embedded", "Java"]),
+            (DatabaseEngine.MARIADB, "MariaDB", "MySQL-compatible database", DatabaseCategory.RELATIONAL_SQL, ["Open-source", "Compatible"]),
+            (DatabaseEngine.COUCHDB, "CouchDB", "Document database", DatabaseCategory.NOSQL_DOCUMENT, ["Document", "JSON"]),
+            (DatabaseEngine.CASSANDRA, "Apache Cassandra", "Wide-column database", DatabaseCategory.NOSQL_COLUMN_FAMILY, ["Distributed", "NoSQL"]),
+            (DatabaseEngine.SNOWFLAKE, "Snowflake", "Cloud data warehouse", DatabaseCategory.DATA_WAREHOUSE, ["Cloud", "Analytics"]),
+            (DatabaseEngine.REDSHIFT, "Amazon Redshift", "AWS data warehouse", DatabaseCategory.DATA_WAREHOUSE, ["Cloud", "Analytics"]),
+            (DatabaseEngine.COCKROACHDB, "CockroachDB", "Distributed SQL database", DatabaseCategory.RELATIONAL_SQL, ["Distributed", "ACID"]),
+            (DatabaseEngine.YUGABYTEDB, "YugabyteDB", "Distributed SQL database", DatabaseCategory.RELATIONAL_SQL, ["Distributed", "Multi-cloud"]),
+            (DatabaseEngine.TIDB, "TiDB", "Distributed SQL database", DatabaseCategory.RELATIONAL_SQL, ["Distributed", "MySQL-compatible"]),
+            (DatabaseEngine.COUCHBASE, "Couchbase", "NoSQL document database", DatabaseCategory.NOSQL_DOCUMENT, ["Document", "Caching"]),
+            (DatabaseEngine.AMAZON_DYNAMODB, "Amazon DynamoDB", "NoSQL key-value database", DatabaseCategory.NOSQL_KEY_VALUE, ["Key-value", "Serverless"]),
+            (DatabaseEngine.HBASE, "Apache HBase", "Wide-column database", DatabaseCategory.NOSQL_COLUMN_FAMILY, ["Big-data", "Hadoop"]),
+            (DatabaseEngine.MEMCACHED, "Memcached", "In-memory caching system", DatabaseCategory.IN_MEMORY, ["Caching", "Performance"]),
+            (DatabaseEngine.RIAK, "Riak", "Distributed NoSQL database", DatabaseCategory.NOSQL_KEY_VALUE, ["Distributed", "Key-value"])
         ]
 
-        for engine, name, description, features in database_configs:
+        for engine, name, description, category, features in database_configs:
             databases[engine] = DatabaseInfo(
                 engine=engine,
                 name=name,
-                category=DatabaseCategory.RELATIONAL_SQL,  # Default category
+                category=category,
                 vendor=name.split()[0],  # First word as vendor
                 description=description,
                 features=DatabaseFeatures(
