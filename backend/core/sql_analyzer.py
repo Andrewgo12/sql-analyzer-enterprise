@@ -45,7 +45,8 @@ class SQLAnalyzer:
             statistics = self._calculate_statistics(content)
             
             # Análisis de errores
-            errors = self.error_detector.analyze_sql(content)
+            error_objects = self.error_detector.analyze_sql(content)
+            errors = [error.to_dict() for error in error_objects]
             
             # Análisis de esquema
             schema_info = self._analyze_schema(content)
@@ -82,7 +83,7 @@ class SQLAnalyzer:
                     'total_warnings': len([e for e in errors if e['severity'] == 'WARNING']),
                     'critical_errors': len([e for e in errors if e['severity'] == 'ERROR' and self._is_critical_error(e)]),
                     'tables_found': len(schema_info.get('tables', [])),
-                    'queries_found': len(self.sql_utils.extract_statements(content))
+                    'queries_found': len(self.sql_utils.split_sql_statements(content))
                 },
                 'analysis_timestamp': datetime.now().isoformat(),
                 'processed_successfully': True,
@@ -110,7 +111,7 @@ class SQLAnalyzer:
             'non_empty_lines': len([l for l in lines if l.strip()]),
             'comment_lines': len([l for l in lines if l.strip().startswith('--')]),
             'character_count': len(content),
-            'sql_statements': len(self.sql_utils.extract_statements(content))
+            'sql_statements': len(self.sql_utils.split_sql_statements(content))
         }
     
     def _analyze_schema(self, content: str) -> Dict[str, Any]:

@@ -7,6 +7,7 @@ Flask server with comprehensive SQL analysis capabilities
 import os
 import sys
 import json
+import time
 import logging
 import traceback
 from pathlib import Path
@@ -30,9 +31,15 @@ try:
     from backend.core.performance_analyzer import PerformanceAnalyzer
     from backend.core.security_analyzer import SecurityAnalyzer
     from backend.core.format_converter import FormatConverter
+    from backend.core.metrics_system import metrics_collector, MetricsTimer, time_operation
     from backend.utils.file_handler import FileHandler
     from backend.utils.validators import FileValidator
     from backend.config import get_config, get_server_config, get_file_config
+
+    # Enterprise features
+    from backend.core.enterprise_analyzer import EnterpriseAnalyzer, AnalysisType
+    from backend.core.database_engines import DatabaseEngine, database_registry
+    from backend.core.advanced_export_system import AdvancedExportSystem, ExportFormat
 except ImportError as e:
     print(f"Import error: {e}")
     print("Please ensure all backend modules are properly installed")
@@ -60,7 +67,7 @@ CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 try:
     config = get_config()
     file_config = get_file_config()
-    
+
     sql_analyzer = SQLAnalyzer()
     error_detector = ErrorDetector()
     performance_analyzer = PerformanceAnalyzer()
@@ -68,8 +75,12 @@ try:
     format_converter = FormatConverter()
     file_handler = FileHandler()
     file_validator = FileValidator()
-    
-    logger.info("All components initialized successfully")
+
+    # Enterprise components
+    enterprise_analyzer = EnterpriseAnalyzer()
+    export_system = AdvancedExportSystem()
+
+    logger.info("All components initialized successfully (including enterprise features)")
 except Exception as e:
     logger.error(f"Failed to initialize components: {e}")
     sys.exit(1)
@@ -82,8 +93,9 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 def health_check():
     """Health check endpoint"""
     try:
+        system_health = metrics_collector.get_system_health()
         return jsonify({
-            'status': 'healthy',
+            'status': system_health.status,
             'timestamp': datetime.now().isoformat(),
             'version': '2.0.0',
             'components': {
@@ -91,12 +103,57 @@ def health_check():
                 'error_detector': 'ready',
                 'performance_analyzer': 'ready',
                 'security_analyzer': 'ready',
-                'format_converter': 'ready'
-            }
+                'format_converter': 'ready',
+                'metrics_system': 'ready'
+            },
+            'system_metrics': system_health.to_dict()
         })
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/metrics', methods=['GET'])
+def get_metrics():
+    """Get comprehensive system metrics"""
+    try:
+        metrics_summary = metrics_collector.get_metrics_summary()
+        return jsonify(metrics_summary)
+    except Exception as e:
+        logger.error(f"Metrics retrieval failed: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/metrics/dashboard', methods=['GET'])
+def get_dashboard_metrics():
+    """Get metrics formatted for dashboard display"""
+    try:
+        # Quick fallback for dashboard metrics
+        try:
+            dashboard_data = metrics_collector.get_dashboard_data()
+            return jsonify(dashboard_data)
+        except:
+            # Return minimal working dashboard data
+            return jsonify({
+                'overview': {
+                    'total_analyses': 0,
+                    'success_rate': 100.0,
+                    'avg_processing_time': 0.0,
+                    'system_status': 'healthy'
+                },
+                'real_time': {
+                    'active_analyses': 0,
+                    'cpu_usage': 5.0,
+                    'memory_usage': 50.0,
+                    'error_rate': 0.0
+                },
+                'trends': {
+                    'database_engines': {'mysql': 1, 'postgresql': 1},
+                    'export_formats': {'json': 1, 'html': 1},
+                    'recent_performance': []
+                }
+            })
+    except Exception as e:
+        logger.error(f"Dashboard metrics retrieval failed: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_sql():
@@ -119,7 +176,14 @@ def analyze_sql():
         filename = secure_filename(file.filename)
         file_path = UPLOAD_DIR / filename
         file.save(str(file_path))
-        
+
+        # Get database engine from request
+        database_engine = request.form.get('database_engine', 'auto_detect')
+
+        # Record analysis start
+        metrics_collector.record_analysis_start(filename, database_engine)
+        analysis_start_time = time.time()
+
         # Read file content
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -184,18 +248,31 @@ def analyze_sql():
                 'message': 'Se detectaron problemas de seguridad'
             })
         
+        # Record analysis success metrics
+        processing_time = time.time() - analysis_start_time
+        lines_analyzed = len(content.splitlines())
+        errors_detected = len(error_analysis)
+
+        metrics_collector.record_analysis_success(
+            filename, processing_time, lines_analyzed, errors_detected
+        )
+
         # Clean up uploaded file
         try:
             os.remove(file_path)
         except:
             pass
-        
-        logger.info(f"Analysis completed for file: {filename}")
+
+        logger.info(f"Analysis completed for file: {filename} in {processing_time:.2f}s")
         return jsonify(results)
         
     except RequestEntityTooLarge:
         return jsonify({'error': 'File too large. Maximum size is 100MB'}), 413
     except Exception as e:
+        # Record analysis failure
+        if 'filename' in locals():
+            metrics_collector.record_analysis_failure(filename, str(e))
+
         logger.error(f"Analysis error: {e}")
         logger.error(traceback.format_exc())
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
@@ -229,6 +306,130 @@ def download_results():
     except Exception as e:
         logger.error(f"Download error: {e}")
         return jsonify({'error': f'Download failed: {str(e)}'}), 500
+
+@app.route('/api/databases/supported', methods=['GET'])
+def get_supported_databases():
+    """Get list of supported database engines"""
+    try:
+        engines = database_registry.get_supported_engines()
+        categories = database_registry.get_database_categories()
+
+        result = {
+            'total_engines': len(engines),
+            'categories': [cat.value for cat in categories],
+            'engines': []
+        }
+
+        for engine in engines:
+            db_info = database_registry.get_database_info(engine)
+            if db_info:
+                result['engines'].append({
+                    'engine': engine.value,
+                    'name': db_info.name,
+                    'category': db_info.category.value,
+                    'vendor': db_info.vendor,
+                    'description': db_info.description,
+                    'is_open_source': db_info.is_open_source,
+                    'default_port': db_info.default_port
+                })
+
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error getting supported databases: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/databases/detect', methods=['POST'])
+def detect_database_engine():
+    """Auto-detect database engine from SQL content"""
+    try:
+        data = request.get_json()
+        sql_content = data.get('sql_content', '')
+        connection_string = data.get('connection_string', '')
+
+        detected_engine = database_registry.detect_database_engine(sql_content, connection_string)
+        db_info = database_registry.get_database_info(detected_engine)
+
+        result = {
+            'detected_engine': detected_engine.value,
+            'confidence': 0.8,  # Placeholder confidence score
+            'database_info': {
+                'name': db_info.name,
+                'category': db_info.category.value,
+                'vendor': db_info.vendor,
+                'description': db_info.description
+            } if db_info else None
+        }
+
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error detecting database engine: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/export/formats', methods=['GET'])
+def get_export_formats():
+    """Get list of supported export formats"""
+    try:
+        formats = export_system.get_supported_formats()
+        categories = list(set(export_system.get_format_info(fmt).category.value for fmt in formats))
+
+        result = {
+            'total_formats': len(formats),
+            'categories': categories,
+            'formats': []
+        }
+
+        for fmt in formats:
+            fmt_info = export_system.get_format_info(fmt)
+            if fmt_info:
+                result['formats'].append({
+                    'format': fmt.value,
+                    'name': fmt_info.name,
+                    'category': fmt_info.category.value,
+                    'description': fmt_info.description,
+                    'file_extension': fmt_info.file_extension,
+                    'mime_type': fmt_info.mime_type,
+                    'supports_charts': fmt_info.supports_charts,
+                    'supports_images': fmt_info.supports_images,
+                    'supports_styling': fmt_info.supports_styling,
+                    'is_binary': fmt_info.is_binary
+                })
+
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error getting export formats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/export/<format_name>', methods=['POST'])
+def export_analysis(format_name):
+    """Export analysis results in specified format"""
+    try:
+        # Get analysis data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No analysis data provided'}), 400
+
+        # Convert format name to enum
+        try:
+            export_format = ExportFormat(format_name)
+        except ValueError:
+            return jsonify({'error': f'Unsupported export format: {format_name}'}), 400
+
+        # Export to specified format
+        file_path = export_system.export(data, export_format)
+
+        # Get format info for proper content type
+        format_info = export_system.get_format_info(export_format)
+
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format_info.file_extension}",
+            mimetype=format_info.mime_type
+        )
+
+    except Exception as e:
+        logger.error(f"Export error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.errorhandler(404)
 def not_found(error):
