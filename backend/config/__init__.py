@@ -51,7 +51,7 @@ class DatabaseConfig:
 class ServerConfig:
     """Server configuration."""
     host: str = "127.0.0.1"
-    port: int = 8080
+    port: int = 5000
     debug: bool = False
     reload: bool = False
     workers: int = 1

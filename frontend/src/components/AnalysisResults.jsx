@@ -1,9 +1,9 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  XCircle, 
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
   Info,
   FileText,
   Database,
@@ -21,7 +21,7 @@ const AnalysisResults = ({ results, onDownload }) => {
     statistics: false
   })
 
-  if (!results || !results.processed_successfully) {
+  if (!results || !results.filename) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -61,10 +61,10 @@ const AnalysisResults = ({ results, onDownload }) => {
   }
 
   const stats = [
-    { label: 'Líneas', value: results.lines || 0, icon: FileText },
+    { label: 'Líneas', value: results.line_count || 0, icon: FileText },
     { label: 'Errores', value: results.summary?.total_errors || 0, icon: XCircle },
-    { label: 'Advertencias', value: results.summary?.total_warnings || 0, icon: AlertTriangle },
-    { label: 'Tablas', value: results.summary?.tables_found || 0, icon: Database }
+    { label: 'Tamaño', value: `${Math.round((results.file_size || 0) / 1024)} KB`, icon: Database },
+    { label: 'Performance', value: `${results.summary?.performance_score || 100}%`, icon: TrendingUp }
   ]
 
   return (
@@ -83,42 +83,42 @@ const AnalysisResults = ({ results, onDownload }) => {
             Archivo: {results.filename}
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => onDownload('json')}
+            onClick={() => onDownload(results, 'json')}
             className="btn-secondary text-sm"
           >
             <Download className="w-4 h-4 mr-2" />
             JSON
           </button>
           <button
-            onClick={() => onDownload('html')}
+            onClick={() => onDownload(results, 'html')}
             className="btn-secondary text-sm"
           >
             <Download className="w-4 h-4 mr-2" />
             HTML
           </button>
           <button
-            onClick={() => onDownload('csv')}
+            onClick={() => onDownload(results, 'txt')}
             className="btn-secondary text-sm"
           >
             <Download className="w-4 h-4 mr-2" />
-            CSV
+            TXT
           </button>
         </div>
       </div>
 
       {/* Quality Score */}
-      <div className={`quality-score ${getQualityScoreClass(results.quality_score)}`}>
-        <div className={`text-6xl font-bold mb-2 ${getQualityScoreColor(results.quality_score)}`}>
-          {results.quality_score}%
+      <div className={`quality-score ${getQualityScoreClass(results.summary?.performance_score || 100)}`}>
+        <div className={`text-6xl font-bold mb-2 ${getQualityScoreColor(results.summary?.performance_score || 100)}`}>
+          {results.summary?.performance_score || 100}%
         </div>
         <div className="text-lg font-medium text-gray-700">
-          Score de Calidad
+          Score de Rendimiento
         </div>
         <div className="text-sm text-gray-500 mt-2">
-          Basado en errores, advertencias y mejores prácticas
+          Basado en análisis de rendimiento y mejores prácticas
         </div>
       </div>
 
@@ -147,7 +147,7 @@ const AnalysisResults = ({ results, onDownload }) => {
       </div>
 
       {/* Errors and Warnings */}
-      {results.errors && results.errors.length > 0 && (
+      {results.analysis?.errors && results.analysis.errors.length > 0 && (
         <div className="card">
           <button
             onClick={() => toggleSection('errors')}
@@ -156,17 +156,16 @@ const AnalysisResults = ({ results, onDownload }) => {
             <div className="flex items-center space-x-3">
               <AlertTriangle className="w-5 h-5 text-yellow-500" />
               <h3 className="text-lg font-semibold text-gray-900">
-                Errores y Advertencias ({results.errors.length})
+                Errores y Advertencias ({results.analysis.errors.length})
               </h3>
             </div>
-            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
-              expandedSections.errors ? 'rotate-180' : ''
-            }`} />
+            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${expandedSections.errors ? 'rotate-180' : ''
+              }`} />
           </button>
-          
+
           {expandedSections.errors && (
             <div className="px-6 pb-6 space-y-3">
-              {results.errors.map((error, index) => (
+              {results.analysis.errors.map((error, index) => (
                 <div
                   key={index}
                   className={`error-item ${error.severity === 'ERROR' ? 'error' : 'warning'}`}
@@ -184,11 +183,10 @@ const AnalysisResults = ({ results, onDownload }) => {
                         <span className="text-sm font-medium text-gray-900">
                           Línea {error.line}
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          error.severity === 'ERROR' 
-                            ? 'bg-red-100 text-red-700' 
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <span className={`text-xs px-2 py-1 rounded-full ${error.severity === 'ERROR'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                          }`}>
                           {error.severity}
                         </span>
                       </div>
@@ -210,7 +208,7 @@ const AnalysisResults = ({ results, onDownload }) => {
       )}
 
       {/* Recommendations */}
-      {results.recommendations && results.recommendations.length > 0 && (
+      {results.summary?.recommendations && results.summary.recommendations.length > 0 && (
         <div className="card">
           <button
             onClick={() => toggleSection('recommendations')}
@@ -219,42 +217,33 @@ const AnalysisResults = ({ results, onDownload }) => {
             <div className="flex items-center space-x-3">
               <TrendingUp className="w-5 h-5 text-blue-500" />
               <h3 className="text-lg font-semibold text-gray-900">
-                Recomendaciones ({results.recommendations.length})
+                Recomendaciones ({results.summary.recommendations.length})
               </h3>
             </div>
-            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
-              expandedSections.recommendations ? 'rotate-180' : ''
-            }`} />
+            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${expandedSections.recommendations ? 'rotate-180' : ''
+              }`} />
           </button>
-          
+
           {expandedSections.recommendations && (
             <div className="px-6 pb-6 space-y-4">
-              {results.recommendations.map((rec, index) => (
+              {results.summary.recommendations.map((rec, index) => (
                 <div key={index} className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      rec.priority === 'HIGH' ? 'bg-red-100' : 'bg-yellow-100'
-                    }`}>
-                      <Info className={`w-4 h-4 ${
-                        rec.priority === 'HIGH' ? 'text-red-600' : 'text-yellow-600'
-                      }`} />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-blue-100`}>
+                      <Info className={`w-4 h-4 text-blue-600`} />
                     </div>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       <h4 className="font-medium text-gray-900">
-                        {rec.title}
+                        {rec.type || 'Recomendación'}
                       </h4>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        rec.priority === 'HIGH' 
-                          ? 'bg-red-100 text-red-700' 
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {rec.priority}
+                      <span className={`text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700`}>
+                        INFO
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">
-                      {rec.description}
+                      {rec.message}
                     </p>
                   </div>
                 </div>
@@ -272,7 +261,7 @@ const AnalysisResults = ({ results, onDownload }) => {
             Información del Análisis
           </h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Timestamp:</span>

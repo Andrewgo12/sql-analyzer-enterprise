@@ -32,18 +32,24 @@ export const useAnalysis = () => {
 
     try {
       const results = await analyzeFile(file)
-      
+
       clearInterval(progressInterval)
       setAnalysisProgress(100)
-      
+
       // Small delay for better UX
       setTimeout(() => {
         setAnalysisResults(results)
         setIsAnalyzing(false)
         setAnalysisProgress(0)
-        
-        if (results.processed_successfully) {
-          toast.success('Análisis completado exitosamente')
+
+        // Check if analysis was successful based on the new response format
+        if (results && results.filename) {
+          const errorCount = results.summary?.total_errors || 0
+          if (errorCount === 0) {
+            toast.success('Análisis completado exitosamente - Sin errores detectados')
+          } else {
+            toast.success(`Análisis completado - ${errorCount} problema(s) detectado(s)`)
+          }
         } else {
           toast.error('Error en el análisis: ' + (results.error || 'Error desconocido'))
           setAnalysisError(results.error || 'Error desconocido')
@@ -51,16 +57,16 @@ export const useAnalysis = () => {
       }, 500)
 
       return true
-      
+
     } catch (error) {
       clearInterval(progressInterval)
       setIsAnalyzing(false)
       setAnalysisProgress(0)
-      
+
       const errorMessage = error.message || 'Error procesando el archivo'
       setAnalysisError(errorMessage)
       toast.error(errorMessage)
-      
+
       console.error('Analysis error:', error)
       return false
     }

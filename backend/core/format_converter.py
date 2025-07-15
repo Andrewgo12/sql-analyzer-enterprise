@@ -9,6 +9,7 @@ capabilities while preserving data integrity.
 import re
 import json
 import logging
+from datetime import datetime
 from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
@@ -214,7 +215,161 @@ class FormatConverter:
         """Initialize the format converter."""
         self.conversion_history: List[ConversionResult] = []
     
-    def convert(self, sql_content: str, source_format: DatabaseType, 
+    def convert(self, results: Dict[str, Any], format_type: str) -> Optional[str]:
+        """
+        Convert analysis results to specified format for download
+
+        Args:
+            results: Analysis results dictionary
+            format_type: Target format (json, html, txt, etc.)
+
+        Returns:
+            Path to generated file or None if failed
+        """
+        try:
+            import tempfile
+            import os
+
+            # Create temporary file
+            temp_dir = tempfile.gettempdir()
+            filename = f"sql_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format_type}"
+            file_path = os.path.join(temp_dir, filename)
+
+            if format_type.lower() == 'json':
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=2, ensure_ascii=False, default=str)
+
+            elif format_type.lower() == 'txt':
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write("ANÁLISIS SQL - REPORTE COMPLETO\n")
+                    f.write("=" * 50 + "\n\n")
+
+                    # Basic info
+                    f.write(f"Archivo: {results.get('filename', 'N/A')}\n")
+                    f.write(f"Fecha: {results.get('timestamp', 'N/A')}\n")
+                    f.write(f"Tamaño: {results.get('file_size', 0)} bytes\n")
+                    f.write(f"Líneas: {results.get('line_count', 0)}\n\n")
+
+                    # Summary
+                    summary = results.get('summary', {})
+                    f.write("RESUMEN\n")
+                    f.write("-" * 20 + "\n")
+                    f.write(f"Errores encontrados: {summary.get('total_errors', 0)}\n")
+                    f.write(f"Score de rendimiento: {summary.get('performance_score', 100)}\n")
+                    f.write(f"Score de seguridad: {summary.get('security_score', 100)}\n\n")
+
+                    # Errors
+                    errors = results.get('analysis', {}).get('errors', [])
+                    if errors:
+                        f.write("ERRORES DETECTADOS\n")
+                        f.write("-" * 20 + "\n")
+                        for i, error in enumerate(errors, 1):
+                            f.write(f"{i}. Línea {error.get('line', 'N/A')}: {error.get('message', 'N/A')}\n")
+                        f.write("\n")
+
+                    # Recommendations
+                    recommendations = summary.get('recommendations', [])
+                    if recommendations:
+                        f.write("RECOMENDACIONES\n")
+                        f.write("-" * 20 + "\n")
+                        for i, rec in enumerate(recommendations, 1):
+                            f.write(f"{i}. {rec.get('message', 'N/A')}\n")
+
+            elif format_type.lower() == 'html':
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(self._generate_html_report(results))
+
+            else:
+                # Default to JSON for unsupported formats
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=2, ensure_ascii=False, default=str)
+
+            return file_path
+
+        except Exception as e:
+            logger.error(f"Error converting to {format_type}: {e}")
+            return None
+
+    def _generate_html_report(self, results: Dict[str, Any]) -> str:
+        """Generate HTML report from analysis results"""
+        html = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Análisis SQL - Reporte</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .header {{ background: #f8f9fa; padding: 20px; border-radius: 5px; }}
+                .section {{ margin: 20px 0; }}
+                .error {{ color: #dc3545; }}
+                .warning {{ color: #ffc107; }}
+                .success {{ color: #28a745; }}
+                table {{ width: 100%; border-collapse: collapse; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #f2f2f2; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Análisis SQL - Reporte Completo</h1>
+                <p><strong>Archivo:</strong> {results.get('filename', 'N/A')}</p>
+                <p><strong>Fecha:</strong> {results.get('timestamp', 'N/A')}</p>
+                <p><strong>Tamaño:</strong> {results.get('file_size', 0)} bytes</p>
+                <p><strong>Líneas:</strong> {results.get('line_count', 0)}</p>
+            </div>
+
+            <div class="section">
+                <h2>Resumen</h2>
+                <table>
+                    <tr><th>Métrica</th><th>Valor</th></tr>
+                    <tr><td>Errores encontrados</td><td class="error">{results.get('summary', {}).get('total_errors', 0)}</td></tr>
+                    <tr><td>Score de rendimiento</td><td>{results.get('summary', {}).get('performance_score', 100)}</td></tr>
+                    <tr><td>Score de seguridad</td><td>{results.get('summary', {}).get('security_score', 100)}</td></tr>
+                </table>
+            </div>
+        """
+
+        # Add errors section
+        errors = results.get('analysis', {}).get('errors', [])
+        if errors:
+            html += """
+            <div class="section">
+                <h2>Errores Detectados</h2>
+                <table>
+                    <tr><th>Línea</th><th>Mensaje</th><th>Severidad</th></tr>
+            """
+            for error in errors:
+                html += f"""
+                    <tr>
+                        <td>{error.get('line', 'N/A')}</td>
+                        <td>{error.get('message', 'N/A')}</td>
+                        <td class="error">{error.get('severity', 'N/A')}</td>
+                    </tr>
+                """
+            html += "</table></div>"
+
+        # Add recommendations
+        recommendations = results.get('summary', {}).get('recommendations', [])
+        if recommendations:
+            html += """
+            <div class="section">
+                <h2>Recomendaciones</h2>
+                <ul>
+            """
+            for rec in recommendations:
+                html += f"<li>{rec.get('message', 'N/A')}</li>"
+            html += "</ul></div>"
+
+        html += """
+        </body>
+        </html>
+        """
+
+        return html
+
+    def convert_database_format(self, sql_content: str, source_format: DatabaseType,
                 target_format: DatabaseType) -> ConversionResult:
         """
         Convert SQL from one database format to another.

@@ -46,9 +46,13 @@ const AnalyzePage = () => {
     await startAnalysis(selectedFile)
   }
 
-  const handleDownload = async (format) => {
+  const handleDownload = async (results, format) => {
     try {
-      await downloadResult(format)
+      if (!results) {
+        toast.error('No hay resultados para descargar')
+        return
+      }
+      await downloadResult(results, format)
       toast.success(`Descarga iniciada en formato ${format.toUpperCase()}`)
     } catch (error) {
       console.error('Error downloading:', error)

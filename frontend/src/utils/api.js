@@ -29,12 +29,12 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('API Response Error:', error)
-    
+
     // Handle different error types
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response
-      
+
       switch (status) {
         case 400:
           throw new Error(data.error || 'Solicitud inválida')
@@ -106,18 +106,26 @@ export const analyzeFile = async (file) => {
 
 /**
  * Download analysis results in specified format
+ * @param {Object} results - Analysis results to download
  * @param {string} format - Download format (json, html, txt, csv)
  * @param {string} filename - Optional custom filename
  */
-export const downloadResult = async (format, filename = null) => {
+export const downloadResult = async (results, format, filename = null) => {
   const validFormats = ['json', 'html', 'txt', 'csv', 'sql', 'md']
-  
+
   if (!validFormats.includes(format)) {
     throw new Error(`Formato no válido. Formatos soportados: ${validFormats.join(', ')}`)
   }
 
+  if (!results) {
+    throw new Error('No hay resultados para descargar')
+  }
+
   try {
-    const response = await api.get(`/download/${format}`, {
+    const response = await api.post('/download', {
+      results: results,
+      format: format
+    }, {
       responseType: 'blob', // Important for file downloads
     })
 
@@ -125,20 +133,20 @@ export const downloadResult = async (format, filename = null) => {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    
+
     // Set filename
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const downloadName = filename || `sql_analysis_${timestamp}.${format}`
     link.download = downloadName
-    
+
     // Trigger download
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     // Clean up
     window.URL.revokeObjectURL(url)
-    
+
     console.log(`Download completed: ${downloadName}`)
   } catch (error) {
     console.error('Error downloading file:', error)

@@ -24,7 +24,7 @@ try:
     from textdistance import levenshtein
 except ImportError:
     from .local_textdistance import levenshtein
-from sql_analyzer.core.sql_parser import Table, Column, BusinessDomain
+from .sql_parser import Table, Column, BusinessDomain
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

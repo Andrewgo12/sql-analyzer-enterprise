@@ -11,7 +11,7 @@ import hashlib
 import mimetypes
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any
-import magic
+# import magic  # Commented out for Windows compatibility
 import chardet
 
 
@@ -50,12 +50,11 @@ class FileUtils:
             MIME type string
         """
         try:
-            # Try using python-magic first
-            return magic.from_file(file_path, mime=True)
-        except:
-            # Fallback to mimetypes
+            # Use mimetypes (python-magic commented out for Windows compatibility)
             mime_type, _ = mimetypes.guess_type(file_path)
             return mime_type or 'application/octet-stream'
+        except:
+            return 'application/octet-stream'
     
     @staticmethod
     def detect_file_encoding(file_path: str, sample_size: int = 10000) -> Dict[str, Any]:
