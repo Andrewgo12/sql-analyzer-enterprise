@@ -1,0 +1,407 @@
+/* ===================================================================
+   SQL ANALYZER ENTERPRISE - GITHUB AUTHENTIC SIDEBAR COMPONENT
+   Professional left navigation with GitHub design patterns
+   =================================================================== */
+
+/* ===== SIDEBAR CONTAINER ===== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-fixed);
+  transition: width var(--transition-base);
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* ===== SIDEBAR HEADER ===== */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--border-primary);
+  min-height: var(--header-height);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .sidebar-brand .brand-text {
+  display: none;
+}
+
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.brand-text {
+  white-space: nowrap;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-secondary);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  margin: 0 auto;
+}
+
+/* ===== SIDEBAR NAVIGATION ===== */
+.sidebar-nav {
+  flex: 1;
+  padding: var(--spacing-4);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.nav-section:last-child {
+  margin-bottom: 0;
+}
+
+.nav-section-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-3);
+  padding: 0 var(--spacing-2);
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .nav-section-title {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+/* ===== NAVIGATION ITEMS ===== */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-base);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+  min-height: 32px;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--primary);
+  border-radius: 0 1px 1px 0;
+}
+
+.nav-icon {
+  width: var(--github-icon-size);
+  height: var(--github-icon-size);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.nav-item:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+.nav-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .nav-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.nav-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--spacing-1);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .nav-badge {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* ===== NAVIGATION TOOLTIPS (COLLAPSED STATE) ===== */
+.nav-tooltip {
+  position: absolute;
+  left: calc(100% + var(--spacing-2));
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--github-gray-9);
+  color: var(--text-inverse);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+}
+
+.nav-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: var(--github-gray-9);
+}
+
+.sidebar.collapsed .nav-item:hover .nav-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== SIDEBAR FOOTER ===== */
+.sidebar-footer {
+  padding: var(--spacing-4);
+  border-top: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.sidebar-user:hover {
+  background-color: var(--bg-secondary);
+}
+
+.user-avatar {
+  width: var(--github-avatar-size);
+  height: var(--github-avatar-size);
+  border-radius: var(--radius-full);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .user-info {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: var(--z-modal);
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-overlay);
+    z-index: calc(var(--z-modal) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+  }
+  
+  .sidebar.open + .sidebar-overlay {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100vw;
+    max-width: 320px;
+  }
+  
+  .nav-item {
+    min-height: 44px;
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .sidebar-header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .sidebar-nav {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .sidebar-footer {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.nav-item:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.sidebar-toggle:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .nav-item,
+  .nav-icon,
+  .nav-label,
+  .nav-badge,
+  .nav-tooltip,
+  .sidebar-toggle {
+    transition: none;
+  }
+}
+
+/* ===== HIGH CONTRAST ===== */
+@media (prefers-contrast: high) {
+  .sidebar {
+    border-right-width: 2px;
+  }
+  
+  .nav-item.active {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+  }
+  
+  .nav-item.active::before {
+    background-color: var(--text-primary);
+  }
+}

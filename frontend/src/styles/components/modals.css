@@ -1,0 +1,335 @@
+/* ===================================================================
+   SQL ANALYZER ENTERPRISE - MODAL COMPONENTS (GITHUB AUTHENTIC)
+   Modal dialogs and overlays with GitHub design patterns
+   =================================================================== */
+
+/* ===== MODAL BACKDROP ===== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay);
+  z-index: var(--z-modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-base);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== MODAL CONTAINER ===== */
+.modal {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-xl);
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform var(--transition-base);
+  z-index: var(--z-modal);
+}
+
+.modal-backdrop.open .modal {
+  transform: scale(1);
+}
+
+/* ===== MODAL SIZES ===== */
+.modal.small {
+  max-width: 400px;
+}
+
+.modal.medium {
+  max-width: 600px;
+}
+
+.modal.large {
+  max-width: 800px;
+}
+
+.modal.xlarge {
+  max-width: 1200px;
+}
+
+/* ===== MODAL HEADER ===== */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4) var(--spacing-6);
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background-color: var(--error-bg);
+  color: var(--error);
+  border-color: var(--error);
+}
+
+/* ===== MODAL BODY ===== */
+.modal-body {
+  flex: 1;
+  padding: var(--spacing-6);
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+}
+
+/* ===== MODAL FOOTER ===== */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4) var(--spacing-6);
+  border-top: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+/* ===== CONFIRMATION MODAL ===== */
+.confirmation-modal .modal-body {
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.confirmation-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-4);
+  color: var(--warning);
+}
+
+.confirmation-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.confirmation-message {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--spacing-6);
+}
+
+/* ===== ALERT MODAL ===== */
+.alert-modal .modal-body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+  padding: var(--spacing-6);
+}
+
+.alert-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-icon.success {
+  color: var(--success);
+}
+
+.alert-icon.error {
+  color: var(--error);
+}
+
+.alert-icon.warning {
+  color: var(--warning);
+}
+
+.alert-icon.info {
+  color: var(--primary);
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.alert-message {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+/* ===== FORM MODAL ===== */
+.form-modal .modal-body {
+  padding: var(--spacing-6);
+}
+
+.form-modal .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== LOADING MODAL ===== */
+.loading-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-4);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.loading-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .modal-backdrop {
+    padding: var(--spacing-2);
+  }
+  
+  .modal {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .modal.small,
+  .modal.medium,
+  .modal.large,
+  .modal.xlarge {
+    max-width: 100%;
+  }
+  
+  .modal-header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .modal-body {
+    padding: var(--spacing-4);
+  }
+  
+  .modal-footer {
+    padding: var(--spacing-3) var(--spacing-4);
+    flex-direction: column-reverse;
+    gap: var(--spacing-2);
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .confirmation-modal .modal-body {
+    padding: var(--spacing-6);
+  }
+  
+  .alert-modal .modal-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-3);
+  }
+  
+  .alert-icon {
+    align-self: flex-start;
+  }
+  
+  .loading-modal .modal-body {
+    padding: var(--spacing-6);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.modal:focus {
+  outline: none;
+}
+
+.modal-backdrop[aria-hidden="true"] {
+  display: none;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop,
+  .modal {
+    transition: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+/* ===== HIGH CONTRAST ===== */
+@media (prefers-contrast: high) {
+  .modal {
+    border-width: 2px;
+  }
+  
+  .modal-header,
+  .modal-footer {
+    border-width: 2px;
+  }
+}

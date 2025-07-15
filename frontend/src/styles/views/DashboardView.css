@@ -1,0 +1,391 @@
+/* ===================================================================
+   SQL ANALYZER ENTERPRISE - DASHBOARD VIEW (GITHUB AUTHENTIC)
+   100% viewport utilization with GitHub design patterns
+   =================================================================== */
+
+/* ===== DASHBOARD CONTAINER (100% VIEWPORT) ===== */
+.dashboard-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== DASHBOARD HEADER ===== */
+.dashboard-header {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: var(--spacing-4) var(--spacing-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--header-height);
+  flex-shrink: 0;
+}
+
+.dashboard-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.dashboard-title h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.dashboard-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-left: var(--spacing-2);
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background-color: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  border: 1px solid var(--btn-primary-bg);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: var(--github-button-height);
+}
+
+.refresh-button:hover {
+  background-color: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+}
+
+/* ===== DASHBOARD CONTENT (FULL HEIGHT) ===== */
+.dashboard-content {
+  flex: 1;
+  padding: var(--spacing-6);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--bg-secondary);
+  height: calc(100vh - var(--header-height));
+}
+
+/* ===== METRICS OVERVIEW GRID ===== */
+.metrics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  width: 100%;
+}
+
+.metric-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-4);
+  transition: all var(--transition-fast);
+}
+
+.metric-card:hover {
+  border-color: var(--border-secondary);
+  box-shadow: var(--shadow-base);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-3);
+}
+
+.metric-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.metric-icon {
+  width: var(--github-icon-size);
+  height: var(--github-icon-size);
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: var(--spacing-2) 0;
+  line-height: var(--line-height-tight);
+}
+
+.metric-change {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.metric-change.positive {
+  color: var(--success);
+}
+
+.metric-change.negative {
+  color: var(--error);
+}
+
+.metric-change.neutral {
+  color: var(--text-secondary);
+}
+
+.metric-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-2);
+  line-height: var(--line-height-normal);
+}
+
+/* ===== DASHBOARD MAIN LAYOUT ===== */
+.dashboard-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-6);
+  height: calc(100% - 200px);
+  width: 100%;
+}
+
+/* ===== ACTIVITY FEED ===== */
+.activity-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  height: fit-content;
+  max-height: 600px;
+}
+
+.activity-header {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+.activity-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.activity-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--border-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.activity-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: var(--github-icon-size);
+  height: var(--github-icon-size);
+  color: var(--text-secondary);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-message {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  line-height: var(--line-height-normal);
+}
+
+.activity-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* ===== QUICK STATS SIDEBAR ===== */
+.quick-stats-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  height: fit-content;
+}
+
+.stats-header {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+.stats-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.stats-list {
+  padding: var(--spacing-4);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+/* ===== SYSTEM STATUS ===== */
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--success-bg);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--success);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.system-status.warning {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.system-status.warning .status-dot {
+  background-color: var(--warning);
+}
+
+.system-status.error {
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+.system-status.error .status-dot {
+  background-color: var(--error);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+  .dashboard-main {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+  
+  .metrics-overview {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--spacing-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: var(--spacing-3) var(--spacing-4);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-3);
+  }
+  
+  .dashboard-content {
+    padding: var(--spacing-4);
+  }
+  
+  .metrics-overview {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+  
+  .dashboard-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-title h1 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .metric-card {
+    padding: var(--spacing-3);
+  }
+  
+  .activity-item,
+  .stats-list {
+    padding: var(--spacing-3);
+  }
+}
