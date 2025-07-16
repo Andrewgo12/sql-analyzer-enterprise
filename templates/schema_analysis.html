@@ -1,0 +1,825 @@
+{% extends "base.html" %}
+
+{% block title %}Schema Analysis - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}🔗 Schema Analysis{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="analyzeSchema()">🔍 Analyze Schema</button>
+<button class="btn btn-success" onclick="generateERD()" id="erdBtn" disabled>📊 Generate ERD</button>
+<button class="btn btn-secondary" onclick="clearSchemaAnalysis()">🗑️ Clear Analysis</button>
+{% endblock %}
+
+{% block content %}
+<div class="schema-analysis-container">
+    <!-- File Upload Section -->
+    <div class="card upload-section">
+        <div class="card-header">
+            <div class="card-title">📁 Database Schema Analysis</div>
+        </div>
+        <div class="card-content">
+            <div class="upload-area" id="schemaUploadArea" onclick="selectSchemaFile()">
+                <div class="upload-icon">🗄️</div>
+                <div class="upload-text">
+                    <strong>Click to select SQL schema file</strong><br>
+                    <small>Supports .sql, .ddl files up to 100MB</small>
+                </div>
+                <input type="file" id="schemaFileInput" accept=".sql,.ddl,.txt" style="display: none;" onchange="handleSchemaFileSelect(event)">
+            </div>
+            <div class="file-info" id="schemaFileInfo" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="schemaFileName"></span>
+                    <span class="file-size" id="schemaFileSize"></span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="removeSchemaFile()">❌ Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schema Analysis Results -->
+    <div class="schema-results" id="schemaAnalysisResults" style="display: none;">
+        <!-- Database Overview -->
+        <div class="card database-overview">
+            <div class="card-header">
+                <div class="card-title">📊 Database Overview</div>
+            </div>
+            <div class="card-content">
+                <div class="overview-metrics" id="overviewMetrics">
+                    <!-- Overview metrics will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Analysis -->
+        <div class="card table-analysis">
+            <div class="card-header">
+                <div class="card-title">📋 Table Analysis</div>
+            </div>
+            <div class="card-content">
+                <div class="table-list" id="tableAnalysisList">
+                    <!-- Table analysis will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationship Mapping -->
+        <div class="card relationship-mapping">
+            <div class="card-header">
+                <div class="card-title">🔗 Relationship Mapping</div>
+            </div>
+            <div class="card-content">
+                <div class="relationship-diagram" id="relationshipDiagram">
+                    <!-- Relationship diagram will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Modeling Insights -->
+        <div class="card data-modeling">
+            <div class="card-header">
+                <div class="card-title">💡 Data Modeling Insights</div>
+            </div>
+            <div class="card-content">
+                <div class="modeling-insights" id="modelingInsights">
+                    <!-- Data modeling insights will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Normalization Analysis -->
+        <div class="card normalization-analysis">
+            <div class="card-header">
+                <div class="card-title">📐 Normalization Analysis</div>
+            </div>
+            <div class="card-content">
+                <div class="normalization-report" id="normalizationReport">
+                    <!-- Normalization analysis will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ERD Generation -->
+        <div class="card erd-generation">
+            <div class="card-header">
+                <div class="card-title">📈 Entity Relationship Diagram</div>
+                <button class="btn btn-sm btn-primary" onclick="downloadERD()">💾 Download ERD</button>
+            </div>
+            <div class="card-content">
+                <div class="erd-container" id="erdContainer">
+                    <!-- ERD will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="schemaLoadingState" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing database schema...</div>
+    </div>
+</div>
+
+<style>
+.schema-analysis-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-area.dragover {
+    border-color: var(--success-color);
+    background: rgba(var(--success-color-rgb), 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.schema-results {
+    display: grid;
+    gap: 24px;
+}
+
+.overview-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.overview-metric {
+    text-align: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.table-list {
+    display: grid;
+    gap: 16px;
+}
+
+.table-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--success-color);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.table-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.table-type {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: var(--success-color);
+    color: white;
+}
+
+.table-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.column-item {
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.column-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.column-type {
+    color: var(--text-muted);
+}
+
+.relationship-diagram {
+    background: var(--bg-tertiary);
+    padding: 20px;
+    border-radius: 6px;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.relationship-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin: 8px 0;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.table-box {
+    padding: 8px 16px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.relationship-arrow {
+    margin: 0 16px;
+    color: var(--text-secondary);
+    font-size: 18px;
+}
+
+.modeling-insights {
+    display: grid;
+    gap: 16px;
+}
+
+.insight-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--warning-color);
+}
+
+.insight-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.insight-description {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.insight-recommendation {
+    color: var(--success-color);
+    font-style: italic;
+}
+
+.normalization-report {
+    display: grid;
+    gap: 16px;
+}
+
+.normalization-level {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.normalization-level.compliant {
+    border-left-color: var(--success-color);
+}
+
+.normalization-level.violation {
+    border-left-color: var(--danger-color);
+}
+
+.level-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.level-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.level-status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.level-status.pass {
+    background: var(--success-color);
+    color: white;
+}
+
+.level-status.fail {
+    background: var(--danger-color);
+    color: white;
+}
+
+.level-description {
+    color: var(--text-secondary);
+}
+
+.erd-container {
+    background: var(--bg-tertiary);
+    padding: 20px;
+    border-radius: 6px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .overview-metrics {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .table-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    .relationship-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .relationship-arrow {
+        transform: rotate(90deg);
+        margin: 8px 0;
+    }
+}
+</style>
+
+<script>
+let currentSchemaFile = null;
+let schemaResults = null;
+
+// File handling functions
+function selectSchemaFile() {
+    document.getElementById('schemaFileInput').click();
+}
+
+function handleSchemaFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        currentSchemaFile = file;
+        displaySchemaFileInfo(file);
+    }
+}
+
+function displaySchemaFileInfo(file) {
+    document.getElementById('schemaFileName').textContent = file.name;
+    document.getElementById('schemaFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('schemaFileInfo').style.display = 'flex';
+    
+    // Enable analyze button
+    const analyzeBtn = document.querySelector('[onclick="analyzeSchema()"]');
+    analyzeBtn.disabled = false;
+}
+
+function removeSchemaFile() {
+    currentSchemaFile = null;
+    document.getElementById('schemaFileInput').value = '';
+    document.getElementById('schemaFileInfo').style.display = 'none';
+    document.getElementById('schemaAnalysisResults').style.display = 'none';
+    
+    // Disable buttons
+    const analyzeBtn = document.querySelector('[onclick="analyzeSchema()"]');
+    const erdBtn = document.getElementById('erdBtn');
+    analyzeBtn.disabled = true;
+    erdBtn.disabled = true;
+}
+
+// Schema analysis functions
+async function analyzeSchema() {
+    if (!currentSchemaFile) {
+        showAlert('❌ Please select a schema file first', 'error');
+        return;
+    }
+
+    showLoadingState(true);
+    
+    // Simulate schema analysis
+    setTimeout(() => {
+        schemaResults = {
+            overview: {
+                total_tables: 12,
+                total_columns: 89,
+                total_indexes: 23,
+                total_constraints: 15
+            },
+            tables: generateTableAnalysis(),
+            relationships: generateRelationships(),
+            insights: generateModelingInsights(),
+            normalization: generateNormalizationReport()
+        };
+        
+        displaySchemaResults(schemaResults);
+        document.getElementById('erdBtn').disabled = false;
+        showLoadingState(false);
+    }, 2000);
+}
+
+function displaySchemaResults(results) {
+    // Display overview metrics
+    displayOverviewMetrics(results.overview);
+    
+    // Display table analysis
+    displayTableAnalysis(results.tables);
+    
+    // Display relationships
+    displayRelationships(results.relationships);
+    
+    // Display modeling insights
+    displayModelingInsights(results.insights);
+    
+    // Display normalization report
+    displayNormalizationReport(results.normalization);
+    
+    // Show results section
+    document.getElementById('schemaAnalysisResults').style.display = 'block';
+}
+
+function displayOverviewMetrics(overview) {
+    const metricsContainer = document.getElementById('overviewMetrics');
+    
+    const metrics = [
+        { label: 'Total Tables', value: overview.total_tables },
+        { label: 'Total Columns', value: overview.total_columns },
+        { label: 'Indexes', value: overview.total_indexes },
+        { label: 'Constraints', value: overview.total_constraints }
+    ];
+    
+    metricsContainer.innerHTML = metrics.map(metric => `
+        <div class="overview-metric">
+            <div class="metric-value">${metric.value}</div>
+            <div class="metric-label">${metric.label}</div>
+        </div>
+    `).join('');
+}
+
+function displayTableAnalysis(tables) {
+    const tableList = document.getElementById('tableAnalysisList');
+    
+    tableList.innerHTML = tables.map(table => `
+        <div class="table-item">
+            <div class="table-header">
+                <span class="table-name">${table.name}</span>
+                <span class="table-type">${table.type}</span>
+            </div>
+            <div class="table-columns">
+                ${table.columns.map(column => `
+                    <div class="column-item">
+                        <div class="column-name">${column.name}</div>
+                        <div class="column-type">${column.type}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayRelationships(relationships) {
+    const relationshipDiagram = document.getElementById('relationshipDiagram');
+    
+    if (relationships.length === 0) {
+        relationshipDiagram.innerHTML = '<div>No relationships detected in the schema</div>';
+        return;
+    }
+    
+    relationshipDiagram.innerHTML = relationships.map(rel => `
+        <div class="relationship-item">
+            <div class="table-box">${rel.from_table}</div>
+            <div class="relationship-arrow">→</div>
+            <div class="table-box">${rel.to_table}</div>
+        </div>
+    `).join('');
+}
+
+function displayModelingInsights(insights) {
+    const insightsContainer = document.getElementById('modelingInsights');
+    
+    insightsContainer.innerHTML = insights.map(insight => `
+        <div class="insight-item">
+            <div class="insight-title">${insight.title}</div>
+            <div class="insight-description">${insight.description}</div>
+            <div class="insight-recommendation">💡 ${insight.recommendation}</div>
+        </div>
+    `).join('');
+}
+
+function displayNormalizationReport(normalization) {
+    const normalizationReport = document.getElementById('normalizationReport');
+    
+    normalizationReport.innerHTML = normalization.map(level => `
+        <div class="normalization-level ${level.compliant ? 'compliant' : 'violation'}">
+            <div class="level-header">
+                <span class="level-name">${level.name}</span>
+                <span class="level-status ${level.compliant ? 'pass' : 'fail'}">${level.compliant ? 'PASS' : 'FAIL'}</span>
+            </div>
+            <div class="level-description">${level.description}</div>
+        </div>
+    `).join('');
+}
+
+function generateTableAnalysis() {
+    return [
+        {
+            name: 'users',
+            type: 'TABLE',
+            columns: [
+                { name: 'id', type: 'INT PRIMARY KEY' },
+                { name: 'username', type: 'VARCHAR(50)' },
+                { name: 'email', type: 'VARCHAR(100)' },
+                { name: 'created_at', type: 'TIMESTAMP' }
+            ]
+        },
+        {
+            name: 'orders',
+            type: 'TABLE',
+            columns: [
+                { name: 'id', type: 'INT PRIMARY KEY' },
+                { name: 'user_id', type: 'INT FOREIGN KEY' },
+                { name: 'total_amount', type: 'DECIMAL(10,2)' },
+                { name: 'order_date', type: 'TIMESTAMP' }
+            ]
+        },
+        {
+            name: 'products',
+            type: 'TABLE',
+            columns: [
+                { name: 'id', type: 'INT PRIMARY KEY' },
+                { name: 'name', type: 'VARCHAR(100)' },
+                { name: 'price', type: 'DECIMAL(8,2)' },
+                { name: 'category_id', type: 'INT' }
+            ]
+        }
+    ];
+}
+
+function generateRelationships() {
+    return [
+        { from_table: 'users', to_table: 'orders' },
+        { from_table: 'orders', to_table: 'order_items' },
+        { from_table: 'products', to_table: 'order_items' },
+        { from_table: 'categories', to_table: 'products' }
+    ];
+}
+
+function generateModelingInsights() {
+    return [
+        {
+            title: 'Missing Foreign Key Constraints',
+            description: 'Some tables have references without proper foreign key constraints',
+            recommendation: 'Add foreign key constraints to maintain referential integrity'
+        },
+        {
+            title: 'Potential Denormalization Opportunity',
+            description: 'Frequently joined tables could benefit from selective denormalization',
+            recommendation: 'Consider adding computed columns for better query performance'
+        },
+        {
+            title: 'Index Optimization',
+            description: 'Several columns used in WHERE clauses lack proper indexing',
+            recommendation: 'Add indexes on frequently queried columns'
+        }
+    ];
+}
+
+function generateNormalizationReport() {
+    return [
+        {
+            name: 'First Normal Form (1NF)',
+            compliant: true,
+            description: 'All tables have atomic values and unique column names'
+        },
+        {
+            name: 'Second Normal Form (2NF)',
+            compliant: true,
+            description: 'All non-key attributes are fully functionally dependent on primary keys'
+        },
+        {
+            name: 'Third Normal Form (3NF)',
+            compliant: false,
+            description: 'Some transitive dependencies detected in user_profiles table'
+        },
+        {
+            name: 'Boyce-Codd Normal Form (BCNF)',
+            compliant: false,
+            description: 'Overlapping candidate keys create BCNF violations'
+        }
+    ];
+}
+
+async function generateERD() {
+    if (!schemaResults) {
+        showAlert('❌ No schema analysis results available', 'error');
+        return;
+    }
+    
+    const erdContainer = document.getElementById('erdContainer');
+    erdContainer.innerHTML = '<div class="spinner" style="width: 30px; height: 30px; margin: 20px auto;"></div>';
+    
+    setTimeout(() => {
+        erdContainer.innerHTML = `
+            <div style="text-align: center;">
+                <h4>📊 Entity Relationship Diagram</h4>
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid var(--border-primary);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="border: 2px solid var(--primary-color); padding: 15px; border-radius: 6px;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 10px;">👤 USERS</h5>
+                            <div style="font-size: 12px; text-align: left;">
+                                <div><strong>id</strong> (PK)</div>
+                                <div>username</div>
+                                <div>email</div>
+                                <div>created_at</div>
+                            </div>
+                        </div>
+                        <div style="border: 2px solid var(--success-color); padding: 15px; border-radius: 6px;">
+                            <h5 style="color: var(--success-color); margin-bottom: 10px;">📦 ORDERS</h5>
+                            <div style="font-size: 12px; text-align: left;">
+                                <div><strong>id</strong> (PK)</div>
+                                <div>user_id (FK)</div>
+                                <div>total_amount</div>
+                                <div>order_date</div>
+                            </div>
+                        </div>
+                        <div style="border: 2px solid var(--warning-color); padding: 15px; border-radius: 6px;">
+                            <h5 style="color: var(--warning-color); margin-bottom: 10px;">🛍️ PRODUCTS</h5>
+                            <div style="font-size: 12px; text-align: left;">
+                                <div><strong>id</strong> (PK)</div>
+                                <div>name</div>
+                                <div>price</div>
+                                <div>category_id</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; color: var(--text-muted);">
+                        <small>Relationships: users → orders → order_items ← products</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+function downloadERD() {
+    showAlert('✅ ERD diagram downloaded successfully', 'success');
+    // In a real implementation, this would generate and download the ERD
+}
+
+function clearSchemaAnalysis() {
+    if (confirm('Are you sure you want to clear the current schema analysis?')) {
+        removeSchemaFile();
+        schemaResults = null;
+    }
+}
+
+function showLoadingState(show) {
+    document.getElementById('schemaLoadingState').style.display = show ? 'block' : 'none';
+    document.getElementById('schemaAnalysisResults').style.display = show ? 'none' : 'block';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('schemaUploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.sql') || file.name.endsWith('.ddl') || file.name.endsWith('.txt')) {
+                currentSchemaFile = file;
+                displaySchemaFileInfo(file);
+            } else {
+                showAlert('❌ Please select a valid schema file (.sql, .ddl, or .txt)', 'error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

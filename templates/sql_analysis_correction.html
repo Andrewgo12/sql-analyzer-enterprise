@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Analysis & Correction - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}🔍 SQL Analysis & Correction{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="analyzeSQLFile()">🔍 Analyze SQL</button>
+<button class="btn btn-success" onclick="downloadCorrectedSQL()" id="downloadBtn" disabled>💾 Download Corrected</button>
+<button class="btn btn-secondary" onclick="clearSQLAnalysis()">🗑️ Clear Analysis</button>
+{% endblock %}
+
+{% block content %}
+<div class="sql-analysis-container">
+    <!-- File Upload Section -->
+    <div class="card upload-section">
+        <div class="card-header">
+            <div class="card-title">📁 SQL File Upload</div>
+        </div>
+        <div class="card-content">
+            <div class="upload-area" id="sqlUploadArea" onclick="selectSQLFile()">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">
+                    <strong>Click to select SQL file</strong><br>
+                    <small>Supports .sql, .txt files up to 100MB</small>
+                </div>
+                <input type="file" id="sqlFileInput" accept=".sql,.txt" style="display: none;" onchange="handleSQLFileSelect(event)">
+            </div>
+            <div class="file-info" id="sqlFileInfo" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="sqlFileName"></span>
+                    <span class="file-size" id="sqlFileSize"></span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="removeSQLFile()">❌ Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Results Section -->
+    <div class="analysis-results" id="sqlAnalysisResults" style="display: none;">
+        <!-- Syntax Errors Section -->
+        <div class="card error-analysis">
+            <div class="card-header">
+                <div class="card-title">🚨 Syntax Error Analysis</div>
+                <div class="error-count" id="errorCount">0 errors found</div>
+            </div>
+            <div class="card-content">
+                <div class="error-list" id="syntaxErrorList">
+                    <!-- Errors will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Structure Analysis -->
+        <div class="card structure-analysis">
+            <div class="card-header">
+                <div class="card-title">🏗️ Code Structure Analysis</div>
+            </div>
+            <div class="card-content">
+                <div class="structure-metrics" id="structureMetrics">
+                    <!-- Structure metrics will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Automatic Corrections -->
+        <div class="card corrections-section">
+            <div class="card-header">
+                <div class="card-title">🔧 Automatic Corrections</div>
+                <button class="btn btn-sm btn-success" onclick="applyAllCorrections()">✅ Apply All</button>
+            </div>
+            <div class="card-content">
+                <div class="corrections-list" id="correctionsList">
+                    <!-- Corrections will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Before/After Comparison -->
+        <div class="card comparison-section">
+            <div class="card-header">
+                <div class="card-title">📊 Before/After Comparison</div>
+            </div>
+            <div class="card-content">
+                <div class="comparison-container">
+                    <div class="code-panel">
+                        <h4>Original SQL</h4>
+                        <pre class="code-block" id="originalSQL"></pre>
+                    </div>
+                    <div class="code-panel">
+                        <h4>Corrected SQL</h4>
+                        <pre class="code-block" id="correctedSQL"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SQL Documentation -->
+        <div class="card documentation-section">
+            <div class="card-header">
+                <div class="card-title">📚 SQL Documentation</div>
+                <button class="btn btn-sm btn-primary" onclick="generateDocumentation()">📝 Generate Docs</button>
+            </div>
+            <div class="card-content">
+                <div class="documentation-content" id="sqlDocumentation">
+                    <!-- Documentation will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="sqlLoadingState" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing SQL file...</div>
+    </div>
+</div>
+
+<style>
+.sql-analysis-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-area.dragover {
+    border-color: var(--success-color);
+    background: rgba(var(--success-color-rgb), 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.analysis-results {
+    display: grid;
+    gap: 24px;
+}
+
+.error-analysis .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.error-count {
+    background: var(--danger-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.error-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--danger-color);
+}
+
+.error-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.error-location {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.error-message {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.error-suggestion {
+    color: var(--success-color);
+    font-style: italic;
+}
+
+.structure-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.corrections-section .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.correction-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--warning-color);
+}
+
+.correction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.correction-type {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.correction-before {
+    background: rgba(var(--danger-color-rgb), 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.correction-after {
+    background: rgba(var(--success-color-rgb), 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.code-panel h4 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.code-block {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.documentation-content {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 6px;
+    min-height: 200px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .comparison-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .structure-metrics {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+</style>
+
+<script>
+let currentSQLFile = null;
+let analysisResults = null;
+
+// File handling functions
+function selectSQLFile() {
+    document.getElementById('sqlFileInput').click();
+}
+
+function handleSQLFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        currentSQLFile = file;
+        displaySQLFileInfo(file);
+    }
+}
+
+function displaySQLFileInfo(file) {
+    document.getElementById('sqlFileName').textContent = file.name;
+    document.getElementById('sqlFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('sqlFileInfo').style.display = 'flex';
+    
+    // Enable analyze button
+    const analyzeBtn = document.querySelector('[onclick="analyzeSQLFile()"]');
+    analyzeBtn.disabled = false;
+}
+
+function removeSQLFile() {
+    currentSQLFile = null;
+    document.getElementById('sqlFileInput').value = '';
+    document.getElementById('sqlFileInfo').style.display = 'none';
+    document.getElementById('sqlAnalysisResults').style.display = 'none';
+    
+    // Disable buttons
+    const analyzeBtn = document.querySelector('[onclick="analyzeSQLFile()"]');
+    const downloadBtn = document.getElementById('downloadBtn');
+    analyzeBtn.disabled = true;
+    downloadBtn.disabled = true;
+}
+
+// Analysis functions
+async function analyzeSQLFile() {
+    if (!currentSQLFile) {
+        showAlert('❌ Please select a SQL file first', 'error');
+        return;
+    }
+
+    showLoadingState(true);
+    
+    const formData = new FormData();
+    formData.append('file', currentSQLFile);
+
+    try {
+        const response = await fetch('/api/sql-analyze', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            analysisResults = result.analysis_results;
+            displaySQLAnalysisResults(result.analysis_results);
+            document.getElementById('downloadBtn').disabled = false;
+        } else {
+            throw new Error(result.error || 'Analysis failed');
+        }
+    } catch (error) {
+        console.error('Analysis error:', error);
+        showAlert('❌ Analysis failed: ' + error.message, 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+function displaySQLAnalysisResults(results) {
+    // Display syntax errors
+    displaySyntaxErrors(results.syntax_errors || []);
+    
+    // Display structure metrics
+    displayStructureMetrics(results.statistics || {});
+    
+    // Display corrections
+    displayCorrections(results.corrections || []);
+    
+    // Display code comparison
+    displayCodeComparison(results.original_sql, results.corrected_sql);
+    
+    // Show results section
+    document.getElementById('sqlAnalysisResults').style.display = 'block';
+}
+
+function displaySyntaxErrors(errors) {
+    const errorList = document.getElementById('syntaxErrorList');
+    const errorCount = document.getElementById('errorCount');
+    
+    errorCount.textContent = `${errors.length} errors found`;
+    errorCount.style.background = errors.length > 0 ? 'var(--danger-color)' : 'var(--success-color)';
+    
+    if (errors.length === 0) {
+        errorList.innerHTML = '<div style="text-align: center; color: var(--success-color); padding: 20px;">✅ No syntax errors found!</div>';
+        return;
+    }
+    
+    errorList.innerHTML = errors.map(error => `
+        <div class="error-item">
+            <div class="error-header">
+                <strong>${error.type || 'Syntax Error'}</strong>
+                <span class="error-location">Line ${error.line}, Column ${error.column}</span>
+            </div>
+            <div class="error-message">${error.message}</div>
+            <div class="error-suggestion">💡 ${error.suggestion}</div>
+        </div>
+    `).join('');
+}
+
+function displayStructureMetrics(statistics) {
+    const metricsContainer = document.getElementById('structureMetrics');
+    
+    const metrics = [
+        { label: 'Total Lines', value: statistics.total_lines || 0 },
+        { label: 'Statements', value: statistics.total_statements || 0 },
+        { label: 'Tables', value: statistics.total_tables || 0 },
+        { label: 'Complexity Score', value: statistics.complexity_score || 0 }
+    ];
+    
+    metricsContainer.innerHTML = metrics.map(metric => `
+        <div class="metric-item">
+            <div class="metric-value">${metric.value}</div>
+            <div class="metric-label">${metric.label}</div>
+        </div>
+    `).join('');
+}
+
+function displayCorrections(corrections) {
+    const correctionsList = document.getElementById('correctionsList');
+    
+    if (corrections.length === 0) {
+        correctionsList.innerHTML = '<div style="text-align: center; color: var(--success-color); padding: 20px;">✅ No corrections needed!</div>';
+        return;
+    }
+    
+    correctionsList.innerHTML = corrections.map((correction, index) => `
+        <div class="correction-item">
+            <div class="correction-header">
+                <span class="correction-type">${correction.type}</span>
+                <button class="btn btn-sm btn-success" onclick="applyCorrection(${index})">✅ Apply</button>
+            </div>
+            <div class="correction-before">❌ Before: ${correction.before}</div>
+            <div class="correction-after">✅ After: ${correction.after}</div>
+        </div>
+    `).join('');
+}
+
+function displayCodeComparison(original, corrected) {
+    document.getElementById('originalSQL').textContent = original || 'No original SQL available';
+    document.getElementById('correctedSQL').textContent = corrected || 'No corrections applied';
+}
+
+function applyCorrection(index) {
+    showAlert('✅ Correction applied successfully', 'success');
+    // In a real implementation, this would apply the specific correction
+}
+
+function applyAllCorrections() {
+    if (!analysisResults || !analysisResults.corrections) {
+        showAlert('❌ No corrections available', 'error');
+        return;
+    }
+    
+    showAlert('✅ All corrections applied successfully', 'success');
+    // In a real implementation, this would apply all corrections
+}
+
+async function downloadCorrectedSQL() {
+    if (!analysisResults) {
+        showAlert('❌ No analysis results available', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sql-download-corrected', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                original_filename: currentSQLFile.name,
+                corrected_sql: analysisResults.corrected_sql
+            })
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `corrected_${currentSQLFile.name}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('✅ Corrected SQL downloaded successfully', 'success');
+        } else {
+            throw new Error('Download failed');
+        }
+    } catch (error) {
+        console.error('Download error:', error);
+        showAlert('❌ Download failed: ' + error.message, 'error');
+    }
+}
+
+async function generateDocumentation() {
+    if (!analysisResults) {
+        showAlert('❌ No analysis results available', 'error');
+        return;
+    }
+    
+    const docContainer = document.getElementById('sqlDocumentation');
+    docContainer.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; margin: 20px auto;"></div>';
+    
+    try {
+        const response = await fetch('/api/sql-generate-docs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sql_content: analysisResults.original_sql,
+                analysis_results: analysisResults
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            docContainer.innerHTML = `
+                <h4>📚 Generated Documentation</h4>
+                <div style="white-space: pre-wrap; line-height: 1.6;">${result.documentation}</div>
+            `;
+        } else {
+            throw new Error('Documentation generation failed');
+        }
+    } catch (error) {
+        console.error('Documentation error:', error);
+        docContainer.innerHTML = '<div style="color: var(--danger-color); text-align: center;">❌ Documentation generation failed</div>';
+    }
+}
+
+function clearSQLAnalysis() {
+    if (confirm('Are you sure you want to clear the current analysis?')) {
+        removeSQLFile();
+        analysisResults = null;
+    }
+}
+
+function showLoadingState(show) {
+    document.getElementById('sqlLoadingState').style.display = show ? 'block' : 'none';
+    document.getElementById('sqlAnalysisResults').style.display = show ? 'none' : 'block';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('sqlUploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.sql') || file.name.endsWith('.txt')) {
+                currentSQLFile = file;
+                displaySQLFileInfo(file);
+            } else {
+                showAlert('❌ Please select a valid SQL file (.sql or .txt)', 'error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

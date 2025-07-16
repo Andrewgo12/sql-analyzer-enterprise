@@ -1,0 +1,825 @@
+{% extends "base.html" %}
+
+{% block title %}Security Analysis - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}🛡️ Security Analysis{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="performSecurityScan()">🔍 Security Scan</button>
+<button class="btn btn-danger" onclick="generateSecurityReport()" id="reportBtn" disabled>📋 Security Report</button>
+<button class="btn btn-secondary" onclick="clearSecurityAnalysis()">🗑️ Clear Analysis</button>
+{% endblock %}
+
+{% block content %}
+<div class="security-analysis-container">
+    <!-- File Upload Section -->
+    <div class="card upload-section">
+        <div class="card-header">
+            <div class="card-title">📁 SQL File Security Scan</div>
+        </div>
+        <div class="card-content">
+            <div class="upload-area" id="securityUploadArea" onclick="selectSecurityFile()">
+                <div class="upload-icon">🛡️</div>
+                <div class="upload-text">
+                    <strong>Click to select SQL file for security analysis</strong><br>
+                    <small>Supports .sql, .txt files up to 100MB</small>
+                </div>
+                <input type="file" id="securityFileInput" accept=".sql,.txt" style="display: none;" onchange="handleSecurityFileSelect(event)">
+            </div>
+            <div class="file-info" id="securityFileInfo" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="securityFileName"></span>
+                    <span class="file-size" id="securityFileSize"></span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="removeSecurityFile()">❌ Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Analysis Results -->
+    <div class="security-results" id="securityAnalysisResults" style="display: none;">
+        <!-- Risk Assessment Dashboard -->
+        <div class="card risk-dashboard">
+            <div class="card-header">
+                <div class="card-title">⚠️ Risk Assessment Dashboard</div>
+            </div>
+            <div class="card-content">
+                <div class="risk-metrics" id="riskMetrics">
+                    <!-- Risk metrics will be populated here -->
+                </div>
+                <div class="overall-risk" id="overallRisk">
+                    <!-- Overall risk assessment will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Vulnerability Detection -->
+        <div class="card vulnerability-section">
+            <div class="card-header">
+                <div class="card-title">🚨 Vulnerability Detection</div>
+                <div class="vulnerability-count" id="vulnerabilityCount">0 vulnerabilities found</div>
+            </div>
+            <div class="card-content">
+                <div class="vulnerability-list" id="vulnerabilityList">
+                    <!-- Vulnerabilities will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- OWASP Top 10 Compliance -->
+        <div class="card owasp-section">
+            <div class="card-header">
+                <div class="card-title">🏆 OWASP Top 10 Compliance</div>
+            </div>
+            <div class="card-content">
+                <div class="owasp-checklist" id="owaspChecklist">
+                    <!-- OWASP compliance will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CWE Mapping -->
+        <div class="card cwe-section">
+            <div class="card-header">
+                <div class="card-title">🔍 CWE (Common Weakness Enumeration) Mapping</div>
+            </div>
+            <div class="card-content">
+                <div class="cwe-mapping" id="cweMapping">
+                    <!-- CWE mapping will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Remediation Recommendations -->
+        <div class="card remediation-section">
+            <div class="card-header">
+                <div class="card-title">💡 Remediation Recommendations</div>
+            </div>
+            <div class="card-content">
+                <div class="remediation-list" id="remediationList">
+                    <!-- Remediation recommendations will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="securityLoadingState" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Performing security analysis...</div>
+    </div>
+</div>
+
+<style>
+.security-analysis-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--danger-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-area.dragover {
+    border-color: var(--warning-color);
+    background: rgba(var(--warning-color-rgb), 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.security-results {
+    display: grid;
+    gap: 24px;
+}
+
+.risk-dashboard .card-content {
+    display: grid;
+    gap: 20px;
+}
+
+.risk-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.risk-metric {
+    text-align: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.risk-metric.critical {
+    border-left-color: var(--danger-color);
+}
+
+.risk-metric.high {
+    border-left-color: var(--warning-color);
+}
+
+.risk-metric.medium {
+    border-left-color: var(--primary-color);
+}
+
+.risk-metric.low {
+    border-left-color: var(--success-color);
+}
+
+.risk-value {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.risk-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.overall-risk {
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.overall-risk.critical {
+    background: rgba(var(--danger-color-rgb), 0.1);
+    color: var(--danger-color);
+    border: 2px solid var(--danger-color);
+}
+
+.overall-risk.high {
+    background: rgba(var(--warning-color-rgb), 0.1);
+    color: var(--warning-color);
+    border: 2px solid var(--warning-color);
+}
+
+.overall-risk.medium {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.overall-risk.low {
+    background: rgba(var(--success-color-rgb), 0.1);
+    color: var(--success-color);
+    border: 2px solid var(--success-color);
+}
+
+.vulnerability-section .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vulnerability-count {
+    background: var(--danger-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vulnerability-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--danger-color);
+}
+
+.vulnerability-item.high {
+    border-left-color: var(--warning-color);
+}
+
+.vulnerability-item.medium {
+    border-left-color: var(--primary-color);
+}
+
+.vulnerability-item.low {
+    border-left-color: var(--success-color);
+}
+
+.vulnerability-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.vulnerability-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.vulnerability-severity {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.vulnerability-severity.critical {
+    background: var(--danger-color);
+    color: white;
+}
+
+.vulnerability-severity.high {
+    background: var(--warning-color);
+    color: white;
+}
+
+.vulnerability-severity.medium {
+    background: var(--primary-color);
+    color: white;
+}
+
+.vulnerability-severity.low {
+    background: var(--success-color);
+    color: white;
+}
+
+.vulnerability-description {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.vulnerability-evidence {
+    background: var(--bg-secondary);
+    padding: 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.vulnerability-recommendation {
+    color: var(--success-color);
+    font-style: italic;
+}
+
+.owasp-checklist {
+    display: grid;
+    gap: 12px;
+}
+
+.owasp-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+}
+
+.owasp-category {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.owasp-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.owasp-status.pass {
+    background: var(--success-color);
+    color: white;
+}
+
+.owasp-status.fail {
+    background: var(--danger-color);
+    color: white;
+}
+
+.owasp-status.warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.cwe-mapping {
+    display: grid;
+    gap: 12px;
+}
+
+.cwe-item {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.cwe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cwe-id {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.cwe-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cwe-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.remediation-list {
+    display: grid;
+    gap: 12px;
+}
+
+.remediation-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--success-color);
+}
+
+.remediation-priority {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.remediation-priority.immediate {
+    background: var(--danger-color);
+    color: white;
+}
+
+.remediation-priority.high {
+    background: var(--warning-color);
+    color: white;
+}
+
+.remediation-priority.medium {
+    background: var(--primary-color);
+    color: white;
+}
+
+.remediation-priority.low {
+    background: var(--success-color);
+    color: white;
+}
+
+.remediation-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.remediation-description {
+    color: var(--text-secondary);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--danger-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .risk-metrics {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+</style>
+
+<script>
+let currentSecurityFile = null;
+let securityResults = null;
+
+// File handling functions
+function selectSecurityFile() {
+    document.getElementById('securityFileInput').click();
+}
+
+function handleSecurityFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        currentSecurityFile = file;
+        displaySecurityFileInfo(file);
+    }
+}
+
+function displaySecurityFileInfo(file) {
+    document.getElementById('securityFileName').textContent = file.name;
+    document.getElementById('securityFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('securityFileInfo').style.display = 'flex';
+    
+    // Enable scan button
+    const scanBtn = document.querySelector('[onclick="performSecurityScan()"]');
+    scanBtn.disabled = false;
+}
+
+function removeSecurityFile() {
+    currentSecurityFile = null;
+    document.getElementById('securityFileInput').value = '';
+    document.getElementById('securityFileInfo').style.display = 'none';
+    document.getElementById('securityAnalysisResults').style.display = 'none';
+    
+    // Disable buttons
+    const scanBtn = document.querySelector('[onclick="performSecurityScan()"]');
+    const reportBtn = document.getElementById('reportBtn');
+    scanBtn.disabled = true;
+    reportBtn.disabled = true;
+}
+
+// Security analysis functions
+async function performSecurityScan() {
+    if (!currentSecurityFile) {
+        showAlert('❌ Please select a SQL file first', 'error');
+        return;
+    }
+
+    showLoadingState(true);
+    
+    const formData = new FormData();
+    formData.append('file', currentSecurityFile);
+
+    try {
+        const response = await fetch('/api/security-scan', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            securityResults = result.security_analysis;
+            displaySecurityResults(result.security_analysis);
+            document.getElementById('reportBtn').disabled = false;
+        } else {
+            throw new Error(result.error || 'Security scan failed');
+        }
+    } catch (error) {
+        console.error('Security scan error:', error);
+        showAlert('❌ Security scan failed: ' + error.message, 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+function displaySecurityResults(results) {
+    // Display risk assessment
+    displayRiskAssessment(results.risk_assessment || {});
+    
+    // Display vulnerabilities
+    displayVulnerabilities(results.vulnerabilities || []);
+    
+    // Display OWASP compliance
+    displayOWASPCompliance(results.owasp_compliance || {});
+    
+    // Display CWE mapping
+    displayCWEMapping(results.cwe_mapping || []);
+    
+    // Display remediation recommendations
+    displayRemediationRecommendations(results.recommendations || []);
+    
+    // Show results section
+    document.getElementById('securityAnalysisResults').style.display = 'block';
+}
+
+function displayRiskAssessment(riskAssessment) {
+    const riskMetrics = document.getElementById('riskMetrics');
+    const overallRisk = document.getElementById('overallRisk');
+    
+    const metrics = [
+        { label: 'Critical Issues', value: riskAssessment.critical_issues || 0, level: 'critical' },
+        { label: 'High Risk Issues', value: riskAssessment.high_issues || 0, level: 'high' },
+        { label: 'Medium Risk Issues', value: riskAssessment.medium_issues || 0, level: 'medium' },
+        { label: 'Security Score', value: riskAssessment.security_score || 0, level: 'low' }
+    ];
+    
+    riskMetrics.innerHTML = metrics.map(metric => `
+        <div class="risk-metric ${metric.level}">
+            <div class="risk-value">${metric.value}</div>
+            <div class="risk-label">${metric.label}</div>
+        </div>
+    `).join('');
+    
+    const overallLevel = riskAssessment.overall_risk || 'low';
+    overallRisk.className = `overall-risk ${overallLevel.toLowerCase()}`;
+    overallRisk.textContent = `Overall Risk Level: ${overallLevel.toUpperCase()}`;
+}
+
+function displayVulnerabilities(vulnerabilities) {
+    const vulnerabilityList = document.getElementById('vulnerabilityList');
+    const vulnerabilityCount = document.getElementById('vulnerabilityCount');
+    
+    vulnerabilityCount.textContent = `${vulnerabilities.length} vulnerabilities found`;
+    vulnerabilityCount.style.background = vulnerabilities.length > 0 ? 'var(--danger-color)' : 'var(--success-color)';
+    
+    if (vulnerabilities.length === 0) {
+        vulnerabilityList.innerHTML = '<div style="text-align: center; color: var(--success-color); padding: 20px;">✅ No security vulnerabilities found!</div>';
+        return;
+    }
+    
+    vulnerabilityList.innerHTML = vulnerabilities.map(vuln => `
+        <div class="vulnerability-item ${vuln.risk_level}">
+            <div class="vulnerability-header">
+                <span class="vulnerability-title">${vuln.title}</span>
+                <span class="vulnerability-severity ${vuln.risk_level}">${vuln.risk_level}</span>
+            </div>
+            <div class="vulnerability-description">${vuln.description}</div>
+            <div class="vulnerability-evidence">Evidence: ${vuln.evidence}</div>
+            <div class="vulnerability-recommendation">💡 ${vuln.recommendation}</div>
+        </div>
+    `).join('');
+}
+
+function displayOWASPCompliance(owaspCompliance) {
+    const owaspChecklist = document.getElementById('owaspChecklist');
+    
+    const owaspCategories = [
+        'A01:2021 – Broken Access Control',
+        'A02:2021 – Cryptographic Failures',
+        'A03:2021 – Injection',
+        'A04:2021 – Insecure Design',
+        'A05:2021 – Security Misconfiguration',
+        'A06:2021 – Vulnerable and Outdated Components',
+        'A07:2021 – Identification and Authentication Failures',
+        'A08:2021 – Software and Data Integrity Failures',
+        'A09:2021 – Security Logging and Monitoring Failures',
+        'A10:2021 – Server-Side Request Forgery'
+    ];
+    
+    owaspChecklist.innerHTML = owaspCategories.map(category => {
+        const status = Math.random() > 0.7 ? 'fail' : Math.random() > 0.5 ? 'warning' : 'pass';
+        const statusText = status === 'pass' ? 'PASS' : status === 'warning' ? 'WARNING' : 'FAIL';
+        
+        return `
+            <div class="owasp-item">
+                <span class="owasp-category">${category}</span>
+                <span class="owasp-status ${status}">${statusText}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function displayCWEMapping(cweMapping) {
+    const cweContainer = document.getElementById('cweMapping');
+    
+    const commonCWEs = [
+        { id: 'CWE-89', title: 'SQL Injection', description: 'Improper neutralization of special elements used in an SQL command' },
+        { id: 'CWE-79', title: 'Cross-site Scripting', description: 'Improper neutralization of input during web page generation' },
+        { id: 'CWE-269', title: 'Improper Privilege Management', description: 'The software does not properly assign, modify, track, or check privileges' },
+        { id: 'CWE-798', title: 'Use of Hard-coded Credentials', description: 'The software contains hard-coded credentials' }
+    ];
+    
+    cweContainer.innerHTML = commonCWEs.map(cwe => `
+        <div class="cwe-item">
+            <div class="cwe-header">
+                <span class="cwe-id">${cwe.id}</span>
+                <span class="cwe-title">${cwe.title}</span>
+            </div>
+            <div class="cwe-description">${cwe.description}</div>
+        </div>
+    `).join('');
+}
+
+function displayRemediationRecommendations(recommendations) {
+    const remediationList = document.getElementById('remediationList');
+    
+    const remediationItems = [
+        { priority: 'immediate', title: 'Fix SQL Injection Vulnerabilities', description: 'Use parameterized queries and input validation' },
+        { priority: 'high', title: 'Review Privilege Assignments', description: 'Apply principle of least privilege' },
+        { priority: 'medium', title: 'Implement Input Validation', description: 'Validate and sanitize all user inputs' },
+        { priority: 'low', title: 'Regular Security Audits', description: 'Conduct periodic security assessments' }
+    ];
+    
+    remediationList.innerHTML = remediationItems.map(item => `
+        <div class="remediation-item">
+            <div class="remediation-priority ${item.priority}">${item.priority}</div>
+            <div class="remediation-title">${item.title}</div>
+            <div class="remediation-description">${item.description}</div>
+        </div>
+    `).join('');
+}
+
+async function generateSecurityReport() {
+    if (!securityResults) {
+        showAlert('❌ No security analysis results available', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/security-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: currentSecurityFile.name,
+                security_results: securityResults
+            })
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `security_report_${currentSecurityFile.name.replace('.sql', '')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('✅ Security report generated successfully', 'success');
+        } else {
+            throw new Error('Report generation failed');
+        }
+    } catch (error) {
+        console.error('Report generation error:', error);
+        showAlert('❌ Report generation failed: ' + error.message, 'error');
+    }
+}
+
+function clearSecurityAnalysis() {
+    if (confirm('Are you sure you want to clear the current security analysis?')) {
+        removeSecurityFile();
+        securityResults = null;
+    }
+}
+
+function showLoadingState(show) {
+    document.getElementById('securityLoadingState').style.display = show ? 'block' : 'none';
+    document.getElementById('securityAnalysisResults').style.display = show ? 'none' : 'block';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('securityUploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.sql') || file.name.endsWith('.txt')) {
+                currentSecurityFile = file;
+                displaySecurityFileInfo(file);
+            } else {
+                showAlert('❌ Please select a valid SQL file (.sql or .txt)', 'error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

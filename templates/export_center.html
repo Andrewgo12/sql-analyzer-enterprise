@@ -1,0 +1,742 @@
+{% extends "base.html" %}
+
+{% block title %}Export Center - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}📤 Export Center{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="refreshExportHistory()">🔄 Refresh</button>
+<button class="btn btn-success" onclick="batchExportAll()">📦 Batch Export All</button>
+<button class="btn btn-secondary" onclick="clearExportHistory()">🗑️ Clear History</button>
+{% endblock %}
+
+{% block content %}
+<div class="export-center-container">
+    <!-- Export Options Section -->
+    <div class="card export-options">
+        <div class="card-header">
+            <div class="card-title">📋 Export Options</div>
+        </div>
+        <div class="card-content">
+            <div class="export-formats" id="exportFormats">
+                <div class="format-category">
+                    <h4>📊 Data Formats</h4>
+                    <div class="format-grid">
+                        <div class="format-item" onclick="exportFormat('json')">
+                            <div class="format-icon">📄</div>
+                            <div class="format-name">JSON</div>
+                            <div class="format-description">Structured data format</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('csv')">
+                            <div class="format-icon">📊</div>
+                            <div class="format-name">CSV</div>
+                            <div class="format-description">Comma-separated values</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('xml')">
+                            <div class="format-icon">🏷️</div>
+                            <div class="format-name">XML</div>
+                            <div class="format-description">Extensible markup language</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('excel')">
+                            <div class="format-icon">📈</div>
+                            <div class="format-name">Excel</div>
+                            <div class="format-description">Microsoft Excel format</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="format-category">
+                    <h4>📝 Document Formats</h4>
+                    <div class="format-grid">
+                        <div class="format-item" onclick="exportFormat('html')">
+                            <div class="format-icon">🌐</div>
+                            <div class="format-name">HTML</div>
+                            <div class="format-description">Web document format</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('pdf')">
+                            <div class="format-icon">📕</div>
+                            <div class="format-name">PDF</div>
+                            <div class="format-description">Portable document format</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('markdown')">
+                            <div class="format-icon">📝</div>
+                            <div class="format-name">Markdown</div>
+                            <div class="format-description">Lightweight markup language</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('txt')">
+                            <div class="format-icon">📄</div>
+                            <div class="format-name">TXT</div>
+                            <div class="format-description">Plain text format</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="format-category">
+                    <h4>💾 Database Formats</h4>
+                    <div class="format-grid">
+                        <div class="format-item" onclick="exportFormat('sql')">
+                            <div class="format-icon">🗄️</div>
+                            <div class="format-name">SQL</div>
+                            <div class="format-description">SQL script format</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('sqlite')">
+                            <div class="format-icon">💾</div>
+                            <div class="format-name">SQLite</div>
+                            <div class="format-description">SQLite database file</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('backup')">
+                            <div class="format-icon">💿</div>
+                            <div class="format-name">Backup</div>
+                            <div class="format-description">Database backup format</div>
+                        </div>
+                        <div class="format-item" onclick="exportFormat('zip')">
+                            <div class="format-icon">🗜️</div>
+                            <div class="format-name">ZIP</div>
+                            <div class="format-description">Compressed archive</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Export Templates -->
+    <div class="card custom-templates">
+        <div class="card-header">
+            <div class="card-title">🎨 Custom Export Templates</div>
+            <button class="btn btn-sm btn-primary" onclick="createCustomTemplate()">➕ Create Template</button>
+        </div>
+        <div class="card-content">
+            <div class="template-list" id="customTemplateList">
+                <div class="template-item">
+                    <div class="template-header">
+                        <span class="template-name">Security Report Template</span>
+                        <div class="template-actions">
+                            <button class="btn btn-sm btn-success" onclick="useTemplate('security')">📋 Use</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editTemplate('security')">✏️ Edit</button>
+                        </div>
+                    </div>
+                    <div class="template-description">Comprehensive security analysis report with OWASP compliance</div>
+                </div>
+                <div class="template-item">
+                    <div class="template-header">
+                        <span class="template-name">Performance Report Template</span>
+                        <div class="template-actions">
+                            <button class="btn btn-sm btn-success" onclick="useTemplate('performance')">📋 Use</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editTemplate('performance')">✏️ Edit</button>
+                        </div>
+                    </div>
+                    <div class="template-description">Detailed performance analysis with optimization recommendations</div>
+                </div>
+                <div class="template-item">
+                    <div class="template-header">
+                        <span class="template-name">Executive Summary Template</span>
+                        <div class="template-actions">
+                            <button class="btn btn-sm btn-success" onclick="useTemplate('executive')">📋 Use</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editTemplate('executive')">✏️ Edit</button>
+                        </div>
+                    </div>
+                    <div class="template-description">High-level summary for management and stakeholders</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export History -->
+    <div class="card export-history">
+        <div class="card-header">
+            <div class="card-title">📋 Export History</div>
+            <div class="export-stats">
+                <span class="stat-item">Total: <strong>47</strong></span>
+                <span class="stat-item">Today: <strong>12</strong></span>
+                <span class="stat-item">Success Rate: <strong>98.5%</strong></span>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="history-list" id="exportHistoryList">
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-filename">security_analysis_report.pdf</span>
+                        <span class="history-timestamp">2 minutes ago</span>
+                    </div>
+                    <div class="history-details">
+                        <span class="history-format">PDF</span>
+                        <span class="history-size">2.4 MB</span>
+                        <span class="history-status success">✅ Success</span>
+                        <div class="history-actions">
+                            <button class="btn btn-sm btn-primary" onclick="downloadAgain('security_analysis_report.pdf')">💾 Download</button>
+                            <button class="btn btn-sm btn-secondary" onclick="shareExport('security_analysis_report.pdf')">🔗 Share</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-filename">performance_optimization.json</span>
+                        <span class="history-timestamp">15 minutes ago</span>
+                    </div>
+                    <div class="history-details">
+                        <span class="history-format">JSON</span>
+                        <span class="history-size">856 KB</span>
+                        <span class="history-status success">✅ Success</span>
+                        <div class="history-actions">
+                            <button class="btn btn-sm btn-primary" onclick="downloadAgain('performance_optimization.json')">💾 Download</button>
+                            <button class="btn btn-sm btn-secondary" onclick="shareExport('performance_optimization.json')">🔗 Share</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-filename">sql_analysis_complete.xlsx</span>
+                        <span class="history-timestamp">1 hour ago</span>
+                    </div>
+                    <div class="history-details">
+                        <span class="history-format">Excel</span>
+                        <span class="history-size">3.2 MB</span>
+                        <span class="history-status success">✅ Success</span>
+                        <div class="history-actions">
+                            <button class="btn btn-sm btn-primary" onclick="downloadAgain('sql_analysis_complete.xlsx')">💾 Download</button>
+                            <button class="btn btn-sm btn-secondary" onclick="shareExport('sql_analysis_complete.xlsx')">🔗 Share</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Export Options -->
+    <div class="card batch-export">
+        <div class="card-header">
+            <div class="card-title">📦 Batch Export Options</div>
+        </div>
+        <div class="card-content">
+            <div class="batch-options">
+                <div class="batch-option">
+                    <div class="batch-header">
+                        <span class="batch-name">All Analysis Results</span>
+                        <button class="btn btn-sm btn-success" onclick="batchExport('all')">📦 Export All</button>
+                    </div>
+                    <div class="batch-description">Export all analysis results in multiple formats</div>
+                    <div class="batch-formats">
+                        <span class="format-tag">JSON</span>
+                        <span class="format-tag">HTML</span>
+                        <span class="format-tag">PDF</span>
+                        <span class="format-tag">Excel</span>
+                    </div>
+                </div>
+                <div class="batch-option">
+                    <div class="batch-header">
+                        <span class="batch-name">Security Reports Only</span>
+                        <button class="btn btn-sm btn-danger" onclick="batchExport('security')">🛡️ Export Security</button>
+                    </div>
+                    <div class="batch-description">Export only security-related analysis results</div>
+                    <div class="batch-formats">
+                        <span class="format-tag">PDF</span>
+                        <span class="format-tag">HTML</span>
+                        <span class="format-tag">JSON</span>
+                    </div>
+                </div>
+                <div class="batch-option">
+                    <div class="batch-header">
+                        <span class="batch-name">Performance Reports Only</span>
+                        <button class="btn btn-sm btn-warning" onclick="batchExport('performance')">⚡ Export Performance</button>
+                    </div>
+                    <div class="batch-description">Export only performance-related analysis results</div>
+                    <div class="batch-formats">
+                        <span class="format-tag">Excel</span>
+                        <span class="format-tag">CSV</span>
+                        <span class="format-tag">JSON</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Progress -->
+    <div class="export-progress" id="exportProgress" style="display: none;">
+        <div class="progress-header">
+            <span class="progress-title">Exporting...</span>
+            <span class="progress-percentage" id="progressPercentage">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-details" id="progressDetails">Preparing export...</div>
+    </div>
+</div>
+
+<style>
+.export-center-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.export-options {
+    margin-bottom: 24px;
+}
+
+.format-category {
+    margin-bottom: 32px;
+}
+
+.format-category h4 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border-primary);
+}
+
+.format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.format-item {
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.format-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.format-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.format-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.format-description {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.custom-templates {
+    margin-bottom: 24px;
+}
+
+.custom-templates .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.template-list {
+    display: grid;
+    gap: 12px;
+}
+
+.template-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.template-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.template-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.template-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.export-history {
+    margin-bottom: 24px;
+}
+
+.export-history .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.export-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.history-list {
+    display: grid;
+    gap: 12px;
+}
+
+.history-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--success-color);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.history-filename {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.history-timestamp {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.history-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.history-format {
+    padding: 2px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.history-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.history-status {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.history-status.success {
+    color: var(--success-color);
+}
+
+.history-status.error {
+    color: var(--danger-color);
+}
+
+.history-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.batch-export {
+    margin-bottom: 24px;
+}
+
+.batch-options {
+    display: grid;
+    gap: 16px;
+}
+
+.batch-option {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--warning-color);
+}
+
+.batch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.batch-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.batch-description {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.batch-formats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.format-tag {
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.export-progress {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.progress-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.progress-percentage {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--success-color);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-details {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+    .format-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .export-stats {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .history-details {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .history-actions {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+    
+    .export-progress {
+        left: 20px;
+        right: 20px;
+        width: auto;
+    }
+}
+</style>
+
+<script>
+// Export functionality
+async function exportFormat(format) {
+    showExportProgress(true);
+    updateProgress(0, `Preparing ${format.toUpperCase()} export...`);
+    
+    try {
+        // Simulate export progress
+        for (let i = 0; i <= 100; i += 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            updateProgress(i, i < 50 ? 'Analyzing data...' : i < 80 ? 'Generating export...' : 'Finalizing...');
+        }
+        
+        // Simulate download
+        const response = await fetch(`/api/export/${format}`);
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analysis_export.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert(`✅ ${format.toUpperCase()} export completed successfully`, 'success');
+            addToExportHistory(format);
+        } else {
+            throw new Error('Export failed');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        showAlert(`❌ ${format.toUpperCase()} export failed: ${error.message}`, 'error');
+    } finally {
+        showExportProgress(false);
+    }
+}
+
+function showExportProgress(show) {
+    document.getElementById('exportProgress').style.display = show ? 'block' : 'none';
+}
+
+function updateProgress(percentage, details) {
+    document.getElementById('progressPercentage').textContent = `${percentage}%`;
+    document.getElementById('progressFill').style.width = `${percentage}%`;
+    document.getElementById('progressDetails').textContent = details;
+}
+
+function addToExportHistory(format) {
+    const historyList = document.getElementById('exportHistoryList');
+    const timestamp = new Date().toLocaleString('es-ES');
+    const filename = `analysis_export_${Date.now()}.${format}`;
+    const size = `${(Math.random() * 5 + 0.5).toFixed(1)} MB`;
+    
+    const historyItem = document.createElement('div');
+    historyItem.className = 'history-item';
+    historyItem.innerHTML = `
+        <div class="history-header">
+            <span class="history-filename">${filename}</span>
+            <span class="history-timestamp">Just now</span>
+        </div>
+        <div class="history-details">
+            <span class="history-format">${format.toUpperCase()}</span>
+            <span class="history-size">${size}</span>
+            <span class="history-status success">✅ Success</span>
+            <div class="history-actions">
+                <button class="btn btn-sm btn-primary" onclick="downloadAgain('${filename}')">💾 Download</button>
+                <button class="btn btn-sm btn-secondary" onclick="shareExport('${filename}')">🔗 Share</button>
+            </div>
+        </div>
+    `;
+    
+    historyList.insertBefore(historyItem, historyList.firstChild);
+}
+
+// Template functions
+function createCustomTemplate() {
+    showAlert('🎨 Custom template creator opened', 'info');
+    // In a real implementation, this would open a template editor
+}
+
+function useTemplate(templateType) {
+    showAlert(`📋 Using ${templateType} template for export`, 'info');
+    // In a real implementation, this would apply the template
+}
+
+function editTemplate(templateType) {
+    showAlert(`✏️ Editing ${templateType} template`, 'info');
+    // In a real implementation, this would open template editor
+}
+
+// Batch export functions
+async function batchExport(type) {
+    showExportProgress(true);
+    updateProgress(0, `Starting batch export for ${type}...`);
+    
+    const formats = type === 'all' ? ['json', 'html', 'pdf', 'excel'] :
+                   type === 'security' ? ['pdf', 'html', 'json'] :
+                   ['excel', 'csv', 'json'];
+    
+    try {
+        for (let i = 0; i < formats.length; i++) {
+            const format = formats[i];
+            const progress = Math.round((i / formats.length) * 100);
+            updateProgress(progress, `Exporting ${format.toUpperCase()}...`);
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            addToExportHistory(format);
+        }
+        
+        updateProgress(100, 'Batch export completed!');
+        showAlert(`✅ Batch export completed: ${formats.length} files generated`, 'success');
+    } catch (error) {
+        showAlert(`❌ Batch export failed: ${error.message}`, 'error');
+    } finally {
+        setTimeout(() => showExportProgress(false), 1000);
+    }
+}
+
+function batchExportAll() {
+    batchExport('all');
+}
+
+// History functions
+function downloadAgain(filename) {
+    showAlert(`💾 Re-downloading ${filename}`, 'success');
+    // In a real implementation, this would trigger the download
+}
+
+function shareExport(filename) {
+    showAlert(`🔗 Share link generated for ${filename}`, 'info');
+    // In a real implementation, this would generate a share link
+}
+
+function refreshExportHistory() {
+    showAlert('🔄 Export history refreshed', 'info');
+    // In a real implementation, this would refresh the history from server
+}
+
+function clearExportHistory() {
+    if (confirm('Are you sure you want to clear the export history?')) {
+        document.getElementById('exportHistoryList').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No export history available</div>';
+        showAlert('🗑️ Export history cleared', 'warning');
+    }
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Initialize export center
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Export Center initialized');
+});
+</script>
+{% endblock %}

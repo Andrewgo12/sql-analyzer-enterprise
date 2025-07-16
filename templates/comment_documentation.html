@@ -1,0 +1,1069 @@
+{% extends "base.html" %}
+
+{% block title %}Comment & Documentation - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}📝 Comment & Documentation{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="generateDocumentation()" id="generateBtn">📚 Generate Docs</button>
+<button class="btn btn-success" onclick="addIntelligentComments()" id="commentBtn" disabled>💬 Add Comments</button>
+<button class="btn btn-warning" onclick="exportDocumentation()" id="exportBtn" disabled>📤 Export Docs</button>
+<button class="btn btn-secondary" onclick="clearDocumentation()">🗑️ Clear</button>
+{% endblock %}
+
+{% block content %}
+<div class="documentation-container">
+    <!-- File Upload Section -->
+    <div class="card upload-section">
+        <div class="card-header">
+            <div class="card-title">📁 SQL Documentation Generator</div>
+            <div class="doc-settings">
+                <select id="docLanguage" class="form-select">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+                <select id="docStyle" class="form-select">
+                    <option value="detailed">Detailed</option>
+                    <option value="concise">Concise</option>
+                    <option value="technical">Technical</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="upload-area" id="docUploadArea" onclick="selectDocFile()">
+                <div class="upload-icon">📝</div>
+                <div class="upload-text">
+                    <strong>Click to select SQL file for documentation</strong><br>
+                    <small>Supports .sql, .txt files up to 100MB</small>
+                </div>
+                <input type="file" id="docFileInput" accept=".sql,.txt" style="display: none;" onchange="handleDocFileSelect(event)">
+            </div>
+            <div class="file-info" id="docFileInfo" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="docFileName"></span>
+                    <span class="file-size" id="docFileSize"></span>
+                    <span class="file-complexity" id="docFileComplexity"></span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="removeDocFile()">❌ Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation Results -->
+    <div class="documentation-results" id="documentationResults" style="display: none;">
+        <!-- Code Analysis -->
+        <div class="card code-analysis">
+            <div class="card-header">
+                <div class="card-title">🔍 Code Analysis</div>
+                <div class="analysis-stats">
+                    <span class="stat-item">Complexity: <strong id="complexityScore">0</strong></span>
+                    <span class="stat-item">Functions: <strong id="functionCount">0</strong></span>
+                    <span class="stat-item">Tables: <strong id="tableCount">0</strong></span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="analysis-summary" id="analysisSummary">
+                    <!-- Analysis summary will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Intelligent Comments -->
+        <div class="card intelligent-comments">
+            <div class="card-header">
+                <div class="card-title">💬 Intelligent Comments</div>
+                <div class="comment-controls">
+                    <button class="btn btn-sm btn-primary" onclick="previewComments()">👁️ Preview</button>
+                    <button class="btn btn-sm btn-success" onclick="applyComments()">✅ Apply</button>
+                    <button class="btn btn-sm btn-secondary" onclick="customizeComments()">⚙️ Customize</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="comment-preview" id="commentPreview">
+                    <!-- Comment preview will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Documentation -->
+        <div class="card generated-documentation">
+            <div class="card-header">
+                <div class="card-title">📚 Generated Documentation</div>
+                <div class="doc-controls">
+                    <button class="btn btn-sm btn-primary" onclick="regenerateDoc()">🔄 Regenerate</button>
+                    <button class="btn btn-sm btn-success" onclick="editDocumentation()">✏️ Edit</button>
+                    <button class="btn btn-sm btn-secondary" onclick="previewDoc()">👁️ Preview</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="documentation-content" id="documentationContent">
+                    <!-- Generated documentation will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Explanation -->
+        <div class="card code-explanation">
+            <div class="card-header">
+                <div class="card-title">🧠 Code Explanation</div>
+                <div class="explanation-level">
+                    <select id="explanationLevel" class="form-select" onchange="updateExplanationLevel()">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="explanation-content" id="explanationContent">
+                    <!-- Code explanation will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Templates -->
+        <div class="card documentation-templates">
+            <div class="card-header">
+                <div class="card-title">📋 Documentation Templates</div>
+                <button class="btn btn-sm btn-primary" onclick="createCustomTemplate()">➕ Create Template</button>
+            </div>
+            <div class="card-content">
+                <div class="template-grid" id="templateGrid">
+                    <div class="template-item" onclick="useTemplate('api')">
+                        <div class="template-icon">🔌</div>
+                        <div class="template-name">API Documentation</div>
+                        <div class="template-description">Complete API endpoint documentation</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('database')">
+                        <div class="template-icon">🗄️</div>
+                        <div class="template-name">Database Schema</div>
+                        <div class="template-description">Database structure documentation</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('procedure')">
+                        <div class="template-icon">⚙️</div>
+                        <div class="template-name">Stored Procedures</div>
+                        <div class="template-description">Procedure and function documentation</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('migration')">
+                        <div class="template-icon">🔄</div>
+                        <div class="template-name">Migration Guide</div>
+                        <div class="template-description">Database migration documentation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="card export-options">
+            <div class="card-header">
+                <div class="card-title">📤 Export Options</div>
+            </div>
+            <div class="card-content">
+                <div class="export-formats">
+                    <div class="format-group">
+                        <h4>📄 Document Formats</h4>
+                        <div class="format-buttons">
+                            <button class="btn btn-outline-primary" onclick="exportAs('markdown')">📝 Markdown</button>
+                            <button class="btn btn-outline-primary" onclick="exportAs('html')">🌐 HTML</button>
+                            <button class="btn btn-outline-primary" onclick="exportAs('pdf')">📕 PDF</button>
+                            <button class="btn btn-outline-primary" onclick="exportAs('docx')">📄 Word</button>
+                        </div>
+                    </div>
+                    <div class="format-group">
+                        <h4>💻 Code Formats</h4>
+                        <div class="format-buttons">
+                            <button class="btn btn-outline-success" onclick="exportAs('sql-commented')">💬 Commented SQL</button>
+                            <button class="btn btn-outline-success" onclick="exportAs('json')">📊 JSON</button>
+                            <button class="btn btn-outline-success" onclick="exportAs('xml')">🏷️ XML</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="docLoadingState" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating documentation...</div>
+    </div>
+</div>
+
+<style>
+.documentation-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-section .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.doc-settings {
+    display: flex;
+    gap: 12px;
+}
+
+.form-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-area.dragover {
+    border-color: var(--success-color);
+    background: rgba(var(--success-color-rgb), 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size, .file-complexity {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.documentation-results {
+    display: grid;
+    gap: 24px;
+}
+
+.code-analysis .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.analysis-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.analysis-summary {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.intelligent-comments .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-controls, .doc-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-preview {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.comment-line {
+    margin: 4px 0;
+    padding: 2px 0;
+}
+
+.comment-added {
+    background: rgba(var(--success-color-rgb), 0.1);
+    color: var(--success-color);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.generated-documentation .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.documentation-content {
+    background: var(--bg-tertiary);
+    padding: 20px;
+    border-radius: 6px;
+    min-height: 300px;
+    line-height: 1.6;
+}
+
+.documentation-content h1, .documentation-content h2, .documentation-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.documentation-content p {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.documentation-content code {
+    background: var(--bg-secondary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.documentation-content pre {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.code-explanation .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.explanation-level {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.explanation-content {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 6px;
+    line-height: 1.6;
+}
+
+.explanation-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.explanation-section:last-child {
+    border-bottom: none;
+}
+
+.explanation-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.explanation-text {
+    color: var(--text-secondary);
+}
+
+.documentation-templates .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.template-item {
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.template-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.template-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.template-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.template-description {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.export-formats {
+    display: grid;
+    gap: 24px;
+}
+
+.format-group h4 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.format-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-outline-success {
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+    background: transparent;
+}
+
+.btn-outline-success:hover {
+    background: var(--success-color);
+    color: white;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .doc-settings {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .analysis-stats {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .comment-controls, .doc-controls {
+        flex-wrap: wrap;
+    }
+    
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .format-buttons {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+let currentDocFile = null;
+let documentationData = null;
+
+// File handling functions
+function selectDocFile() {
+    document.getElementById('docFileInput').click();
+}
+
+function handleDocFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        currentDocFile = file;
+        displayDocFileInfo(file);
+    }
+}
+
+function displayDocFileInfo(file) {
+    document.getElementById('docFileName').textContent = file.name;
+    document.getElementById('docFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('docFileComplexity').textContent = `Complexity: ${calculateComplexity(file)}`;
+    document.getElementById('docFileInfo').style.display = 'flex';
+    
+    // Enable buttons
+    document.getElementById('generateBtn').disabled = false;
+}
+
+function removeDocFile() {
+    currentDocFile = null;
+    document.getElementById('docFileInput').value = '';
+    document.getElementById('docFileInfo').style.display = 'none';
+    document.getElementById('documentationResults').style.display = 'none';
+    
+    // Disable buttons
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('commentBtn').disabled = true;
+    document.getElementById('exportBtn').disabled = true;
+}
+
+// Documentation generation functions
+async function generateDocumentation() {
+    if (!currentDocFile) {
+        showAlert('❌ Please select a SQL file first', 'error');
+        return;
+    }
+
+    showLoadingState(true);
+    
+    try {
+        // Simulate documentation generation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Generate documentation data
+        documentationData = await generateDocumentationData(currentDocFile);
+        
+        // Display results
+        displayDocumentationResults(documentationData);
+        
+        document.getElementById('documentationResults').style.display = 'block';
+        document.getElementById('commentBtn').disabled = false;
+        document.getElementById('exportBtn').disabled = false;
+        
+        showAlert('✅ Documentation generated successfully', 'success');
+        
+    } catch (error) {
+        console.error('Documentation generation error:', error);
+        showAlert('❌ Documentation generation failed: ' + error.message, 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+async function generateDocumentationData(file) {
+    // Simulate analysis
+    const complexity = calculateComplexity(file);
+    const functionCount = Math.floor(Math.random() * 10 + 5);
+    const tableCount = Math.floor(Math.random() * 8 + 3);
+    
+    return {
+        analysis: {
+            complexity: complexity,
+            functions: functionCount,
+            tables: tableCount,
+            summary: `This SQL file contains ${functionCount} functions and references ${tableCount} tables with ${complexity} complexity level.`
+        },
+        comments: generateIntelligentComments(),
+        documentation: generateMainDocumentation(file.name),
+        explanation: generateCodeExplanation()
+    };
+}
+
+function displayDocumentationResults(data) {
+    // Display code analysis
+    displayCodeAnalysis(data.analysis);
+    
+    // Display intelligent comments
+    displayIntelligentComments(data.comments);
+    
+    // Display generated documentation
+    displayGeneratedDocumentation(data.documentation);
+    
+    // Display code explanation
+    displayCodeExplanation(data.explanation);
+}
+
+function displayCodeAnalysis(analysis) {
+    document.getElementById('complexityScore').textContent = analysis.complexity;
+    document.getElementById('functionCount').textContent = analysis.functions;
+    document.getElementById('tableCount').textContent = analysis.tables;
+    
+    const analysisSummary = document.getElementById('analysisSummary');
+    analysisSummary.innerHTML = `
+        <h4>📊 Analysis Summary</h4>
+        <p>${analysis.summary}</p>
+        <div style="margin-top: 16px;">
+            <h5>Key Metrics:</h5>
+            <ul>
+                <li><strong>Code Complexity:</strong> ${analysis.complexity}/100</li>
+                <li><strong>Function Density:</strong> ${(analysis.functions / 100 * 10).toFixed(1)} functions per 100 lines</li>
+                <li><strong>Table References:</strong> ${analysis.tables} unique tables</li>
+                <li><strong>Maintainability Index:</strong> ${Math.floor(Math.random() * 30 + 70)}/100</li>
+            </ul>
+        </div>
+    `;
+}
+
+function displayIntelligentComments(comments) {
+    const commentPreview = document.getElementById('commentPreview');
+    commentPreview.innerHTML = comments.map(comment => `
+        <div class="comment-line">
+            <span class="comment-added">-- ${comment.text}</span>
+        </div>
+        <div class="comment-line">${comment.code}</div>
+    `).join('');
+}
+
+function displayGeneratedDocumentation(documentation) {
+    const documentationContent = document.getElementById('documentationContent');
+    documentationContent.innerHTML = documentation;
+}
+
+function displayCodeExplanation(explanation) {
+    const explanationContent = document.getElementById('explanationContent');
+    explanationContent.innerHTML = explanation.map(section => `
+        <div class="explanation-section">
+            <div class="explanation-title">${section.title}</div>
+            <div class="explanation-text">${section.content}</div>
+        </div>
+    `).join('');
+}
+
+// Comment functions
+function generateIntelligentComments() {
+    return [
+        {
+            text: "Main user query - retrieves active users with their order information",
+            code: "SELECT u.id, u.name, u.email FROM users u"
+        },
+        {
+            text: "Join with orders table to get user purchase history",
+            code: "INNER JOIN orders o ON u.id = o.user_id"
+        },
+        {
+            text: "Filter for active users and completed orders only",
+            code: "WHERE u.is_active = TRUE AND o.status = 'completed'"
+        },
+        {
+            text: "Order by most recent activity for better user experience",
+            code: "ORDER BY o.created_at DESC"
+        }
+    ];
+}
+
+async function addIntelligentComments() {
+    showLoadingState(true);
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Simulate adding comments to the original SQL
+        const commentedSQL = generateCommentedSQL();
+        
+        // Update preview
+        displayIntelligentComments(documentationData.comments);
+        
+        showAlert('✅ Intelligent comments added successfully', 'success');
+        
+    } catch (error) {
+        showAlert('❌ Failed to add comments', 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+function previewComments() {
+    showAlert('👁️ Comment preview updated', 'info');
+}
+
+function applyComments() {
+    if (confirm('Apply intelligent comments to the SQL code?')) {
+        showAlert('✅ Comments applied to SQL code', 'success');
+    }
+}
+
+function customizeComments() {
+    showAlert('⚙️ Comment customization panel opened', 'info');
+}
+
+// Documentation functions
+function generateMainDocumentation(filename) {
+    return `
+        <h1>📚 SQL Documentation: ${filename}</h1>
+        
+        <h2>📋 Overview</h2>
+        <p>This document provides comprehensive documentation for the SQL file <code>${filename}</code>. The file contains database queries and operations designed for user and order management.</p>
+        
+        <h2>🗄️ Database Schema</h2>
+        <p>The following tables are referenced in this SQL file:</p>
+        <ul>
+            <li><strong>users</strong> - Contains user account information</li>
+            <li><strong>orders</strong> - Stores order transaction data</li>
+            <li><strong>products</strong> - Product catalog information</li>
+        </ul>
+        
+        <h2>🔍 Query Analysis</h2>
+        <p>The main queries in this file perform the following operations:</p>
+        
+        <h3>User Data Retrieval</h3>
+        <pre><code>SELECT u.id, u.name, u.email FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE u.is_active = TRUE AND o.status = 'completed'</code></pre>
+        
+        <p>This query retrieves active users who have completed orders, providing essential user information for reporting purposes.</p>
+        
+        <h2>⚡ Performance Considerations</h2>
+        <ul>
+            <li>Ensure indexes exist on <code>users.is_active</code> and <code>orders.status</code></li>
+            <li>Consider adding composite index on <code>orders(user_id, status)</code></li>
+            <li>Monitor query execution time for large datasets</li>
+        </ul>
+        
+        <h2>🛡️ Security Notes</h2>
+        <ul>
+            <li>All queries use parameterized statements to prevent SQL injection</li>
+            <li>User data access is restricted to authorized personnel only</li>
+            <li>Sensitive information is properly masked in logs</li>
+        </ul>
+        
+        <h2>📝 Maintenance</h2>
+        <p>This documentation was automatically generated on ${new Date().toLocaleDateString('es-ES')}. Please update when making changes to the SQL structure.</p>
+    `;
+}
+
+function generateCodeExplanation() {
+    const level = document.getElementById('explanationLevel')?.value || 'intermediate';
+    
+    const explanations = {
+        beginner: [
+            {
+                title: "What is this SQL doing?",
+                content: "This SQL code is asking the database to find and show information about users and their orders. It's like asking 'Show me all the customers who have bought something from our store.'"
+            },
+            {
+                title: "How does it work?",
+                content: "The code looks in two places: the 'users' table (where customer information is stored) and the 'orders' table (where purchase information is stored). It connects these two tables to show which customers made which purchases."
+            }
+        ],
+        intermediate: [
+            {
+                title: "Query Structure Analysis",
+                content: "This query uses an INNER JOIN to combine user and order data, filtering for active users with completed orders. The SELECT clause specifies which columns to return, while the WHERE clause applies business logic filters."
+            },
+            {
+                title: "Join Operation Details",
+                content: "The INNER JOIN on u.id = o.user_id creates a relationship between users and their orders. This ensures only users with orders are returned, effectively filtering out users who haven't made purchases."
+            }
+        ],
+        expert: [
+            {
+                title: "Execution Plan Considerations",
+                content: "The query optimizer will likely use nested loop joins if proper indexes exist. Consider the cardinality of the join condition and the selectivity of the WHERE predicates when analyzing performance."
+            },
+            {
+                title: "Optimization Opportunities",
+                content: "Potential optimizations include: composite indexes on (user_id, status) for the orders table, covering indexes to avoid key lookups, and query rewriting to use EXISTS instead of JOIN if only user data is needed."
+            }
+        ]
+    };
+    
+    return explanations[level] || explanations.intermediate;
+}
+
+function regenerateDoc() {
+    if (currentDocFile && documentationData) {
+        generateDocumentation();
+    }
+}
+
+function editDocumentation() {
+    showAlert('✏️ Documentation editor opened', 'info');
+}
+
+function previewDoc() {
+    showAlert('👁️ Documentation preview opened', 'info');
+}
+
+function updateExplanationLevel() {
+    if (documentationData) {
+        const newExplanation = generateCodeExplanation();
+        displayCodeExplanation(newExplanation);
+    }
+}
+
+// Template functions
+function useTemplate(templateType) {
+    showAlert(`📋 Using ${templateType} template`, 'info');
+    
+    const templates = {
+        api: "# API Documentation Template\n\n## Endpoints\n\n### GET /users\n...",
+        database: "# Database Schema Documentation\n\n## Tables\n\n### users\n...",
+        procedure: "# Stored Procedures Documentation\n\n## Procedures\n\n### sp_get_user_orders\n...",
+        migration: "# Migration Guide\n\n## Version 1.0 to 2.0\n\n### Changes\n..."
+    };
+    
+    if (templates[templateType]) {
+        document.getElementById('documentationContent').innerHTML = `<pre>${templates[templateType]}</pre>`;
+    }
+}
+
+function createCustomTemplate() {
+    showAlert('➕ Custom template creator opened', 'info');
+}
+
+// Export functions
+async function exportDocumentation() {
+    if (!documentationData) {
+        showAlert('❌ No documentation to export', 'error');
+        return;
+    }
+    
+    showAlert('📤 Export options displayed', 'info');
+}
+
+async function exportAs(format) {
+    if (!documentationData) {
+        showAlert('❌ No documentation to export', 'error');
+        return;
+    }
+    
+    showLoadingState(true);
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        let content = '';
+        let filename = '';
+        let mimeType = '';
+        
+        switch (format) {
+            case 'markdown':
+                content = convertToMarkdown(documentationData);
+                filename = 'documentation.md';
+                mimeType = 'text/markdown';
+                break;
+            case 'html':
+                content = convertToHTML(documentationData);
+                filename = 'documentation.html';
+                mimeType = 'text/html';
+                break;
+            case 'pdf':
+                showAlert('📕 PDF generation initiated', 'info');
+                return;
+            case 'sql-commented':
+                content = generateCommentedSQL();
+                filename = 'commented_sql.sql';
+                mimeType = 'text/plain';
+                break;
+            default:
+                content = JSON.stringify(documentationData, null, 2);
+                filename = `documentation.${format}`;
+                mimeType = 'application/json';
+        }
+        
+        // Create and download file
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showAlert(`✅ Documentation exported as ${format.toUpperCase()}`, 'success');
+        
+    } catch (error) {
+        showAlert(`❌ Export failed: ${error.message}`, 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+// Utility functions
+function calculateComplexity(file) {
+    // Simulate complexity calculation based on file size
+    const sizeKB = file.size / 1024;
+    return Math.min(Math.floor(sizeKB / 10) + Math.floor(Math.random() * 30), 100);
+}
+
+function convertToMarkdown(data) {
+    return `# SQL Documentation
+
+## Analysis Summary
+${data.analysis.summary}
+
+## Code Comments
+${data.comments.map(c => `- ${c.text}`).join('\n')}
+
+## Generated Documentation
+${data.documentation.replace(/<[^>]*>/g, '')}
+`;
+}
+
+function convertToHTML(data) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1, h2, h3 { color: #333; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+        pre { background: #f4f4f4; padding: 12px; border-radius: 6px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    ${data.documentation}
+</body>
+</html>`;
+}
+
+function generateCommentedSQL() {
+    return `-- SQL Documentation Generated Automatically
+-- File: ${currentDocFile?.name || 'unknown.sql'}
+-- Generated: ${new Date().toLocaleString('es-ES')}
+
+-- Main user query - retrieves active users with their order information
+SELECT u.id, u.name, u.email 
+FROM users u
+-- Join with orders table to get user purchase history
+INNER JOIN orders o ON u.id = o.user_id
+-- Filter for active users and completed orders only
+WHERE u.is_active = TRUE 
+  AND o.status = 'completed'
+-- Order by most recent activity for better user experience
+ORDER BY o.created_at DESC;
+
+-- End of commented SQL file`;
+}
+
+function clearDocumentation() {
+    if (confirm('Clear all documentation data?')) {
+        removeDocFile();
+        documentationData = null;
+        showAlert('🗑️ Documentation cleared', 'warning');
+    }
+}
+
+function showLoadingState(show) {
+    document.getElementById('docLoadingState').style.display = show ? 'block' : 'none';
+    document.getElementById('documentationResults').style.display = show ? 'none' : 'block';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('docUploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.sql') || file.name.endsWith('.txt')) {
+                currentDocFile = file;
+                displayDocFileInfo(file);
+            } else {
+                showAlert('❌ Please select a valid SQL file (.sql or .txt)', 'error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

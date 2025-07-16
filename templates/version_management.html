@@ -1,0 +1,986 @@
+{% extends "base.html" %}
+
+{% block title %}Version Management - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}📚 Version Management{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="createNewVersion()" id="createVersionBtn">📝 Create Version</button>
+<button class="btn btn-success" onclick="compareVersions()" id="compareBtn" disabled>🔄 Compare Versions</button>
+<button class="btn btn-warning" onclick="rollbackVersion()" id="rollbackBtn" disabled>⏪ Rollback</button>
+<button class="btn btn-secondary" onclick="exportVersionHistory()">📤 Export History</button>
+{% endblock %}
+
+{% block content %}
+<div class="version-management-container">
+    <!-- File Upload Section -->
+    <div class="card upload-section">
+        <div class="card-header">
+            <div class="card-title">📁 SQL File Version Control</div>
+            <div class="version-info">
+                <span class="current-version" id="currentVersion">No file loaded</span>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="upload-area" id="versionUploadArea" onclick="selectVersionFile()">
+                <div class="upload-icon">📚</div>
+                <div class="upload-text">
+                    <strong>Click to select SQL file for version management</strong><br>
+                    <small>Supports .sql, .txt files up to 100MB</small>
+                </div>
+                <input type="file" id="versionFileInput" accept=".sql,.txt" style="display: none;" onchange="handleVersionFileSelect(event)">
+            </div>
+            <div class="file-info" id="versionFileInfo" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="versionFileName"></span>
+                    <span class="file-size" id="versionFileSize"></span>
+                    <span class="file-hash" id="versionFileHash"></span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="removeVersionFile()">❌ Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Management Results -->
+    <div class="version-results" id="versionManagementResults" style="display: none;">
+        <!-- Version Timeline -->
+        <div class="card version-timeline">
+            <div class="card-header">
+                <div class="card-title">📈 Version Timeline</div>
+                <div class="timeline-controls">
+                    <button class="btn btn-sm btn-primary" onclick="refreshTimeline()">🔄 Refresh</button>
+                    <button class="btn btn-sm btn-secondary" onclick="filterTimeline()">🔍 Filter</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="timeline-container" id="versionTimeline">
+                    <!-- Version timeline will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Version Comparison -->
+        <div class="card version-comparison" id="versionComparisonCard" style="display: none;">
+            <div class="card-header">
+                <div class="card-title">🔄 Version Comparison</div>
+                <div class="comparison-controls">
+                    <select id="version1Select" class="form-select">
+                        <option value="">Select Version 1</option>
+                    </select>
+                    <select id="version2Select" class="form-select">
+                        <option value="">Select Version 2</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="performComparison()">🔍 Compare</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="comparison-result" id="comparisonResult">
+                    <!-- Comparison results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Tracking -->
+        <div class="card change-tracking">
+            <div class="card-header">
+                <div class="card-title">📝 Change Tracking</div>
+                <div class="tracking-stats">
+                    <span class="stat-item">Total Changes: <strong id="totalChanges">0</strong></span>
+                    <span class="stat-item">Contributors: <strong id="totalContributors">1</strong></span>
+                    <span class="stat-item">Active Branch: <strong id="activeBranch">main</strong></span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="change-list" id="changeTrackingList">
+                    <!-- Change tracking will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Branch Management -->
+        <div class="card branch-management">
+            <div class="card-header">
+                <div class="card-title">🌿 Branch Management</div>
+                <div class="branch-controls">
+                    <button class="btn btn-sm btn-success" onclick="createBranch()">➕ New Branch</button>
+                    <button class="btn btn-sm btn-primary" onclick="mergeBranch()">🔀 Merge</button>
+                    <button class="btn btn-sm btn-warning" onclick="switchBranch()">🔄 Switch</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="branch-list" id="branchList">
+                    <!-- Branch list will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Rollback Options -->
+        <div class="card rollback-options">
+            <div class="card-header">
+                <div class="card-title">⏪ Rollback Options</div>
+            </div>
+            <div class="card-content">
+                <div class="rollback-list" id="rollbackList">
+                    <!-- Rollback options will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="versionLoadingState" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Processing version management...</div>
+    </div>
+</div>
+
+<style>
+.version-management-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-section .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.version-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.current-version {
+    padding: 4px 12px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-primary);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-area.dragover {
+    border-color: var(--success-color);
+    background: rgba(var(--success-color-rgb), 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size, .file-hash {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.version-results {
+    display: grid;
+    gap: 24px;
+}
+
+.version-timeline .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timeline-controls, .comparison-controls, .branch-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.timeline-container {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 3px solid var(--bg-primary);
+}
+
+.timeline-item.current {
+    border-left-color: var(--success-color);
+}
+
+.timeline-item.current::before {
+    background: var(--success-color);
+}
+
+.timeline-content {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.timeline-version {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.timeline-description {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.timeline-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.timeline-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.comparison-result {
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    padding: 20px;
+    min-height: 200px;
+}
+
+.diff-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.diff-panel {
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.diff-panel h4 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.diff-content {
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.diff-added {
+    background: rgba(var(--success-color-rgb), 0.2);
+    color: var(--success-color);
+}
+
+.diff-removed {
+    background: rgba(var(--danger-color-rgb), 0.2);
+    color: var(--danger-color);
+}
+
+.change-tracking .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tracking-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.change-list {
+    display: grid;
+    gap: 12px;
+}
+
+.change-item {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--warning-color);
+}
+
+.change-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.change-type {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.change-timestamp {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.change-description {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.change-author {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.branch-management .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.branch-list {
+    display: grid;
+    gap: 12px;
+}
+
+.branch-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--success-color);
+}
+
+.branch-item.active {
+    border-left-color: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.branch-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.branch-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.branch-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.branch-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.rollback-list {
+    display: grid;
+    gap: 12px;
+}
+
+.rollback-item {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--danger-color);
+}
+
+.rollback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.rollback-version {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rollback-risk {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.rollback-risk.low {
+    background: var(--success-color);
+    color: white;
+}
+
+.rollback-risk.medium {
+    background: var(--warning-color);
+    color: white;
+}
+
+.rollback-risk.high {
+    background: var(--danger-color);
+    color: white;
+}
+
+.rollback-description {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.rollback-impact {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.form-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .diff-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-controls, .comparison-controls, .branch-controls {
+        flex-wrap: wrap;
+    }
+    
+    .tracking-stats {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+</style>
+
+<script>
+let currentVersionFile = null;
+let versionHistory = [];
+let selectedVersions = [];
+
+// File handling functions
+function selectVersionFile() {
+    document.getElementById('versionFileInput').click();
+}
+
+function handleVersionFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        currentVersionFile = file;
+        displayVersionFileInfo(file);
+        initializeVersionManagement(file);
+    }
+}
+
+function displayVersionFileInfo(file) {
+    document.getElementById('versionFileName').textContent = file.name;
+    document.getElementById('versionFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('versionFileHash').textContent = `Hash: ${generateFileHash(file.name)}`;
+    document.getElementById('versionFileInfo').style.display = 'flex';
+    document.getElementById('currentVersion').textContent = `v1.0 - ${file.name}`;
+    
+    // Enable buttons
+    document.getElementById('createVersionBtn').disabled = false;
+}
+
+function removeVersionFile() {
+    currentVersionFile = null;
+    document.getElementById('versionFileInput').value = '';
+    document.getElementById('versionFileInfo').style.display = 'none';
+    document.getElementById('versionManagementResults').style.display = 'none';
+    document.getElementById('currentVersion').textContent = 'No file loaded';
+    
+    // Disable buttons
+    document.getElementById('createVersionBtn').disabled = true;
+    document.getElementById('compareBtn').disabled = true;
+    document.getElementById('rollbackBtn').disabled = true;
+}
+
+// Version management functions
+async function initializeVersionManagement(file) {
+    showLoadingState(true);
+    
+    try {
+        // Simulate version initialization
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Generate initial version history
+        versionHistory = generateInitialVersionHistory(file);
+        
+        // Display version management interface
+        displayVersionManagement();
+        
+        document.getElementById('versionManagementResults').style.display = 'block';
+        document.getElementById('compareBtn').disabled = false;
+        document.getElementById('rollbackBtn').disabled = false;
+        
+    } catch (error) {
+        console.error('Version management initialization error:', error);
+        showAlert('❌ Failed to initialize version management', 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+function displayVersionManagement() {
+    displayVersionTimeline();
+    displayChangeTracking();
+    displayBranchManagement();
+    displayRollbackOptions();
+    populateVersionSelects();
+}
+
+function displayVersionTimeline() {
+    const timeline = document.getElementById('versionTimeline');
+    
+    timeline.innerHTML = versionHistory.map((version, index) => `
+        <div class="timeline-item ${index === 0 ? 'current' : ''}">
+            <div class="timeline-content">
+                <div class="timeline-version">${version.version}</div>
+                <div class="timeline-description">${version.description}</div>
+                <div class="timeline-meta">
+                    <span>📅 ${version.timestamp}</span>
+                    <span>👤 ${version.author}</span>
+                    <span>📊 ${version.changes} changes</span>
+                </div>
+            </div>
+            <div class="timeline-actions">
+                <button class="btn btn-sm btn-primary" onclick="viewVersion('${version.id}')">👁️ View</button>
+                <button class="btn btn-sm btn-secondary" onclick="selectForComparison('${version.id}')">🔄 Compare</button>
+                ${index > 0 ? `<button class="btn btn-sm btn-warning" onclick="rollbackToVersion('${version.id}')">⏪ Rollback</button>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayChangeTracking() {
+    const changeList = document.getElementById('changeTrackingList');
+    
+    const changes = [
+        {
+            type: 'SQL Optimization',
+            description: 'Optimized SELECT query performance by adding index hints',
+            author: 'Current User',
+            timestamp: '2 minutes ago'
+        },
+        {
+            type: 'Security Fix',
+            description: 'Fixed SQL injection vulnerability in WHERE clause',
+            author: 'Current User',
+            timestamp: '15 minutes ago'
+        },
+        {
+            type: 'Syntax Correction',
+            description: 'Added missing semicolons and fixed keyword casing',
+            author: 'Current User',
+            timestamp: '1 hour ago'
+        }
+    ];
+    
+    changeList.innerHTML = changes.map(change => `
+        <div class="change-item">
+            <div class="change-header">
+                <span class="change-type">${change.type}</span>
+                <span class="change-timestamp">${change.timestamp}</span>
+            </div>
+            <div class="change-description">${change.description}</div>
+            <div class="change-author">By: ${change.author}</div>
+        </div>
+    `).join('');
+    
+    // Update stats
+    document.getElementById('totalChanges').textContent = changes.length;
+}
+
+function displayBranchManagement() {
+    const branchList = document.getElementById('branchList');
+    
+    const branches = [
+        { name: 'main', active: true, commits: 12, lastUpdate: '2 minutes ago' },
+        { name: 'feature/optimization', active: false, commits: 5, lastUpdate: '1 hour ago' },
+        { name: 'hotfix/security', active: false, commits: 2, lastUpdate: '3 hours ago' }
+    ];
+    
+    branchList.innerHTML = branches.map(branch => `
+        <div class="branch-item ${branch.active ? 'active' : ''}">
+            <div class="branch-info">
+                <div class="branch-name">${branch.name} ${branch.active ? '(current)' : ''}</div>
+                <div class="branch-meta">${branch.commits} commits • Last update: ${branch.lastUpdate}</div>
+            </div>
+            <div class="branch-actions">
+                ${!branch.active ? `<button class="btn btn-sm btn-primary" onclick="switchToBranch('${branch.name}')">🔄 Switch</button>` : ''}
+                <button class="btn btn-sm btn-success" onclick="mergeBranchAction('${branch.name}')">🔀 Merge</button>
+                ${!branch.active ? `<button class="btn btn-sm btn-danger" onclick="deleteBranch('${branch.name}')">🗑️ Delete</button>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayRollbackOptions() {
+    const rollbackList = document.getElementById('rollbackList');
+    
+    const rollbackOptions = versionHistory.slice(1).map(version => ({
+        ...version,
+        risk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+        impact: `${Math.floor(Math.random() * 50 + 10)} lines affected`
+    }));
+    
+    rollbackList.innerHTML = rollbackOptions.map(option => `
+        <div class="rollback-item">
+            <div class="rollback-header">
+                <span class="rollback-version">${option.version}</span>
+                <div>
+                    <span class="rollback-risk ${option.risk}">${option.risk} risk</span>
+                    <button class="btn btn-sm btn-warning" onclick="performRollback('${option.id}')">⏪ Rollback</button>
+                </div>
+            </div>
+            <div class="rollback-description">${option.description}</div>
+            <div class="rollback-impact">Impact: ${option.impact}</div>
+        </div>
+    `).join('');
+}
+
+function populateVersionSelects() {
+    const version1Select = document.getElementById('version1Select');
+    const version2Select = document.getElementById('version2Select');
+    
+    const options = versionHistory.map(version => 
+        `<option value="${version.id}">${version.version} - ${version.description}</option>`
+    ).join('');
+    
+    version1Select.innerHTML = '<option value="">Select Version 1</option>' + options;
+    version2Select.innerHTML = '<option value="">Select Version 2</option>' + options;
+}
+
+// Version operations
+async function createNewVersion() {
+    const description = prompt('Enter version description:');
+    if (!description) return;
+    
+    showLoadingState(true);
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const newVersion = {
+            id: `v${versionHistory.length + 1}`,
+            version: `v${versionHistory.length + 1}.0`,
+            description: description,
+            timestamp: new Date().toLocaleString('es-ES'),
+            author: 'Current User',
+            changes: Math.floor(Math.random() * 20 + 5)
+        };
+        
+        versionHistory.unshift(newVersion);
+        displayVersionManagement();
+        
+        showAlert('✅ New version created successfully', 'success');
+        
+    } catch (error) {
+        showAlert('❌ Failed to create version', 'error');
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+function compareVersions() {
+    document.getElementById('versionComparisonCard').style.display = 'block';
+}
+
+function performComparison() {
+    const version1 = document.getElementById('version1Select').value;
+    const version2 = document.getElementById('version2Select').value;
+    
+    if (!version1 || !version2) {
+        showAlert('❌ Please select both versions to compare', 'error');
+        return;
+    }
+    
+    const comparisonResult = document.getElementById('comparisonResult');
+    comparisonResult.innerHTML = `
+        <div class="diff-container">
+            <div class="diff-panel">
+                <h4>Version ${version1}</h4>
+                <div class="diff-content">
+                    <div class="diff-removed">- SELECT * FROM users WHERE active = 1</div>
+                    <div>  JOIN orders ON users.id = orders.user_id</div>
+                    <div class="diff-removed">- WHERE orders.status = 'pending'</div>
+                </div>
+            </div>
+            <div class="diff-panel">
+                <h4>Version ${version2}</h4>
+                <div class="diff-content">
+                    <div class="diff-added">+ SELECT u.id, u.name, u.email FROM users u</div>
+                    <div>  INNER JOIN orders o ON u.id = o.user_id</div>
+                    <div class="diff-added">+ WHERE o.status = 'pending' AND u.is_active = TRUE</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showAlert('✅ Version comparison completed', 'success');
+}
+
+function rollbackVersion() {
+    const selectedVersion = prompt('Enter version ID to rollback to:');
+    if (selectedVersion) {
+        performRollback(selectedVersion);
+    }
+}
+
+function performRollback(versionId) {
+    if (confirm(`Are you sure you want to rollback to version ${versionId}? This action cannot be undone.`)) {
+        showLoadingState(true);
+        
+        setTimeout(() => {
+            showAlert(`✅ Successfully rolled back to version ${versionId}`, 'success');
+            showLoadingState(false);
+        }, 2000);
+    }
+}
+
+// Branch operations
+function createBranch() {
+    const branchName = prompt('Enter new branch name:');
+    if (branchName) {
+        showAlert(`✅ Branch '${branchName}' created successfully`, 'success');
+        displayBranchManagement();
+    }
+}
+
+function mergeBranch() {
+    showAlert('🔀 Branch merge initiated', 'info');
+}
+
+function switchBranch() {
+    showAlert('🔄 Branch switching interface opened', 'info');
+}
+
+function switchToBranch(branchName) {
+    showAlert(`🔄 Switched to branch '${branchName}'`, 'success');
+    displayBranchManagement();
+}
+
+function mergeBranchAction(branchName) {
+    if (confirm(`Merge branch '${branchName}' into main?`)) {
+        showAlert(`🔀 Branch '${branchName}' merged successfully`, 'success');
+    }
+}
+
+function deleteBranch(branchName) {
+    if (confirm(`Delete branch '${branchName}'? This action cannot be undone.`)) {
+        showAlert(`🗑️ Branch '${branchName}' deleted`, 'warning');
+        displayBranchManagement();
+    }
+}
+
+// Utility functions
+function generateInitialVersionHistory(file) {
+    return [
+        {
+            id: 'v1',
+            version: 'v1.0',
+            description: `Initial version of ${file.name}`,
+            timestamp: new Date().toLocaleString('es-ES'),
+            author: 'Current User',
+            changes: 1
+        }
+    ];
+}
+
+function generateFileHash(filename) {
+    return filename.split('').reduce((hash, char) => {
+        return ((hash << 5) - hash) + char.charCodeAt(0);
+    }, 0).toString(16).substring(0, 8);
+}
+
+function viewVersion(versionId) {
+    showAlert(`👁️ Viewing version ${versionId}`, 'info');
+}
+
+function selectForComparison(versionId) {
+    selectedVersions.push(versionId);
+    if (selectedVersions.length === 2) {
+        document.getElementById('version1Select').value = selectedVersions[0];
+        document.getElementById('version2Select').value = selectedVersions[1];
+        selectedVersions = [];
+        compareVersions();
+    }
+}
+
+function refreshTimeline() {
+    showAlert('🔄 Timeline refreshed', 'info');
+    displayVersionTimeline();
+}
+
+function filterTimeline() {
+    showAlert('🔍 Timeline filter opened', 'info');
+}
+
+function exportVersionHistory() {
+    const historyData = JSON.stringify(versionHistory, null, 2);
+    const blob = new Blob([historyData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'version_history.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showAlert('✅ Version history exported', 'success');
+}
+
+function showLoadingState(show) {
+    document.getElementById('versionLoadingState').style.display = show ? 'block' : 'none';
+    document.getElementById('versionManagementResults').style.display = show ? 'none' : 'block';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation - can be enhanced with toast notifications
+    alert(message);
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('versionUploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.sql') || file.name.endsWith('.txt')) {
+                currentVersionFile = file;
+                displayVersionFileInfo(file);
+                initializeVersionManagement(file);
+            } else {
+                showAlert('❌ Please select a valid SQL file (.sql or .txt)', 'error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
