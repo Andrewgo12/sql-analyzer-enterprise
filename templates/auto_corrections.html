@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block title %}Correcciones Automáticas - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}🔧 Correcciones Automáticas{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="applyAllCorrections()">✅ Aplicar Todas</button>
+<button class="btn btn-success" onclick="downloadCorrectedSQL()">💾 Descargar SQL Corregido</button>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Auto-Corrections Dashboard -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🔧 Sistema de Correcciones Automáticas</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <div style="width: 8px; height: 8px; background: var(--success-color); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                <span style="font-size: 12px; color: var(--success-color);">ACTIVO</span>
+            </div>
+        </div>
+        <div class="card-content">
+            <!-- Correction Summary -->
+            <div class="stats-grid" style="margin-bottom: 32px;">
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--danger-color);">85</div>
+                    <div class="stat-label">Errores Detectados</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">🚨 Requieren corrección</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--success-color);">78</div>
+                    <div class="stat-label">Auto-Corregibles</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">🔧 Corrección automática</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--warning-color);">7</div>
+                    <div class="stat-label">Revisión Manual</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">👤 Requiere intervención</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--primary-color);">92%</div>
+                    <div class="stat-label">Tasa de Éxito</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">📊 Correcciones exitosas</div>
+                </div>
+            </div>
+
+            <!-- Correction Categories -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+                <div>
+                    <h4 style="margin-bottom: 16px; color: var(--text-primary);">🔧 Correcciones Automáticas Disponibles</h4>
+                    <div id="auto-corrections" style="max-height: 400px; overflow-y: auto;">
+                        <div class="correction-item auto" onclick="showCorrectionDetails('missing-semicolon')">
+                            <div class="correction-header">
+                                <div class="correction-type">Missing Semicolon</div>
+                                <div class="correction-count">47 ocurrencias</div>
+                                <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); applyCorrection('missing-semicolon')">🔧 Aplicar</button>
+                            </div>
+                            <div class="correction-description">Agregar punto y coma al final de declaraciones SQL</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ SELECT * FROM users</div>
+                                <div class="code-after">✅ SELECT * FROM users;</div>
+                            </div>
+                        </div>
+
+                        <div class="correction-item auto" onclick="showCorrectionDetails('keyword-case')">
+                            <div class="correction-header">
+                                <div class="correction-type">Keyword Case Standardization</div>
+                                <div class="correction-count">23 ocurrencias</div>
+                                <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); applyCorrection('keyword-case')">🔧 Aplicar</button>
+                            </div>
+                            <div class="correction-description">Estandarizar palabras clave SQL a mayúsculas</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ select * from users where id = 1</div>
+                                <div class="code-after">✅ SELECT * FROM users WHERE id = 1;</div>
+                            </div>
+                        </div>
+
+                        <div class="correction-item auto" onclick="showCorrectionDetails('quotes-standardization')">
+                            <div class="correction-header">
+                                <div class="correction-type">Quote Standardization</div>
+                                <div class="correction-count">15 ocurrencias</div>
+                                <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); applyCorrection('quotes-standardization')">🔧 Aplicar</button>
+                            </div>
+                            <div class="correction-description">Estandarizar comillas simples para strings</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ WHERE name = "John"</div>
+                                <div class="code-after">✅ WHERE name = 'John'</div>
+                            </div>
+                        </div>
+
+                        <div class="correction-item auto" onclick="showCorrectionDetails('table-aliases')">
+                            <div class="correction-header">
+                                <div class="correction-type">Table Alias Optimization</div>
+                                <div class="correction-count">12 ocurrencias</div>
+                                <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); applyCorrection('table-aliases')">🔧 Aplicar</button>
+                            </div>
+                            <div class="correction-description">Agregar aliases a tablas para mejor legibilidad</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ SELECT users.name FROM users</div>
+                                <div class="code-after">✅ SELECT u.name FROM users u</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom: 16px; color: var(--text-primary);">👤 Correcciones que Requieren Revisión Manual</h4>
+                    <div id="manual-corrections" style="max-height: 400px; overflow-y: auto;">
+                        <div class="correction-item manual" onclick="showCorrectionDetails('complex-join')">
+                            <div class="correction-header">
+                                <div class="correction-type">Complex JOIN Optimization</div>
+                                <div class="correction-count">3 ocurrencias</div>
+                                <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); reviewCorrection('complex-join')">👁️ Revisar</button>
+                            </div>
+                            <div class="correction-description">Optimización de JOINs complejos requiere revisión</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ Consulta con múltiples JOINs anidados</div>
+                                <div class="code-after">⚠️ Requiere análisis manual</div>
+                            </div>
+                        </div>
+
+                        <div class="correction-item manual" onclick="showCorrectionDetails('business-logic')">
+                            <div class="correction-header">
+                                <div class="correction-type">Business Logic Validation</div>
+                                <div class="correction-count">2 ocurrencias</div>
+                                <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); reviewCorrection('business-logic')">👁️ Revisar</button>
+                            </div>
+                            <div class="correction-description">Validación de lógica de negocio específica</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ Condiciones de negocio complejas</div>
+                                <div class="code-after">⚠️ Requiere validación manual</div>
+                            </div>
+                        </div>
+
+                        <div class="correction-item manual" onclick="showCorrectionDetails('data-type-conversion')">
+                            <div class="correction-header">
+                                <div class="correction-type">Data Type Conversion</div>
+                                <div class="correction-count">2 ocurrencias</div>
+                                <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); reviewCorrection('data-type-conversion')">👁️ Revisar</button>
+                            </div>
+                            <div class="correction-description">Conversiones de tipo de datos requieren validación</div>
+                            <div class="correction-preview">
+                                <div class="code-before">❌ Conversiones implícitas detectadas</div>
+                                <div class="code-after">⚠️ Verificar compatibilidad</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correction Progress -->
+            <div style="margin-bottom: 32px;">
+                <h4 style="margin-bottom: 16px; color: var(--text-primary);">📊 Progreso de Correcciones</h4>
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span>Correcciones Aplicadas</span>
+                        <span style="font-weight: 600;">78 / 85 (92%)</span>
+                    </div>
+                    <div style="background: var(--bg-secondary); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, var(--success-color), var(--primary-color)); height: 100%; width: 92%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                        <span>✅ Auto-corregidas: 78</span>
+                        <span>⚠️ Pendientes: 7</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-success" onclick="applyAllAutoCorrections()">🔧 Aplicar Todas las Automáticas</button>
+                <button class="btn btn-primary" onclick="showCorrectedCode()">👁️ Vista Previa del Código</button>
+                <button class="btn btn-warning" onclick="reviewManualCorrections()">👤 Revisar Manuales</button>
+                <button class="btn btn-secondary" onclick="exportCorrectionReport()">📋 Reporte de Correcciones</button>
+                <button class="btn btn-danger" onclick="resetCorrections()">🔄 Reiniciar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.correction-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.correction-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.correction-item.auto {
+    border-left: 4px solid var(--success-color);
+}
+
+.correction-item.manual {
+    border-left: 4px solid var(--warning-color);
+}
+
+.correction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.correction-type {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.correction-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.correction-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.correction-preview {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.code-before {
+    color: var(--danger-color);
+    margin-bottom: 4px;
+}
+
+.code-after {
+    color: var(--success-color);
+}
+</style>
+
+<script>
+function showCorrectionDetails(type) {
+    const details = {
+        'missing-semicolon': {
+            title: 'Missing Semicolon Correction',
+            description: 'Automatically adds semicolons to SQL statements that are missing them.',
+            examples: [
+                { before: 'SELECT * FROM users', after: 'SELECT * FROM users;' },
+                { before: 'INSERT INTO products VALUES (1, "Test")', after: 'INSERT INTO products VALUES (1, "Test");' }
+            ]
+        },
+        'keyword-case': {
+            title: 'Keyword Case Standardization',
+            description: 'Converts all SQL keywords to uppercase for consistency.',
+            examples: [
+                { before: 'select * from users where id = 1', after: 'SELECT * FROM users WHERE id = 1' },
+                { before: 'insert into products (name) values ("Test")', after: 'INSERT INTO products (name) VALUES ("Test")' }
+            ]
+        }
+    };
+
+    const detail = details[type] || { title: 'Correction Details', description: 'Detailed information about this correction.' };
+    
+    let content = `
+        <div style="margin-bottom: 20px;">
+            <h4>${detail.title}</h4>
+            <p style="color: var(--text-secondary); margin-top: 8px;">${detail.description}</p>
+        </div>
+    `;
+
+    if (detail.examples) {
+        content += '<div style="margin-top: 16px;"><h5>Ejemplos:</h5>';
+        detail.examples.forEach(example => {
+            content += `
+                <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; margin: 8px 0;">
+                    <div style="color: var(--danger-color); font-family: monospace; margin-bottom: 4px;">❌ Antes: ${example.before}</div>
+                    <div style="color: var(--success-color); font-family: monospace;">✅ Después: ${example.after}</div>
+                </div>
+            `;
+        });
+        content += '</div>';
+    }
+
+    document.getElementById('error-details-content').innerHTML = content;
+    showModal('error-details-modal');
+}
+
+function applyCorrection(type) {
+    showAlert(`🔧 Aplicando corrección: ${type}...`, 'info');
+    
+    setTimeout(() => {
+        showAlert(`✅ Corrección ${type} aplicada exitosamente`, 'success');
+        // Update UI to reflect applied correction
+        updateCorrectionProgress();
+    }, 1500);
+}
+
+function reviewCorrection(type) {
+    showAlert(`👁️ Abriendo revisión manual para: ${type}`, 'info');
+    
+    setTimeout(() => {
+        const content = `
+            <div style="margin-bottom: 20px;">
+                <h4>👤 Revisión Manual Requerida</h4>
+                <p style="color: var(--text-secondary); margin-top: 8px;">
+                    Esta corrección requiere revisión manual debido a su complejidad o impacto en la lógica de negocio.
+                </p>
+            </div>
+            <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h5>Código Original:</h5>
+                <pre style="background: var(--bg-secondary); padding: 12px; border-radius: 4px; margin: 8px 0; color: var(--danger-color);">SELECT u.*, o.*, p.*
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+LEFT JOIN order_items oi ON o.id = oi.order_id
+LEFT JOIN products p ON oi.product_id = p.id
+WHERE u.created_at > '2024-01-01'
+  AND o.status = 'completed'
+  AND p.is_active = TRUE;</pre>
+                
+                <h5>Sugerencia de Optimización:</h5>
+                <pre style="background: var(--bg-secondary); padding: 12px; border-radius: 4px; margin: 8px 0; color: var(--success-color);">-- Optimización sugerida con índices específicos
+SELECT u.id, u.name, u.email,
+       o.id as order_id, o.total_amount,
+       p.id as product_id, p.name as product_name
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+INNER JOIN order_items oi ON o.id = oi.order_id
+INNER JOIN products p ON oi.product_id = p.id
+WHERE u.created_at > '2024-01-01'
+  AND o.status = 'completed'
+  AND p.is_active = TRUE
+ORDER BY u.created_at DESC
+LIMIT 1000;</pre>
+            </div>
+            <div style="margin-top: 16px;">
+                <strong>⚠️ Consideraciones:</strong>
+                <ul style="margin-top: 8px; color: var(--text-secondary);">
+                    <li>Cambio de LEFT JOIN a INNER JOIN puede afectar resultados</li>
+                    <li>Selección específica de columnas mejora rendimiento</li>
+                    <li>LIMIT agregado para prevenir consultas masivas</li>
+                    <li>ORDER BY puede requerir índice adicional</li>
+                </ul>
+            </div>
+        `;
+        
+        document.getElementById('performance-content').innerHTML = content;
+        showModal('performance-modal');
+    }, 500);
+}
+
+function applyAllAutoCorrections() {
+    if (confirm('¿Aplicar todas las correcciones automáticas? Esta acción no se puede deshacer.')) {
+        showAlert('🔧 Aplicando todas las correcciones automáticas...', 'info');
+        
+        setTimeout(() => {
+            showAlert('✅ Todas las correcciones automáticas aplicadas exitosamente', 'success');
+            updateCorrectionProgress();
+        }, 3000);
+    }
+}
+
+function showCorrectedCode() {
+    const correctedCode = `-- CÓDIGO SQL CORREGIDO AUTOMÁTICAMENTE
+-- Correcciones aplicadas: 78/85
+
+-- 1. Consulta de usuarios con correcciones aplicadas
+SELECT u.id, u.username, u.email, u.created_at
+FROM users u
+WHERE u.is_active = TRUE
+  AND u.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
+ORDER BY u.created_at DESC
+LIMIT 100;
+
+-- 2. Consulta de productos optimizada
+SELECT p.id, p.name, c.name AS category_name, p.price
+FROM products p
+INNER JOIN categories c ON p.category_id = c.id
+WHERE p.is_active = TRUE
+  AND p.price > 10.00
+ORDER BY p.created_at DESC
+LIMIT 50;
+
+-- 3. Consulta agregada corregida
+SELECT 
+    DATE(o.created_at) AS order_date,
+    COUNT(*) AS total_orders,
+    SUM(o.total_amount) AS total_revenue
+FROM orders o
+WHERE o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+  AND o.status = 'completed'
+GROUP BY DATE(o.created_at)
+ORDER BY order_date DESC;
+
+-- Índices sugeridos para optimización:
+CREATE INDEX idx_users_active_created ON users(is_active, created_at);
+CREATE INDEX idx_products_active_price ON products(is_active, price, created_at);
+CREATE INDEX idx_orders_status_created ON orders(status, created_at);`;
+
+    showCodePreview(correctedCode, []);
+}
+
+function updateCorrectionProgress() {
+    // Simulate progress update
+    const progressBar = document.querySelector('[style*="width: 92%"]');
+    if (progressBar) {
+        progressBar.style.width = '95%';
+    }
+}
+
+function reviewManualCorrections() {
+    showAlert('👤 Abriendo panel de revisión manual...', 'info');
+    // Show manual review interface
+}
+
+function exportCorrectionReport() {
+    showAlert('📋 Generando reporte de correcciones...', 'info');
+    
+    setTimeout(() => {
+        const reportContent = `REPORTE DE CORRECCIONES AUTOMÁTICAS
+========================================
+
+RESUMEN:
+- Total de errores detectados: 85
+- Correcciones automáticas aplicadas: 78
+- Correcciones manuales pendientes: 7
+- Tasa de éxito: 92%
+
+CORRECCIONES APLICADAS:
+1. Missing Semicolon: 47 correcciones
+2. Keyword Case Standardization: 23 correcciones  
+3. Quote Standardization: 15 correcciones
+4. Table Alias Optimization: 12 correcciones
+
+CORRECCIONES PENDIENTES:
+1. Complex JOIN Optimization: 3 casos
+2. Business Logic Validation: 2 casos
+3. Data Type Conversion: 2 casos
+
+RECOMENDACIONES:
+- Revisar manualmente las correcciones pendientes
+- Implementar validación automática en el pipeline
+- Establecer estándares de codificación SQL
+
+Generado: ${new Date().toLocaleString('es-ES')}
+`;
+
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'correction_report.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showAlert('✅ Reporte de correcciones descargado', 'success');
+    }, 2000);
+}
+
+function resetCorrections() {
+    if (confirm('¿Reiniciar todas las correcciones? Esto deshará todos los cambios aplicados.')) {
+        showAlert('🔄 Reiniciando correcciones...', 'warning');
+        setTimeout(() => {
+            showAlert('✅ Correcciones reiniciadas', 'info');
+            location.reload();
+        }, 2000);
+    }
+}
+
+function applyAllCorrections() {
+    applyAllAutoCorrections();
+}
+
+function downloadCorrectedSQL() {
+    showAlert('💾 Preparando descarga del SQL corregido...', 'info');
+    
+    setTimeout(() => {
+        showCorrectedCode();
+    }, 1000);
+}
+</script>
+{% endblock %}

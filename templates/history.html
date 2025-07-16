@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}History - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}Analysis History{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-secondary" onclick="clearHistory()">
+        🗑️ Limpiar Historial
+    </button>
+    <button class="btn btn-primary" onclick="exportHistory()">
+        📤 Exportar
+    </button>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <!-- Filter Controls -->
+    <div class="card mb-3">
+        <div class="card-content">
+            <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <label class="form-label">Filtrar por tipo:</label>
+                    <select class="form-input" style="width: 200px;">
+                        <option>Todos los análisis</option>
+                        <option>SQL Analysis</option>
+                        <option>Security Scan</option>
+                        <option>Performance</option>
+                        <option>Schema Analysis</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Fecha:</label>
+                    <input type="date" class="form-input" style="width: 150px;">
+                </div>
+                <button class="btn btn-primary">🔍 Filtrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History List -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">📋 Historial de Análisis</div>
+        </div>
+        <div class="card-content">
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- History Item -->
+                <div style="padding: 16px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 600; color: #ffffff;">SQL Analysis Completo</div>
+                            <div style="font-size: 14px; color: #71717a;">usuarios_tabla.sql</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #71717a;">15:30 - Hoy</div>
+                            <div style="font-size: 12px; color: #10b981;">✅ Exitoso</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #a1a1aa; margin-bottom: 12px;">
+                        Análisis completado: 0 errores, 3 optimizaciones sugeridas, 1 vulnerabilidad menor detectada
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Ver Detalles</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Descargar</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Re-analizar</button>
+                    </div>
+                </div>
+
+                <!-- History Item -->
+                <div style="padding: 16px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 600; color: #ffffff;">Security Scan</div>
+                            <div style="font-size: 14px; color: #71717a;">login_sistema.sql</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #71717a;">14:15 - Hoy</div>
+                            <div style="font-size: 12px; color: #f59e0b;">⚠️ Advertencias</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #a1a1aa; margin-bottom: 12px;">
+                        Escaneo de seguridad: 2 vulnerabilidades críticas detectadas, requiere atención inmediata
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Ver Detalles</button>
+                        <button class="btn btn-danger" style="padding: 4px 12px; font-size: 12px;">Corregir</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Descargar</button>
+                    </div>
+                </div>
+
+                <!-- History Item -->
+                <div style="padding: 16px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 600; color: #ffffff;">Performance Analysis</div>
+                            <div style="font-size: 14px; color: #71717a;">consultas_productos.sql</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #71717a;">13:45 - Hoy</div>
+                            <div style="font-size: 12px; color: #10b981;">✅ Optimizado</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #a1a1aa; margin-bottom: 12px;">
+                        Análisis de rendimiento: 5 consultas optimizadas, mejora del 40% en tiempo de ejecución
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Ver Detalles</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Aplicar</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Descargar</button>
+                    </div>
+                </div>
+
+                <!-- History Item -->
+                <div style="padding: 16px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #ef4444;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 600; color: #ffffff;">Schema Analysis</div>
+                            <div style="font-size: 14px; color: #71717a;">estructura_bd.sql</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #71717a;">12:30 - Hoy</div>
+                            <div style="font-size: 12px; color: #ef4444;">❌ Errores</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #a1a1aa; margin-bottom: 12px;">
+                        Análisis de esquema: 3 errores de integridad referencial, 2 tablas sin normalizar
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Ver Detalles</button>
+                        <button class="btn btn-danger" style="padding: 4px 12px; font-size: 12px;">Corregir</button>
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Re-analizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function clearHistory() {
+    if (confirm('¿Estás seguro de que quieres limpiar todo el historial?')) {
+        showAlert('Limpiando historial...', 'info');
+        setTimeout(() => {
+            showAlert('Historial limpiado exitosamente', 'success');
+            location.reload();
+        }, 1500);
+    }
+}
+
+function exportHistory() {
+    showAlert('Exportando historial...', 'info');
+    setTimeout(() => {
+        showAlert('Historial exportado exitosamente', 'success');
+    }, 2000);
+}
+</script>
+{% endblock %}

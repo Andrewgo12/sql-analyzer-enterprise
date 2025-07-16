@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-secondary" onclick="resetSettings()">
+        🔄 Restaurar Defaults
+    </button>
+    <button class="btn btn-primary" onclick="saveSettings()">
+        💾 Guardar Cambios
+    </button>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- General Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">⚙️ Configuración General</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">Idioma de la Interfaz</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option selected>Español</option>
+                    <option>English</option>
+                    <option>Français</option>
+                    <option>Deutsch</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tema</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option selected>Oscuro</option>
+                    <option>Claro</option>
+                    <option>Automático</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Zona Horaria</label>
+                <select class="form-input" style="max-width: 250px;">
+                    <option selected>UTC-5 (América/Bogotá)</option>
+                    <option>UTC-3 (América/Buenos_Aires)</option>
+                    <option>UTC-6 (América/México)</option>
+                    <option>UTC+1 (Europa/Madrid)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🔍 Configuración de Análisis</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Análisis automático al subir archivos
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Escaneo de seguridad por defecto
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" style="margin-right: 8px;">
+                    Optimización automática de consultas
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nivel de detalle en reportes</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option>Básico</option>
+                    <option selected>Detallado</option>
+                    <option>Completo</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🛡️ Configuración de Seguridad</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Escaneo de inyección SQL
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Verificación de permisos
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" style="margin-right: 8px;">
+                    Alertas de seguridad en tiempo real
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nivel de seguridad</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option>Básico</option>
+                    <option selected>Estándar</option>
+                    <option>Estricto</option>
+                    <option>Paranoid</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">⚡ Configuración de Rendimiento</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">Tamaño máximo de archivo (MB)</label>
+                <input type="number" class="form-input" value="100" min="1" max="1000" style="max-width: 150px;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Timeout de análisis (segundos)</label>
+                <input type="number" class="form-input" value="300" min="30" max="3600" style="max-width: 150px;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Usar caché para análisis repetidos
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" style="margin-right: 8px;">
+                    Procesamiento paralelo
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">📤 Configuración de Exportación</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">Formato de exportación por defecto</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option>JSON</option>
+                    <option selected>HTML</option>
+                    <option>PDF</option>
+                    <option>Excel</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Incluir gráficos en reportes
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" style="margin-right: 8px;">
+                    Comprimir archivos de exportación
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Calidad de imágenes en PDF</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option>Baja</option>
+                    <option selected>Media</option>
+                    <option>Alta</option>
+                    <option>Máxima</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🗄️ Configuración de Base de Datos</div>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label class="form-label">Motor de BD por defecto</label>
+                <select class="form-input" style="max-width: 200px;">
+                    <option selected>MySQL</option>
+                    <option>PostgreSQL</option>
+                    <option>Oracle</option>
+                    <option>SQL Server</option>
+                    <option>SQLite</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Timeout de conexión (segundos)</label>
+                <input type="number" class="form-input" value="30" min="5" max="300" style="max-width: 150px;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" checked style="margin-right: 8px;">
+                    Pool de conexiones
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Máximo conexiones simultáneas</label>
+                <input type="number" class="form-input" value="10" min="1" max="100" style="max-width: 150px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveSettings() {
+    showAlert('Guardando configuración...', 'info');
+    
+    // Simulate save
+    setTimeout(() => {
+        showAlert('Configuración guardada exitosamente', 'success');
+    }, 1500);
+}
+
+function resetSettings() {
+    if (confirm('¿Estás seguro de que quieres restaurar la configuración por defecto?')) {
+        showAlert('Restaurando configuración por defecto...', 'info');
+        
+        setTimeout(() => {
+            showAlert('Configuración restaurada exitosamente', 'success');
+            location.reload();
+        }, 1500);
+    }
+}
+</script>
+{% endblock %}

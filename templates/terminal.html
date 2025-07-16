@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Terminal - SQL Analyzer Enterprise{% endblock %}
+{% block page_title %}Terminal{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-secondary" onclick="clearTerminal()">
+    🗑️ Limpiar
+</button>
+<button class="btn btn-primary" onclick="saveSession()">
+    💾 Guardar Sesión
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .terminal-container {
+        background: #000000;
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        height: 650px;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .terminal-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00ff00, #00ffff, #ff00ff);
+        animation: rainbow 3s linear infinite;
+    }
+
+    @keyframes rainbow {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        100% {
+            background-position: 100% 50%;
+        }
+    }
+
+    .terminal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #333;
+    }
+
+    .terminal-title {
+        color: #00ff00;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .terminal-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .terminal-control {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .terminal-control.close {
+        background: #ff5f56;
+    }
+
+    .terminal-control.minimize {
+        background: #ffbd2e;
+    }
+
+    .terminal-control.maximize {
+        background: #27ca3f;
+    }
+
+    .terminal-control:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 8px currentColor;
+    }
+
+    .terminal-output {
+        color: #00ff00;
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        margin-bottom: 16px;
+        text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+    }
+
+    .terminal-input {
+        display: flex;
+        align-items: center;
+        position: sticky;
+        bottom: 0;
+        background: #000000;
+        padding-top: 8px;
+    }
+
+    .terminal-prompt {
+        color: #00ff00;
+        margin-right: 8px;
+        font-weight: bold;
+        text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        animation: pulse 2s infinite;
+    }
+
+    .terminal-command {
+        background: transparent;
+        border: none;
+        color: #ffffff;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 14px;
+        flex: 1;
+        outline: none;
+        caret-color: #00ff00;
+        text-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    .terminal-command:focus {
+        background: rgba(0, 255, 0, 0.05);
+        border-radius: 4px;
+        padding: 4px 8px;
+    }
+
+    .command-suggestion {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid #00ff00;
+        border-radius: 4px;
+        padding: 8px;
+        color: #00ff00;
+        font-size: 12px;
+        z-index: 1000;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+    }
+
+    .command-history {
+        max-height: 200px;
+        overflow-y: auto;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        padding: 16px;
+    }
+
+    .history-item {
+        padding: 8px 12px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        margin-bottom: 8px;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 12px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .history-item:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .syntax-highlight {
+        color: #ff6b6b;
+    }
+
+    .syntax-highlight.command {
+        color: #4ecdc4;
+    }
+
+    .syntax-highlight.flag {
+        color: #ffe66d;
+    }
+
+    .syntax-highlight.string {
+        color: #ff8b94;
+    }
+
+    .typing-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 14px;
+        background: #00ff00;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+    }
+
+    @keyframes blink {
+
+        0%,
+        50% {
+            opacity: 1;
+        }
+
+        51%,
+        100% {
+            opacity: 0;
+        }
+    }
+
+    .terminal-stats {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 10px;
+        color: rgba(0, 255, 0, 0.6);
+        background: rgba(0, 0, 0, 0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 255, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .terminal-container {
+            height: 500px;
+            padding: 16px;
+        }
+
+        .terminal-output {
+            font-size: 12px;
+        }
+
+        .terminal-command {
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="terminal-wrapper">
+    <div class="card mb-3">
+        <div class="card-content">
+            <p><strong>Terminal SQL Analyzer Enterprise</strong> - Interfaz de línea de comandos para análisis avanzado
+            </p>
+            <p>Comandos disponibles: <code>analyze</code>, <code>scan</code>, <code>optimize</code>,
+                <code>export</code>, <code>help</code></p>
+        </div>
+    </div>
+
+    <div class="terminal-container" id="terminal">
+        <div class="terminal-output" id="output">SQL Analyzer Enterprise Terminal v1.0.0
+            Iniciado el {{ datetime.now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+            Bienvenido al terminal de análisis SQL avanzado.
+            Escribe 'help' para ver los comandos disponibles.
+
+            sql-analyzer@enterprise:~$ </div>
+
+        <div class="terminal-input">
+            <span class="terminal-prompt">sql-analyzer@enterprise:~$</span>
+            <input type="text" class="terminal-command" id="commandInput" placeholder="Escribe un comando..."
+                onkeypress="handleCommand(event)">
+        </div>
+    </div>
+
+    <!-- Command History -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="card-title">📋 Historial de Comandos</div>
+        </div>
+        <div class="card-content">
+            <div id="commandHistory" style="font-family: 'Courier New', monospace; font-size: 12px; color: #71717a;">
+                <div>analyze usuarios.sql --type=security</div>
+                <div>scan --all --format=json</div>
+                <div>optimize consultas.sql --engine=mysql</div>
+                <div>export results --format=pdf</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let commandHistory = [];
+    let historyIndex = -1;
+
+    function handleCommand(event) {
+        if (event.key === 'Enter') {
+            const input = event.target;
+            const command = input.value.trim();
+
+            if (command) {
+                executeCommand(command);
+                commandHistory.push(command);
+                historyIndex = commandHistory.length;
+                input.value = '';
+            }
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                event.target.value = commandHistory[historyIndex];
+            }
+        } else if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                event.target.value = commandHistory[historyIndex];
+            } else {
+                historyIndex = commandHistory.length;
+                event.target.value = '';
+            }
+        }
+    }
+
+    function executeCommand(command) {
+        const output = document.getElementById('output');
+        output.textContent += command + '\n';
+
+        // Simulate command execution
+        setTimeout(() => {
+            let response = '';
+
+            if (command.startsWith('help')) {
+                response = `Comandos disponibles:
+  analyze <archivo> [--type=sql|security|performance]  - Analizar archivo SQL
+  scan [--all] [--format=json|html]                   - Escanear vulnerabilidades
+  optimize <archivo> [--engine=mysql|postgres]        - Optimizar consultas
+  export <tipo> [--format=pdf|json|html]             - Exportar resultados
+  clear                                               - Limpiar terminal
+  status                                              - Estado del sistema
+  help                                                - Mostrar esta ayuda`;
+            } else if (command.startsWith('analyze')) {
+                response = `Analizando archivo...
+✅ Análisis completado
+📊 Resultados: 0 errores, 3 optimizaciones sugeridas
+🛡️ Seguridad: 1 vulnerabilidad menor detectada
+⚡ Rendimiento: Consultas optimizables encontradas`;
+            } else if (command.startsWith('scan')) {
+                response = `Iniciando escaneo de seguridad...
+🔍 Escaneando vulnerabilidades SQL injection...
+🔍 Verificando permisos y privilegios...
+🔍 Analizando funciones peligrosas...
+✅ Escaneo completado: 2 vulnerabilidades encontradas`;
+            } else if (command.startsWith('optimize')) {
+                response = `Optimizando consultas...
+⚡ Analizando plan de ejecución...
+⚡ Sugiriendo índices...
+⚡ Optimizando JOINs...
+✅ Optimización completada: Mejora del 35% estimada`;
+            } else if (command.startsWith('export')) {
+                response = `Exportando resultados...
+📤 Generando archivo...
+📤 Aplicando formato...
+✅ Exportación completada: results_${Date.now()}.pdf`;
+            } else if (command === 'clear') {
+                output.textContent = 'Terminal limpiado.\n\nsql-analyzer@enterprise:~$ ';
+                return;
+            } else if (command === 'status') {
+                response = `Estado del Sistema:
+🖥️  CPU: 23% | Memoria: 67% | Disco: 45%
+🗄️  Conexiones BD: 4 activas
+💾 Caché: 67% utilizado
+📊 Análisis hoy: 47 completados`;
+            } else {
+                response = `Comando no reconocido: ${command}
+Escribe 'help' para ver los comandos disponibles.`;
+            }
+
+            output.textContent += response + '\n\nsql-analyzer@enterprise:~$ ';
+            output.scrollTop = output.scrollHeight;
+        }, 1000);
+    }
+
+    function clearTerminal() {
+        const output = document.getElementById('output');
+        output.textContent = 'Terminal limpiado.\n\nsql-analyzer@enterprise:~$ ';
+    }
+
+    function saveSession() {
+        showAlert('Sesión de terminal guardada exitosamente', 'success');
+    }
+
+    // Focus on command input when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('commandInput').focus();
+    });
+</script>
+{% endblock %}

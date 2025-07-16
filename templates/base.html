@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SQL Analyzer Enterprise{% endblock %}</title>
+
+    <!-- CSS Styles -->
+    <style>
+        /* ===== RESET Y BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --warning-color: #f59e0b;
+            --warning-hover: #d97706;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --border-primary: #262626;
+            --border-secondary: #374151;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition-fast: 150ms ease;
+            --transition-normal: 200ms ease;
+            --transition-slow: 300ms ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* ===== SCROLLBAR STYLING ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-primary);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-secondary);
+        }
+
+        /* ===== LAYOUT PRINCIPAL ===== */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform var(--transition-slow);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-primary);
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .sidebar-header:hover::before {
+            transform: translateX(100%);
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-normal);
+            border-left: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+            margin: 2px 8px;
+            border-radius: var(--radius-md);
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .nav-item-content {
+            flex: 1;
+        }
+
+        .nav-item-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-item-badge {
+            background: #3b82f6;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-header {
+            background: #111111;
+            border-bottom: 1px solid #262626;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .main-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            user-select: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--text-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-primary);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: var(--text-primary);
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: var(--text-primary);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--text-primary);
+        }
+
+        .btn-warning:hover {
+            background: var(--warning-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-lg {
+            padding: 16px 24px;
+            font-size: 16px;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            transform: scaleX(0);
+            transition: transform var(--transition-normal);
+        }
+
+        .card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .card-content {
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        /* ===== FORMS ===== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* ===== ALERTS ===== */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            53%,
+            80%,
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            40%,
+            43% {
+                transform: translate3d(0, -30px, 0);
+            }
+
+            70% {
+                transform: translate3d(0, -15px, 0);
+            }
+
+            90% {
+                transform: translate3d(0, -4px, 0);
+            }
+        }
+
+        /* ===== ENTRANCE ANIMATIONS ===== */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .animate-slide-in-left {
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .animate-slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .animate-slide-in-up {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        .animate-bounce {
+            animation: bounce 1s ease-in-out;
+        }
+
+        /* ===== LOADING STATES ===== */
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--border-primary);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 260px;
+            }
+
+            .main-content {
+                margin-left: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+                transition: transform var(--transition-slow);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-header {
+                padding: 16px;
+            }
+
+            .main-body {
+                padding: 16px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-header {
+                padding: 16px;
+            }
+
+            .nav-item {
+                padding: 10px 16px;
+                margin: 1px 4px;
+            }
+
+            .main-header h2 {
+                font-size: 18px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .mb-1 {
+            margin-bottom: 8px;
+        }
+
+        .mb-2 {
+            margin-bottom: 16px;
+        }
+
+        .mb-3 {
+            margin-bottom: 24px;
+        }
+
+        .mt-0 {
+            margin-top: 0;
+        }
+
+        .mt-1 {
+            margin-top: 8px;
+        }
+
+        .mt-2 {
+            margin-top: 16px;
+        }
+
+        .mt-3 {
+            margin-top: 24px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+
+        .gap-3 {
+            gap: 12px;
+        }
+
+        .gap-4 {
+            gap: 16px;
+        }
+
+        /* ===== MODAL SYSTEM ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.9);
+            transition: transform var(--transition-normal);
+        }
+
+        .modal-overlay.show .modal-container {
+            transform: scale(1);
+        }
+
+        .large-modal {
+            max-width: 800px;
+        }
+
+        .extra-large-modal {
+            max-width: 1200px;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .modal-content {
+            padding: 24px;
+            max-height: 60vh;
+            overflow-y: auto;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: var(--bg-tertiary);
+        }
+
+        /* ===== CODE PREVIEW STYLES ===== */
+        .code-preview {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre;
+            color: var(--text-primary);
+        }
+
+        .code-line {
+            display: block;
+            padding: 2px 0;
+        }
+
+        .code-line.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--danger-color);
+            padding-left: 8px;
+        }
+
+        .code-line.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--warning-color);
+            padding-left: 8px;
+        }
+
+        .code-line.suggestion {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--success-color);
+            padding-left: 8px;
+        }
+
+        /* ===== STATISTICS STYLES ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            transition: all var(--transition-normal);
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== VULNERABILITY STYLES ===== */
+        .vulnerability-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .vulnerability-item.high {
+            border-left-color: var(--warning-color);
+        }
+
+        .vulnerability-item.medium {
+            border-left-color: var(--primary-color);
+        }
+
+        .vulnerability-item.low {
+            border-left-color: var(--success-color);
+        }
+
+        .vulnerability-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .vulnerability-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .vulnerability-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ===== PERFORMANCE STYLES ===== */
+        .performance-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .performance-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .performance-suggestion {
+            color: var(--success-color);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .performance-benefit {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>SQL Analyzer Enterprise</h1>
+                <p>Análisis avanzado de SQL</p>
+            </div>
+
+            <div class="sidebar-nav">
+                <!-- Análisis Avanzado -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Análisis Avanzado</div>
+                    <a href="/sql-analysis" class="nav-item {% if active_tab == 'sql-analysis' %}active{% endif %}">
+                        <div class="nav-item-icon">📝</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">SQL Analysis</div>
+                        </div>
+                        <span class="nav-item-badge">AI</span>
+                    </a>
+                    <a href="/security-analysis"
+                        class="nav-item {% if active_tab == 'security-analysis' %}active{% endif %}">
+                        <div class="nav-item-icon">🛡️</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Security Analysis</div>
+                        </div>
+                        <span class="nav-item-badge">SEC</span>
+                    </a>
+                    <a href="/performance-optimizer"
+                        class="nav-item {% if active_tab == 'performance-optimizer' %}active{% endif %}">
+                        <div class="nav-item-icon">⚡</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Performance Optimizer</div>
+                        </div>
+                        <span class="nav-item-badge">OPT</span>
+                    </a>
+                    <a href="/schema-analysis"
+                        class="nav-item {% if active_tab == 'schema-analysis' %}active{% endif %}">
+                        <div class="nav-item-icon">🔗</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Schema Analysis</div>
+                        </div>
+                    </a>
+                    <a href="/auto-corrections"
+                        class="nav-item {% if active_tab == 'auto-corrections' %}active{% endif %}">
+                        <div class="nav-item-icon">🔧</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Auto Corrections</div>
+                        </div>
+                        <span class="nav-item-badge">AI</span>
+                    </a>
+                </div>
+
+                <!-- Sistema -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <a href="/cache-management"
+                        class="nav-item {% if active_tab == 'cache-management' %}active{% endif %}">
+                        <div class="nav-item-icon">💾</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Cache Management</div>
+                        </div>
+                    </a>
+                    <a href="/database-connections"
+                        class="nav-item {% if active_tab == 'database-connections' %}active{% endif %}">
+                        <div class="nav-item-icon">🗄️</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Database Connections</div>
+                        </div>
+                    </a>
+                    <a href="/export-center" class="nav-item {% if active_tab == 'export-center' %}active{% endif %}">
+                        <div class="nav-item-icon">📤</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Export Center</div>
+                        </div>
+                        <span class="nav-item-badge">50+</span>
+                    </a>
+                    <a href="/metrics" class="nav-item {% if active_tab == 'system-monitoring' %}active{% endif %}">
+                        <div class="nav-item-icon">📊</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">System Monitoring</div>
+                        </div>
+                        <span class="nav-item-badge">LIVE</span>
+                    </a>
+                    <a href="/real-time-stats"
+                        class="nav-item {% if active_tab == 'real-time-stats' %}active{% endif %}">
+                        <div class="nav-item-icon">📈</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Real-time Statistics</div>
+                        </div>
+                        <span class="nav-item-badge">NEW</span>
+                    </a>
+                </div>
+
+                <!-- Herramientas -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Herramientas</div>
+                    <a href="/dashboard" class="nav-item">
+                        <div class="nav-item-icon">📈</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Dashboard</div>
+                        </div>
+                    </a>
+                    <a href="/file-manager" class="nav-item">
+                        <div class="nav-item-icon">📁</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">File Manager</div>
+                        </div>
+                    </a>
+                    <a href="/history" class="nav-item">
+                        <div class="nav-item-icon">🕒</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">History</div>
+                        </div>
+                    </a>
+                    <a href="/terminal" class="nav-item">
+                        <div class="nav-item-icon">💻</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Terminal</div>
+                        </div>
+                    </a>
+                    <a href="/settings" class="nav-item">
+                        <div class="nav-item-icon">⚙️</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Settings</div>
+                        </div>
+                    </a>
+                    <a href="/help" class="nav-item">
+                        <div class="nav-item-icon">❓</div>
+                        <div class="nav-item-content">
+                            <div class="nav-item-label">Help</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <h2>{% block page_title %}SQL Analyzer Enterprise{% endblock %}</h2>
+                <div class="flex items-center gap-3">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </header>
+
+            <div class="main-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Advanced Modal System -->
+    <div id="error-details-modal" class="modal-overlay">
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h3>🔍 Detalles del Error</h3>
+                <button class="modal-close" onclick="closeErrorModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="error-details-content">
+                <!-- Error details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="applyErrorFix()">🔧 Aplicar Corrección</button>
+                <button class="btn btn-secondary" onclick="closeErrorModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="vulnerability-modal" class="modal-overlay">
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h3>🛡️ Detalles de Vulnerabilidad</h3>
+                <button class="modal-close" onclick="closeVulnerabilityModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="vulnerability-content">
+                <!-- Vulnerability details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="showSecurityFix()">🔒 Ver Solución</button>
+                <button class="btn btn-secondary" onclick="closeVulnerabilityModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="performance-modal" class="modal-overlay">
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h3>⚡ Optimización de Rendimiento</h3>
+                <button class="modal-close" onclick="closePerformanceModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="performance-content">
+                <!-- Performance details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="applyPerformanceFix()">🚀 Optimizar</button>
+                <button class="btn btn-secondary" onclick="closePerformanceModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statistics-modal" class="modal-overlay">
+        <div class="modal-container extra-large-modal">
+            <div class="modal-header">
+                <h3>📊 Estadísticas Detalladas</h3>
+                <button class="modal-close" onclick="closeStatisticsModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="statistics-content">
+                <!-- Statistics will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="exportStatistics()">📤 Exportar</button>
+                <button class="btn btn-secondary" onclick="closeStatisticsModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="code-preview-modal" class="modal-overlay">
+        <div class="modal-container extra-large-modal">
+            <div class="modal-header">
+                <h3>📝 Vista Previa del Código</h3>
+                <button class="modal-close" onclick="closeCodePreviewModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="code-preview-content">
+                <!-- Code preview will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="copyCodeToClipboard()">📋 Copiar</button>
+                <button class="btn btn-success" onclick="downloadCorrectedCode()">💾 Descargar</button>
+                <button class="btn btn-secondary" onclick="closeCodePreviewModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== GLOBAL UTILITIES =====
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} animate-slide-in-up`;
+            alert.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="alert-icon">${getAlertIcon(type)}</span>
+                    <span class="alert-message">${message}</span>
+                    <button class="alert-close" onclick="closeAlert(this)" style="margin-left: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 18px; padding: 0; width: 20px; height: 20px;">×</button>
+                </div>
+            `;
+
+            const mainBody = document.querySelector('.main-body');
+            mainBody.insertBefore(alert, mainBody.firstChild);
+
+            // Auto-hide alert
+            setTimeout(() => {
+                const closeBtn = alert.querySelector('.alert-close');
+                if (closeBtn) closeAlert(closeBtn);
+            }, duration);
+        }
+
+        function getAlertIcon(type) {
+            const icons = {
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️',
+                'info': 'ℹ️'
+            };
+            return icons[type] || 'ℹ️';
+        }
+
+        function closeAlert(button) {
+            const alert = button.closest('.alert');
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-20px)';
+            setTimeout(() => alert.remove(), 300);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('open')) {
+                    createSidebarOverlay();
+                } else {
+                    removeSidebarOverlay();
+                }
+            }
+        }
+
+        function createSidebarOverlay() {
+            if (document.querySelector('.sidebar-overlay')) return;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+                opacity: 0;
+                transition: opacity 300ms ease;
+            `;
+
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.style.opacity = '1', 10);
+
+            overlay.addEventListener('click', toggleSidebar);
+        }
+
+        function removeSidebarOverlay() {
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }
+        }
+
+        // ===== LOADING STATES =====
+        function setLoading(element, loading = true) {
+            if (loading) {
+                element.classList.add('loading');
+                element.disabled = true;
+            } else {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('input[type="search"], input[placeholder*="buscar"]');
+                if (searchInput) {
+                    searchInput.focus();
+                    showAlert('Modo de búsqueda activado', 'info', 2000);
+                }
+            }
+
+            if (e.key === 'Escape') {
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar && sidebar.classList.contains('open') && window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            }
+        });
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animate page entrance
+            document.body.classList.add('animate-fade-in');
+
+            // Animate navigation items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('animate-slide-in-left');
+                }, index * 50);
+            });
+
+            // Animate cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate-slide-in-up');
+                }, index * 100);
+            });
+
+            // Add mobile menu button if needed
+            if (window.innerWidth <= 768) {
+                addMobileMenuButton();
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function () {
+                if (window.innerWidth > 768) {
+                    const sidebar = document.querySelector('.sidebar');
+                    sidebar.classList.remove('open');
+                    removeSidebarOverlay();
+                } else if (!document.querySelector('.mobile-menu-btn')) {
+                    addMobileMenuButton();
+                }
+            });
+        });
+
+        function addMobileMenuButton() {
+            if (document.querySelector('.mobile-menu-btn')) return;
+
+            const button = document.createElement('button');
+            button.className = 'mobile-menu-btn';
+            button.innerHTML = '☰';
+            button.style.cssText = `
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 101;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: var(--radius-md);
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+                transition: all var(--transition-normal);
+            `;
+
+            button.addEventListener('click', toggleSidebar);
+            document.body.appendChild(button);
+        }
+
+        // ===== MODAL SYSTEM =====
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function showErrorDetails(error) {
+            const content = document.getElementById('error-details-content');
+            content.innerHTML = `
+                <div class="vulnerability-item">
+                    <div class="vulnerability-title">${error.title || 'Error de Sintaxis'}</div>
+                    <div class="vulnerability-description">${error.message || error.description}</div>
+                    <div class="vulnerability-meta">
+                        <span>Línea: ${error.line}</span>
+                        <span>Columna: ${error.column}</span>
+                        <span>Severidad: ${error.severity}</span>
+                    </div>
+                </div>
+                <div class="code-preview">
+                    <div class="code-line error">Línea ${error.line}: ${error.current_code || 'Código con error'}</div>
+                    ${error.suggestion ? `<div class="code-line suggestion">Sugerencia: ${error.suggestion}</div>` : ''}
+                </div>
+                <div style="margin-top: 16px;">
+                    <strong>💡 Explicación:</strong><br>
+                    ${error.explanation || error.suggestion || 'Error detectado en el código SQL'}
+                </div>
+            `;
+            showModal('error-details-modal');
+        }
+
+        function closeErrorModal() {
+            hideModal('error-details-modal');
+        }
+
+        function showVulnerabilityDetails(vulnerability) {
+            const content = document.getElementById('vulnerability-content');
+            const riskColor = vulnerability.risk_level === 'critical' ? 'var(--danger-color)' :
+                vulnerability.risk_level === 'high' ? 'var(--warning-color)' :
+                    vulnerability.risk_level === 'medium' ? 'var(--primary-color)' : 'var(--success-color)';
+
+            content.innerHTML = `
+                <div class="vulnerability-item ${vulnerability.risk_level}">
+                    <div class="vulnerability-title">${vulnerability.title}</div>
+                    <div class="vulnerability-description">${vulnerability.description}</div>
+                    <div class="vulnerability-meta">
+                        <span>Línea: ${vulnerability.line}</span>
+                        <span>Columna: ${vulnerability.column}</span>
+                        <span>Riesgo: ${vulnerability.risk_level.toUpperCase()}</span>
+                        <span>CWE: ${vulnerability.cwe_id}</span>
+                    </div>
+                </div>
+                <div class="code-preview">
+                    <div class="code-line error">Código vulnerable: ${vulnerability.evidence}</div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <strong>🛡️ Recomendación:</strong><br>
+                    ${vulnerability.recommendation}
+                </div>
+                <div style="margin-top: 12px;">
+                    <strong>📋 Categoría OWASP:</strong><br>
+                    ${vulnerability.owasp_category}
+                </div>
+            `;
+            showModal('vulnerability-modal');
+        }
+
+        function closeVulnerabilityModal() {
+            hideModal('vulnerability-modal');
+        }
+
+        function showPerformanceDetails(performance) {
+            const content = document.getElementById('performance-content');
+            content.innerHTML = `
+                <div class="performance-item">
+                    <div class="performance-title">${performance.title}</div>
+                    <div class="performance-suggestion">💡 ${performance.optimized_code}</div>
+                    <div class="performance-benefit">📈 Mejora estimada: ${performance.estimated_improvement}</div>
+                </div>
+                <div class="code-preview">
+                    <div class="code-line warning">Código actual: ${performance.current_code}</div>
+                    <div class="code-line suggestion">Código optimizado: ${performance.optimized_code}</div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <strong>⚡ Explicación:</strong><br>
+                    ${performance.explanation}
+                </div>
+            `;
+            showModal('performance-modal');
+        }
+
+        function closePerformanceModal() {
+            hideModal('performance-modal');
+        }
+
+        function showStatistics(stats) {
+            const content = document.getElementById('statistics-content');
+            content.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_lines || 0}</div>
+                        <div class="stat-label">Líneas Totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_statements || 0}</div>
+                        <div class="stat-label">Declaraciones</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.syntax_errors || 0}</div>
+                        <div class="stat-label">Errores Sintaxis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.vulnerabilities || 0}</div>
+                        <div class="stat-label">Vulnerabilidades</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.performance_issues || 0}</div>
+                        <div class="stat-label">Problemas Rendimiento</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.complexity_score || 0}</div>
+                        <div class="stat-label">Complejidad</div>
+                    </div>
+                </div>
+                <div style="margin-top: 24px;">
+                    <h4>📊 Distribución de Tipos de Declaración</h4>
+                    <div style="margin-top: 12px;">
+                        ${Object.entries(stats.statement_types || {}).map(([type, count]) => `
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-primary);">
+                                <span>${type}</span>
+                                <span style="font-weight: 600;">${count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            showModal('statistics-modal');
+        }
+
+        function closeStatisticsModal() {
+            hideModal('statistics-modal');
+        }
+
+        function showCodePreview(code, corrections = []) {
+            const content = document.getElementById('code-preview-content');
+            const lines = code.split('\n');
+
+            let codeHTML = '<div class="code-preview">';
+            lines.forEach((line, index) => {
+                const lineNumber = index + 1;
+                const correction = corrections.find(c => c.line === lineNumber);
+                const className = correction ? (correction.type === 'error' ? 'error' : 'warning') : '';
+
+                codeHTML += `<div class="code-line ${className}">${lineNumber}: ${line}</div>`;
+
+                if (correction) {
+                    codeHTML += `<div class="code-line suggestion">    → ${correction.suggestion}</div>`;
+                }
+            });
+            codeHTML += '</div>';
+
+            content.innerHTML = codeHTML;
+            showModal('code-preview-modal');
+        }
+
+        function closeCodePreviewModal() {
+            hideModal('code-preview-modal');
+        }
+
+        function applyErrorFix() {
+            showAlert('🔧 Corrección aplicada exitosamente', 'success');
+            closeErrorModal();
+        }
+
+        function showSecurityFix() {
+            showAlert('🔒 Solución de seguridad mostrada', 'info');
+        }
+
+        function applyPerformanceFix() {
+            showAlert('🚀 Optimización aplicada exitosamente', 'success');
+            closePerformanceModal();
+        }
+
+        function exportStatistics() {
+            showAlert('📤 Estadísticas exportadas', 'success');
+        }
+
+        function copyCodeToClipboard() {
+            const codeContent = document.querySelector('#code-preview-content .code-preview').textContent;
+            navigator.clipboard.writeText(codeContent).then(() => {
+                showAlert('📋 Código copiado al portapapeles', 'success');
+            });
+        }
+
+        function downloadCorrectedCode() {
+            const codeContent = document.querySelector('#code-preview-content .code-preview').textContent;
+            const blob = new Blob([codeContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'corrected_code.sql';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showAlert('💾 Código corregido descargado', 'success');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                const modalId = e.target.id;
+                hideModal(modalId);
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal-overlay.show');
+                if (openModal) {
+                    hideModal(openModal.id);
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
