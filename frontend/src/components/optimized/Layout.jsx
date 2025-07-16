@@ -1,6 +1,6 @@
 import React, { memo, Suspense, lazy } from 'react';
-import { useSidebar, useActivePanel } from '../contexts/UIContext';
-import { usePerformanceMetrics } from '../contexts/PerformanceContext';
+import { useSidebar, useActivePanel } from '../../contexts/UIContext';
+import { usePerformanceMetrics } from '../../contexts/PerformanceContext';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LoadingSpinner from './LoadingSpinner';
@@ -25,16 +25,16 @@ const PANEL_COMPONENTS = {
 // Performance indicator component
 const PerformanceIndicator = memo(() => {
   const metrics = usePerformanceMetrics();
-  
+
   const getStatusColor = (value, thresholds) => {
     if (value < thresholds.good) return 'green';
     if (value < thresholds.warning) return 'yellow';
     return 'red';
   };
-  
+
   const memoryColor = getStatusColor(metrics.memoryUsage, { good: 70, warning: 85 });
   const responseColor = getStatusColor(metrics.responseTime, { good: 500, warning: 1000 });
-  
+
   return (
     <div className="performance-indicator">
       <div className="metric">
@@ -56,9 +56,9 @@ const PerformanceIndicator = memo(() => {
 // Main content area component
 const MainContent = memo(() => {
   const { activePanel } = useActivePanel();
-  
+
   const ActiveComponent = PANEL_COMPONENTS[activePanel] || AnalysisWorkspace;
-  
+
   return (
     <main className="main-content" role="main">
       <Suspense fallback={<LoadingSpinner />}>
@@ -71,21 +71,21 @@ const MainContent = memo(() => {
 // Layout component with optimized structure
 const Layout = memo(() => {
   const { sidebarCollapsed } = useSidebar();
-  
+
   return (
     <div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Header */}
       <Header />
-      
+
       {/* Main layout container */}
       <div className="layout-container">
         {/* Sidebar */}
         <Sidebar />
-        
+
         {/* Main content area */}
         <div className="content-area">
           <MainContent />
-          
+
           {/* Performance indicator */}
           <PerformanceIndicator />
         </div>

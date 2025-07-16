@@ -1,8 +1,8 @@
 import React, { memo, useCallback, useMemo, useReducer, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { AnalysisProvider } from '../contexts/AnalysisContext';
-import { UIProvider } from '../contexts/UIContext';
-import { PerformanceProvider } from '../contexts/PerformanceContext';
+import { AnalysisProvider } from '../../contexts/AnalysisContext';
+import { UIProvider } from '../../contexts/UIContext';
+import { PerformanceProvider } from '../../contexts/PerformanceContext';
 import Layout from './Layout';
 import './OptimizedEnterpriseApp.css';
 
@@ -12,27 +12,27 @@ const initialState = {
   analysisResults: null,
   isAnalyzing: false,
   analysisError: null,
-  
+
   // File management
   selectedFile: null,
   fileContent: '',
-  
+
   // UI state
   activePanel: 'analysis',
   sidebarCollapsed: false,
   theme: 'light',
-  
+
   // Performance metrics
   performanceMetrics: {
     responseTime: 0,
     memoryUsage: 0,
     cacheHitRate: 0
   },
-  
+
   // Export state
   exportFormat: 'json',
   isExporting: false,
-  
+
   // Database engine
   selectedEngine: 'mysql'
 };
@@ -46,7 +46,7 @@ function appReducer(state, action) {
         isAnalyzing: action.payload,
         analysisError: action.payload ? null : state.analysisError
       };
-    
+
     case 'SET_ANALYSIS_RESULTS':
       return {
         ...state,
@@ -54,39 +54,39 @@ function appReducer(state, action) {
         isAnalyzing: false,
         analysisError: null
       };
-    
+
     case 'SET_ANALYSIS_ERROR':
       return {
         ...state,
         analysisError: action.payload,
         isAnalyzing: false
       };
-    
+
     case 'SET_FILE':
       return {
         ...state,
         selectedFile: action.payload.file,
         fileContent: action.payload.content
       };
-    
+
     case 'SET_ACTIVE_PANEL':
       return {
         ...state,
         activePanel: action.payload
       };
-    
+
     case 'TOGGLE_SIDEBAR':
       return {
         ...state,
         sidebarCollapsed: !state.sidebarCollapsed
       };
-    
+
     case 'SET_THEME':
       return {
         ...state,
         theme: action.payload
       };
-    
+
     case 'UPDATE_PERFORMANCE_METRICS':
       return {
         ...state,
@@ -95,25 +95,25 @@ function appReducer(state, action) {
           ...action.payload
         }
       };
-    
+
     case 'SET_EXPORT_FORMAT':
       return {
         ...state,
         exportFormat: action.payload
       };
-    
+
     case 'SET_EXPORT_LOADING':
       return {
         ...state,
         isExporting: action.payload
       };
-    
+
     case 'SET_DATABASE_ENGINE':
       return {
         ...state,
         selectedEngine: action.payload
       };
-    
+
     default:
       return state;
   }
@@ -131,7 +131,7 @@ const ErrorFallback = memo(({ error, resetErrorBoundary }) => (
 // Main optimized component
 const OptimizedEnterpriseApp = memo(() => {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  
+
   // Memoized action creators
   const actions = useMemo(() => ({
     setAnalysisLoading: (loading) => dispatch({ type: 'SET_ANALYSIS_LOADING', payload: loading }),
@@ -146,52 +146,52 @@ const OptimizedEnterpriseApp = memo(() => {
     setExportLoading: (loading) => dispatch({ type: 'SET_EXPORT_LOADING', payload: loading }),
     setDatabaseEngine: (engine) => dispatch({ type: 'SET_DATABASE_ENGINE', payload: engine })
   }), []);
-  
+
   // Optimized API calls with error handling
   const analyzeSQL = useCallback(async (file, content) => {
     actions.setAnalysisLoading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('database_engine', state.selectedEngine);
-      
+
       const startTime = performance.now();
-      
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData
       });
-      
+
       const endTime = performance.now();
       const responseTime = endTime - startTime;
-      
+
       if (!response.ok) {
         throw new Error(`Analysis failed: ${response.statusText}`);
       }
-      
+
       const results = await response.json();
-      
+
       // Update performance metrics
       actions.updatePerformanceMetrics({
         responseTime: responseTime,
         lastAnalysis: new Date().toISOString()
       });
-      
+
       actions.setAnalysisResults(results);
-      
+
     } catch (error) {
       console.error('Analysis error:', error);
       actions.setAnalysisError(error.message);
     }
   }, [state.selectedEngine, actions]);
-  
+
   // Optimized export function
   const exportResults = useCallback(async (format) => {
     if (!state.analysisResults) return;
-    
+
     actions.setExportLoading(true);
-    
+
     try {
       const response = await fetch(`/api/export/${format}`, {
         method: 'POST',
@@ -200,11 +200,11 @@ const OptimizedEnterpriseApp = memo(() => {
         },
         body: JSON.stringify(state.analysisResults)
       });
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -214,7 +214,7 @@ const OptimizedEnterpriseApp = memo(() => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
+
     } catch (error) {
       console.error('Export error:', error);
       actions.setAnalysisError(error.message);
@@ -222,7 +222,7 @@ const OptimizedEnterpriseApp = memo(() => {
       actions.setExportLoading(false);
     }
   }, [state.analysisResults, actions]);
-  
+
   // Performance monitoring
   useEffect(() => {
     const updateMetrics = async () => {
@@ -239,14 +239,14 @@ const OptimizedEnterpriseApp = memo(() => {
         console.warn('Failed to update performance metrics:', error);
       }
     };
-    
+
     // Update metrics every 30 seconds
     const interval = setInterval(updateMetrics, 30000);
     updateMetrics(); // Initial update
-    
+
     return () => clearInterval(interval);
   }, [actions]);
-  
+
   // Memoized context values
   const analysisContextValue = useMemo(() => ({
     ...state,
@@ -257,7 +257,7 @@ const OptimizedEnterpriseApp = memo(() => {
       setDatabaseEngine: actions.setDatabaseEngine
     }
   }), [state, analyzeSQL, exportResults, actions]);
-  
+
   const uiContextValue = useMemo(() => ({
     activePanel: state.activePanel,
     sidebarCollapsed: state.sidebarCollapsed,
@@ -268,12 +268,12 @@ const OptimizedEnterpriseApp = memo(() => {
       setTheme: actions.setTheme
     }
   }), [state.activePanel, state.sidebarCollapsed, state.theme, actions]);
-  
+
   const performanceContextValue = useMemo(() => ({
     metrics: state.performanceMetrics,
     updateMetrics: actions.updatePerformanceMetrics
   }), [state.performanceMetrics, actions]);
-  
+
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}

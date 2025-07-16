@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Code,
   Play,
@@ -21,39 +21,114 @@ import {
   FileText,
   Clock,
   Zap,
-  BarChart3
+  BarChart3,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Layers,
+  Target,
+  Shield,
+  Activity,
+  TrendingUp,
+  TrendingDown,
+  Plus,
+  Minus,
+  RotateCcw,
+  BookOpen,
+  HelpCircle,
+  Lightbulb,
+  Bug,
+  Gauge,
+  PieChart,
+  List,
+  Grid,
+  Terminal,
+  Cpu,
+  HardDrive,
+  Network,
+  Lock,
+  Unlock,
+  Star,
+  Bookmark,
+  Tag,
+  Hash,
+  Type,
+  AlignLeft,
+  Indent,
+  Outdent,
+  WrapText,
+  MousePointer,
+  Keyboard,
+  Monitor,
+  Smartphone,
+  Tablet
 } from 'lucide-react';
 import DatabaseEngineSelector from '../DatabaseEngineSelector';
+import { Card, Button, Input, Dropdown } from '../ui';
 
 const SQLAnalysisView = ({
-  sqlContent,
+  sqlContent = '',
   setSqlContent,
-  analysisResults,
-  isAnalyzing,
-  analysisProgress,
+  analysisResults = null,
+  isAnalyzing = false,
+  analysisProgress = 0,
   onAnalyze,
-  currentConnection,
-  selectedDatabaseEngine,
+  currentConnection = null,
+  selectedDatabaseEngine = 'mysql',
   onDatabaseEngineChange,
   onSave,
   onExport,
-  dragActive,
+  dragActive = false,
   onDragOver,
   onDragLeave,
   onDrop
 }) => {
+  // Enhanced editor settings with more options
   const [editorSettings, setEditorSettings] = useState({
     fontSize: 14,
-    theme: 'light',
+    theme: 'github-light',
     wordWrap: true,
     lineNumbers: true,
-    minimap: false
+    minimap: false,
+    autoComplete: true,
+    syntaxHighlighting: true,
+    bracketMatching: true,
+    autoIndent: true,
+    showWhitespace: false,
+    highlightActiveLine: true,
+    showGutter: true,
+    tabSize: 2,
+    useSoftTabs: true
   });
+  // Enhanced state management
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showResults, setShowResults] = useState(true);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
+  const [viewMode, setViewMode] = useState('split'); // split, editor-only, results-only
+  const [analysisMode, setAnalysisMode] = useState('comprehensive'); // quick, comprehensive, security
+  const [autoSave, setAutoSave] = useState(true);
+  const [liveValidation, setLiveValidation] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [replaceQuery, setReplaceQuery] = useState('');
+  const [showSearchReplace, setShowSearchReplace] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
+  const [selectedText, setSelectedText] = useState('');
+  const [executionPlan, setExecutionPlan] = useState(null);
+  const [performanceMetrics, setPerformanceMetrics] = useState(null);
+  const [queryComplexity, setQueryComplexity] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+
   const textareaRef = useRef(null);
+  const editorContainerRef = useRef(null);
+  const autoSaveTimeoutRef = useRef(null);
 
   const handleCopy = async () => {
     try {
@@ -88,6 +163,167 @@ const SQLAnalysisView = ({
   const getLineCount = () => sqlContent.split('\n').length;
   const getCharCount = () => sqlContent.length;
   const getWordCount = () => sqlContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+  // Enhanced utility functions
+  const analyzeQueryComplexity = useCallback((query) => {
+    if (!query.trim()) return { score: 0, level: 'none', factors: [] };
+
+    const factors = [];
+    let score = 0;
+
+    // Count different SQL elements
+    const joins = (query.match(/\bJOIN\b/gi) || []).length;
+    const subqueries = (query.match(/\(\s*SELECT\b/gi) || []).length;
+    const unions = (query.match(/\bUNION\b/gi) || []).length;
+    const aggregates = (query.match(/\b(COUNT|SUM|AVG|MAX|MIN|GROUP_CONCAT)\b/gi) || []).length;
+    const conditions = (query.match(/\b(WHERE|HAVING)\b/gi) || []).length;
+
+    if (joins > 0) {
+      score += joins * 2;
+      factors.push(`${joins} JOIN${joins > 1 ? 's' : ''}`);
+    }
+    if (subqueries > 0) {
+      score += subqueries * 3;
+      factors.push(`${subqueries} subquer${subqueries > 1 ? 'ies' : 'y'}`);
+    }
+    if (unions > 0) {
+      score += unions * 2;
+      factors.push(`${unions} UNION${unions > 1 ? 's' : ''}`);
+    }
+    if (aggregates > 0) {
+      score += aggregates;
+      factors.push(`${aggregates} aggregate function${aggregates > 1 ? 's' : ''}`);
+    }
+    if (conditions > 0) {
+      score += conditions;
+      factors.push(`${conditions} condition${conditions > 1 ? 's' : ''}`);
+    }
+
+    const level = score === 0 ? 'none' :
+      score <= 3 ? 'simple' :
+        score <= 8 ? 'moderate' :
+          score <= 15 ? 'complex' : 'very complex';
+
+    return { score, level, factors };
+  }, []);
+
+  const validateSQL = useCallback((query) => {
+    const errors = [];
+    const warnings = [];
+
+    if (!query.trim()) {
+      return { errors, warnings, isValid: true };
+    }
+
+    // Basic SQL validation
+    const keywords = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'INSERT', 'UPDATE', 'DELETE'];
+    const hasKeyword = keywords.some(keyword =>
+      new RegExp(`\\b${keyword}\\b`, 'i').test(query)
+    );
+
+    if (!hasKeyword) {
+      errors.push({
+        line: 1,
+        column: 1,
+        message: 'No valid SQL keywords found',
+        severity: 'error'
+      });
+    }
+
+    // Check for common issues
+    const openParens = (query.match(/\(/g) || []).length;
+    const closeParens = (query.match(/\)/g) || []).length;
+
+    if (openParens !== closeParens) {
+      errors.push({
+        line: 1,
+        column: 1,
+        message: 'Mismatched parentheses',
+        severity: 'error'
+      });
+    }
+
+    // Check for potential security issues
+    if (/\b(DROP|DELETE|TRUNCATE)\b/i.test(query)) {
+      warnings.push({
+        line: 1,
+        column: 1,
+        message: 'Potentially destructive operation detected',
+        severity: 'warning'
+      });
+    }
+
+    return { errors, warnings, isValid: errors.length === 0 };
+  }, []);
+
+  const addToHistory = useCallback((content) => {
+    if (content && content !== history[historyIndex]) {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(content);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
+  }, [history, historyIndex]);
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setSqlContent(history[historyIndex - 1]);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setSqlContent(history[historyIndex + 1]);
+    }
+  };
+
+  const handleBookmark = () => {
+    const bookmark = {
+      id: Date.now(),
+      content: sqlContent,
+      timestamp: new Date().toISOString(),
+      name: `Bookmark ${bookmarks.length + 1}`
+    };
+    setBookmarks([...bookmarks, bookmark]);
+  };
+
+  const loadBookmark = (bookmark) => {
+    setSqlContent(bookmark.content);
+    addToHistory(bookmark.content);
+  };
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSave && sqlContent) {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        console.log('Auto-saving SQL content...');
+        // In real implementation, this would save to backend
+      }, 2000);
+    }
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [sqlContent, autoSave]);
+
+  // Live validation
+  useEffect(() => {
+    if (liveValidation && sqlContent) {
+      const validation = validateSQL(sqlContent);
+      setValidationErrors(validation.errors);
+
+      const complexity = analyzeQueryComplexity(sqlContent);
+      setQueryComplexity(complexity);
+    }
+  }, [sqlContent, liveValidation, validateSQL, analyzeQueryComplexity]);
 
   const editorTabs = [
     { id: 'editor', label: 'Editor SQL', icon: Code },

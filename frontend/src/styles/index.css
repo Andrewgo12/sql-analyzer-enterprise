@@ -21,6 +21,14 @@
 /* GitHub-authentic form components */
 @import './components/modals.css';
 /* Modal dialogs and overlays */
+@import './components/ui.css';
+/* Reusable UI component styles */
+
+/* ===== LEGACY COMPATIBILITY STYLES ===== */
+@import './enterprise.css';
+/* Legacy enterprise styles */
+@import './EnterpriseApp.css';
+/* Enterprise app container styles */
 
 /* ===== VIEW STYLES (PAGES) ===== */
 @import './views/DashboardView.css';
@@ -37,6 +45,10 @@
 /* File explorer with tree view */
 @import './views/HistoryView.css';
 /* Analysis history with GitHub table */
+@import './views/SettingsView.css';
+/* Settings interface with tabbed navigation */
+@import './views/DownloadsView.css';
+/* Download management interface */
 
 /* ===== GLOBAL UTILITIES ===== */
 

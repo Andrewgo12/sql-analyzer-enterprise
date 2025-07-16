@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Terminal,
   Play,
@@ -28,26 +28,95 @@ import {
   Cpu,
   MemoryStick,
   HardDrive,
-  Wifi
+  Wifi,
+  Search,
+  Filter,
+  Eye,
+  EyeOff,
+  Pause,
+  RotateCcw,
+  MoreHorizontal,
+  Layers,
+  Grid,
+  List,
+  BookOpen,
+  Code,
+  Command,
+  Type,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Globe,
+  Lock,
+  Unlock,
+  Shield,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  PieChart,
+  LineChart,
+  Gauge,
+  Bell,
+  BellOff,
+  Star,
+  Bookmark,
+  Tag,
+  Plus,
+  Minus,
+  X,
+  Check,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Link,
+  Unlink,
+  Power,
+  PowerOff
 } from 'lucide-react';
+import { Card, Button, Input, Dropdown } from '../ui';
 
 const TerminalView = ({
-  terminalOutput,
+  terminalOutput = [],
   setTerminalOutput,
-  terminalInput,
+  terminalInput = '',
   setTerminalInput,
   onExecuteCommand,
-  systemMetrics,
-  connections,
-  onAnalyze
+  systemMetrics = {},
+  connections = [],
+  onAnalyze,
+  analysisHistory = [],
+  uploadedFiles = []
 }) => {
+  // Estado avanzado del terminal
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentSession, setCurrentSession] = useState(null);
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [activeProcesses, setActiveProcesses] = useState([]);
+  const [terminalTabs, setTerminalTabs] = useState([{ id: 1, name: 'Terminal 1', active: true }]);
+  const [activeTab, setActiveTab] = useState(1);
+  const [splitView, setSplitView] = useState(false);
   const [terminalSettings, setTerminalSettings] = useState({
     fontSize: 14,
     theme: 'dark',
     showTimestamps: true,
     autoScroll: true,
-    maxLines: 1000
+    maxLines: 1000,
+    enableSound: false,
+    enableNotifications: true,
+    cursorStyle: 'block',
+    fontFamily: 'Consolas, Monaco, monospace',
+    lineHeight: 1.4,
+    scrollback: 10000,
+    bellStyle: 'sound',
+    copyOnSelect: false,
+    rightClickSelectsWord: true,
+    macOptionIsMeta: false,
+    allowTransparency: true,
+    drawBoldTextInBrightColors: true
   });
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -63,6 +132,44 @@ const TerminalView = ({
   const [showHelp, setShowHelp] = useState(false);
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Estado avanzado adicional
+  const [showSettings, setShowSettings] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [filterLevel, setFilterLevel] = useState('all');
+  const [bookmarks, setBookmarks] = useState([]);
+  const [aliases, setAliases] = useState({
+    'll': 'ls -la',
+    'la': 'ls -la',
+    'cls': 'clear',
+    'h': 'help',
+    'q': 'exit'
+  });
+  const [environmentVars, setEnvironmentVars] = useState({
+    PATH: '/usr/local/bin:/usr/bin:/bin',
+    HOME: '/home/sql-analyzer',
+    USER: 'sql-analyzer-user',
+    SHELL: '/bin/bash',
+    TERM: 'xterm-256color',
+    LANG: 'es_ES.UTF-8'
+  });
+  const [terminalStats, setTerminalStats] = useState({
+    commandsExecuted: 0,
+    sessionsCreated: 0,
+    errorsEncountered: 0,
+    averageResponseTime: 0,
+    totalUptime: 0
+  });
+
+  // Referencias avanzadas adicionales
+  const outputRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const settingsRef = useRef(null);
+  const autoScrollRef = useRef(null);
+  const commandTimeoutRef = useRef(null);
+  const sessionTimerRef = useRef(null);
 
   const availableCommands = [
     { cmd: 'help', desc: 'Mostrar ayuda de comandos disponibles', category: 'general' },
@@ -505,6 +612,135 @@ Platform: ${navigator.platform}`;
     }
   };
 
+  // Funciones utilitarias avanzadas
+  const searchInOutput = useCallback((query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const results = terminalOutput
+      .filter(line =>
+        line.content.toLowerCase().includes(query.toLowerCase()) ||
+        line.type.toLowerCase().includes(query.toLowerCase())
+      )
+      .map((line, index) => ({
+        ...line,
+        index,
+        highlight: line.content.replace(
+          new RegExp(query, 'gi'),
+          match => `<mark>${match}</mark>`
+        )
+      }));
+
+    setSearchResults(results);
+  }, [terminalOutput]);
+
+  const filterOutput = useCallback((level) => {
+    if (level === 'all') return terminalOutput;
+    return terminalOutput.filter(line => line.type === level);
+  }, [terminalOutput]);
+
+  const exportSession = useCallback((format = 'txt') => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const sessionData = {
+      session: sessionInfo,
+      commands: commandHistory,
+      output: terminalOutput,
+      stats: terminalStats,
+      settings: terminalSettings
+    };
+
+    let content, mimeType, extension;
+
+    switch (format) {
+      case 'json':
+        content = JSON.stringify(sessionData, null, 2);
+        mimeType = 'application/json';
+        extension = 'json';
+        break;
+      case 'csv':
+        content = 'Timestamp,Type,Content\n' +
+          terminalOutput.map(line =>
+            `"${line.timestamp}","${line.type}","${line.content.replace(/"/g, '""')}"`
+          ).join('\n');
+        mimeType = 'text/csv';
+        extension = 'csv';
+        break;
+      case 'html':
+        content = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Terminal Session - ${timestamp}</title>
+  <style>
+    body { font-family: monospace; background: #1e1e1e; color: #fff; }
+    .terminal-line { margin: 2px 0; }
+    .command { color: #4CAF50; }
+    .result { color: #2196F3; }
+    .error { color: #f44336; }
+    .system { color: #FF9800; }
+  </style>
+</head>
+<body>
+  <h1>Terminal Session - ${timestamp}</h1>
+  <div class="terminal-output">
+    ${terminalOutput.map(line =>
+          `<div class="terminal-line ${line.type}">[${line.timestamp}] ${line.content}</div>`
+        ).join('')}
+  </div>
+</body>
+</html>`;
+        mimeType = 'text/html';
+        extension = 'html';
+        break;
+      default:
+        content = terminalOutput
+          .map(line => `[${line.timestamp}] ${line.type}: ${line.content}`)
+          .join('\n');
+        mimeType = 'text/plain';
+        extension = 'txt';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `terminal-session-${timestamp}.${extension}`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    addOutput('system', `Sesión exportada como ${extension.toUpperCase()}`);
+  }, [terminalOutput, sessionInfo, commandHistory, terminalStats, terminalSettings]);
+
+  const addBookmark = useCallback((name, command) => {
+    const bookmark = {
+      id: Date.now(),
+      name: name || `Bookmark ${bookmarks.length + 1}`,
+      command,
+      timestamp: new Date().toISOString()
+    };
+    setBookmarks(prev => [...prev, bookmark]);
+    addOutput('system', `Bookmark "${bookmark.name}" agregado`);
+  }, [bookmarks]);
+
+  const executeBookmark = useCallback((bookmarkId) => {
+    const bookmark = bookmarks.find(b => b.id === bookmarkId);
+    if (bookmark) {
+      setTerminalInput(bookmark.command);
+      addOutput('system', `Ejecutando bookmark: ${bookmark.name}`);
+    }
+  }, [bookmarks]);
+
+  const updateStats = useCallback((commandExecuted = false, error = false) => {
+    setTerminalStats(prev => ({
+      ...prev,
+      commandsExecuted: commandExecuted ? prev.commandsExecuted + 1 : prev.commandsExecuted,
+      errorsEncountered: error ? prev.errorsEncountered + 1 : prev.errorsEncountered,
+      totalUptime: Date.now() - sessionInfo.startTime.getTime()
+    }));
+  }, [sessionInfo]);
+
   const handleCopyOutput = () => {
     const outputText = terminalOutput
       .map(line => `[${line.timestamp}] ${line.content}`)
@@ -588,33 +824,134 @@ Platform: ${navigator.platform}`;
 
   return (
     <div className="terminal-view">
-      <div className="view-header">
-        <div className="header-title">
-          <Terminal size={24} />
-          <h1>Terminal Integrado</h1>
+      {/* Enhanced Header */}
+      <div className="terminal-header">
+        <div className="header-main">
+          <div className="header-title-section">
+            <div className="title-icon-wrapper">
+              <Terminal size={28} />
+            </div>
+            <div className="title-content">
+              <h1 className="terminal-title">Terminal Empresarial</h1>
+              <p className="terminal-subtitle">
+                Interfaz de línea de comandos avanzada para SQL Analyzer Enterprise
+              </p>
+            </div>
+          </div>
+
+          <div className="header-controls">
+            <div className="control-group">
+              <Button
+                variant="outline"
+                size="small"
+                onClick={() => setTerminalOutput([])}
+                icon={Trash2}
+                className="clear-btn"
+              >
+                Limpiar
+              </Button>
+
+              <Button
+                variant="outline"
+                size="small"
+                onClick={handleCopyOutput}
+                icon={Copy}
+                className="copy-btn"
+              >
+                Copiar
+              </Button>
+
+              <Button
+                variant="outline"
+                size="small"
+                onClick={() => exportSession('txt')}
+                icon={Download}
+                className="export-btn"
+              >
+                Exportar
+              </Button>
+            </div>
+
+            <div className="view-controls">
+              <Button
+                variant={showSearch ? 'primary' : 'outline'}
+                size="small"
+                onClick={() => setShowSearch(!showSearch)}
+                icon={Search}
+                className="search-btn"
+              >
+                Buscar
+              </Button>
+
+              <Button
+                variant={showSettings ? 'primary' : 'outline'}
+                size="small"
+                onClick={() => setShowSettings(!showSettings)}
+                icon={Settings}
+                className="settings-btn"
+              >
+                Configurar
+              </Button>
+
+              <Button
+                variant="outline"
+                size="small"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                icon={isFullscreen ? Minimize2 : Maximize2}
+                className="fullscreen-btn"
+              >
+                {isFullscreen ? 'Minimizar' : 'Pantalla completa'}
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="header-actions">
-          <button
-            className="btn-secondary"
-            onClick={() => setTerminalOutput([])}
-          >
-            <Trash2 size={16} />
-            Limpiar
-          </button>
-          <button
-            className="btn-secondary"
-            onClick={handleCopyOutput}
-          >
-            <Copy size={16} />
-            Copiar
-          </button>
-          <button
-            className="btn-secondary"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-          >
-            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            {isFullscreen ? 'Minimizar' : 'Pantalla completa'}
-          </button>
+
+        {/* Status Bar */}
+        <div className="status-bar">
+          <div className="status-indicators">
+            <div className="status-item">
+              <div className={`status-dot ${isProcessing ? 'processing' : 'ready'}`}></div>
+              <span>Estado: {isProcessing ? 'Procesando' : 'Listo'}</span>
+            </div>
+            <div className="status-item">
+              <User size={14} />
+              <span>Usuario: {sessionInfo.user}@{sessionInfo.host}</span>
+            </div>
+            <div className="status-item">
+              <Clock size={14} />
+              <span>Sesión: {Math.floor((Date.now() - sessionInfo.startTime.getTime()) / 60000)}m</span>
+            </div>
+            <div className="status-item">
+              <Hash size={14} />
+              <span>Comandos: {terminalStats.commandsExecuted}</span>
+            </div>
+            {terminalStats.errorsEncountered > 0 && (
+              <div className="status-item warning">
+                <AlertTriangle size={14} />
+                <span>Errores: {terminalStats.errorsEncountered}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="status-actions">
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={() => setShowHelp(!showHelp)}
+              icon={HelpCircle}
+            >
+              Ayuda
+            </Button>
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={() => addBookmark('', terminalInput)}
+              icon={Bookmark}
+              disabled={!terminalInput.trim()}
+            >
+              Bookmark
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -14,7 +14,6 @@ import {
   CheckCircle,
   Clock,
   Menu,
-  X,
   Home,
   History,
   Terminal,
@@ -49,7 +48,6 @@ const EnterpriseApp = () => {
   // UI State
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState('dashboard');
-  const [activeModal, setActiveModal] = useState(null);
   const [showExportSystem, setShowExportSystem] = useState(false);
 
   // Application State
@@ -445,13 +443,10 @@ const EnterpriseApp = () => {
     setTerminalInput('');
   }, []);
 
-  // Modal Functions
+  // Modal Functions (placeholder for future implementation)
   const openModal = useCallback((modalType) => {
-    setActiveModal(modalType);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setActiveModal(null);
+    console.log(`Opening modal: ${modalType}`);
+    // TODO: Implement proper modal system
   }, []);
 
   // Load initial data

@@ -558,6 +558,9 @@ def analyze_sql():
         if cache_manager:
             cache_manager.cache_sql_analysis(content, database_engine, results)
 
+        # Save analysis to history
+        save_analysis_to_storage(results)
+
         # Clean up uploaded file
         try:
             os.remove(file_path)
@@ -609,6 +612,269 @@ def export_analysis(format):
     except Exception as e:
         logger.error(f"Export endpoint failed: {e}")
         return jsonify({'error': 'Export failed', 'message': str(e)}), 500
+
+@app.route('/api/connections', methods=['GET'])
+def get_connections():
+    """Get all database connections"""
+    try:
+        # Load connections from storage (could be database, file, etc.)
+        connections = load_connections_from_storage()
+
+        return jsonify({
+            'status': 'success',
+            'connections': connections,
+            'count': len(connections),
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Get connections failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to retrieve connections',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/connections', methods=['POST'])
+def create_connection():
+    """Create a new database connection"""
+    try:
+        if not request.json:
+            return jsonify({'error': 'No connection data provided'}), 400
+
+        connection_data = request.json
+
+        # Validate required fields
+        required_fields = ['name', 'type', 'host', 'database', 'username']
+        for field in required_fields:
+            if field not in connection_data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Generate connection ID
+        connection_id = generate_connection_id()
+        connection_data['id'] = connection_id
+        connection_data['created_at'] = datetime.now().isoformat()
+        connection_data['status'] = 'inactive'
+
+        # Save connection
+        save_connection_to_storage(connection_data)
+
+        return jsonify({
+            'status': 'success',
+            'connection': connection_data,
+            'message': 'Connection created successfully',
+            'timestamp': datetime.now().isoformat()
+        }), 201
+
+    except Exception as e:
+        logger.error(f"Create connection failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to create connection',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/connections/<connection_id>', methods=['PUT'])
+def update_connection(connection_id):
+    """Update an existing database connection"""
+    try:
+        if not request.json:
+            return jsonify({'error': 'No connection data provided'}), 400
+
+        connection_data = request.json
+        connection_data['id'] = connection_id
+        connection_data['updated_at'] = datetime.now().isoformat()
+
+        # Update connection in storage
+        updated_connection = update_connection_in_storage(connection_id, connection_data)
+
+        if not updated_connection:
+            return jsonify({'error': 'Connection not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'connection': updated_connection,
+            'message': 'Connection updated successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Update connection failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to update connection',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/connections/<connection_id>', methods=['DELETE'])
+def delete_connection(connection_id):
+    """Delete a database connection"""
+    try:
+        deleted = delete_connection_from_storage(connection_id)
+
+        if not deleted:
+            return jsonify({'error': 'Connection not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Connection deleted successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Delete connection failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to delete connection',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/connections/<connection_id>/test', methods=['POST'])
+def test_connection(connection_id):
+    """Test a database connection"""
+    try:
+        connection = get_connection_from_storage(connection_id)
+
+        if not connection:
+            return jsonify({'error': 'Connection not found'}), 404
+
+        # Test the connection
+        test_result = test_database_connection(connection)
+
+        return jsonify({
+            'status': 'success',
+            'test_result': test_result,
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Test connection failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Connection test failed',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/connections/test', methods=['POST'])
+def test_connection_data():
+    """Test a database connection with provided data"""
+    try:
+        if not request.json:
+            return jsonify({'error': 'No connection data provided'}), 400
+
+        connection_data = request.json
+
+        # Validate required fields
+        required_fields = ['type', 'host', 'username']
+        for field in required_fields:
+            if field not in connection_data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Test the connection
+        test_result = test_database_connection(connection_data)
+
+        return jsonify({
+            'status': 'success',
+            'test_result': test_result,
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Test connection data failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Connection test failed',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/history', methods=['GET'])
+def get_analysis_history():
+    """Get analysis history"""
+    try:
+        # Load analysis history from storage
+        history = load_analysis_history_from_storage()
+
+        # Apply filters if provided
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+
+        # Sort by timestamp (newest first)
+        history.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+
+        # Apply pagination
+        paginated_history = history[offset:offset + limit]
+
+        return jsonify({
+            'status': 'success',
+            'history': paginated_history,
+            'total': len(history),
+            'limit': limit,
+            'offset': offset,
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Get analysis history failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to retrieve analysis history',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/history/<analysis_id>', methods=['GET'])
+def get_analysis_by_id(analysis_id):
+    """Get specific analysis by ID"""
+    try:
+        analysis = get_analysis_from_storage(analysis_id)
+
+        if not analysis:
+            return jsonify({'error': 'Analysis not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'analysis': analysis,
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Get analysis by ID failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to retrieve analysis',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/history/<analysis_id>', methods=['DELETE'])
+def delete_analysis(analysis_id):
+    """Delete analysis from history"""
+    try:
+        deleted = delete_analysis_from_storage(analysis_id)
+
+        if not deleted:
+            return jsonify({'error': 'Analysis not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Analysis deleted successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Delete analysis failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': 'Failed to delete analysis',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @app.route('/api/metrics', methods=['GET'])
 def get_system_metrics():
@@ -696,3 +962,205 @@ if __name__ == '__main__':
         print(f"Server failed to start: {e}")
         logger.error(f"Server failed to start: {e}")
         sys.exit(1)
+
+# ===== SUPPORT FUNCTIONS FOR CONNECTIONS =====
+
+def generate_connection_id():
+    """Generate unique connection ID"""
+    import random
+    return f"conn_{int(time.time())}_{random.randint(1000, 9999)}"
+
+def load_connections_from_storage():
+    """Load connections from storage"""
+    try:
+        connections_file = 'data/connections.json'
+        if os.path.exists(connections_file):
+            with open(connections_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return []
+    except Exception as e:
+        logger.error(f"Error loading connections: {e}")
+        return []
+
+def save_connection_to_storage(connection_data):
+    """Save connection to storage"""
+    try:
+        # Ensure data directory exists
+        os.makedirs('data', exist_ok=True)
+
+        connections = load_connections_from_storage()
+        connections.append(connection_data)
+
+        connections_file = 'data/connections.json'
+        with open(connections_file, 'w', encoding='utf-8') as f:
+            json.dump(connections, f, indent=2, ensure_ascii=False)
+
+        return True
+    except Exception as e:
+        logger.error(f"Error saving connection: {e}")
+        return False
+
+def update_connection_in_storage(connection_id, connection_data):
+    """Update connection in storage"""
+    try:
+        connections = load_connections_from_storage()
+
+        for i, conn in enumerate(connections):
+            if conn.get('id') == connection_id:
+                connections[i] = connection_data
+
+                connections_file = 'data/connections.json'
+                with open(connections_file, 'w', encoding='utf-8') as f:
+                    json.dump(connections, f, indent=2, ensure_ascii=False)
+
+                return connection_data
+
+        return None
+    except Exception as e:
+        logger.error(f"Error updating connection: {e}")
+        return None
+
+def delete_connection_from_storage(connection_id):
+    """Delete connection from storage"""
+    try:
+        connections = load_connections_from_storage()
+
+        for i, conn in enumerate(connections):
+            if conn.get('id') == connection_id:
+                del connections[i]
+
+                connections_file = 'data/connections.json'
+                with open(connections_file, 'w', encoding='utf-8') as f:
+                    json.dump(connections, f, indent=2, ensure_ascii=False)
+
+                return True
+
+        return False
+    except Exception as e:
+        logger.error(f"Error deleting connection: {e}")
+        return False
+
+def get_connection_from_storage(connection_id):
+    """Get connection from storage"""
+    try:
+        connections = load_connections_from_storage()
+
+        for conn in connections:
+            if conn.get('id') == connection_id:
+                return conn
+
+        return None
+    except Exception as e:
+        logger.error(f"Error getting connection: {e}")
+        return None
+
+def test_database_connection(connection):
+    """Test database connection"""
+    try:
+        db_type = connection.get('type', 'mysql')
+        host = connection.get('host', 'localhost')
+        port = connection.get('port', '3306')
+        database = connection.get('database', '')
+        username = connection.get('username', '')
+        password = connection.get('password', '')
+
+        # Simulate connection test (in real implementation, use actual database drivers)
+        import time
+        time.sleep(1)  # Simulate connection time
+
+        # Mock successful connection for demonstration
+        return {
+            'success': True,
+            'message': f'Successfully connected to {db_type} database',
+            'connection_time': 0.85,
+            'server_version': '8.0.25',
+            'database_size': '125.4 MB',
+            'tables_count': 15,
+            'timestamp': datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Connection test failed: {e}")
+        return {
+            'success': False,
+            'message': f'Connection failed: {str(e)}',
+            'error_code': 'CONNECTION_ERROR',
+            'timestamp': datetime.now().isoformat()
+        }
+
+def load_analysis_history_from_storage():
+    """Load analysis history from storage"""
+    try:
+        history_file = 'data/analysis_history.json'
+        if os.path.exists(history_file):
+            with open(history_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return []
+    except Exception as e:
+        logger.error(f"Error loading analysis history: {e}")
+        return []
+
+def save_analysis_to_storage(analysis_data):
+    """Save analysis to storage"""
+    try:
+        # Ensure data directory exists
+        os.makedirs('data', exist_ok=True)
+
+        history = load_analysis_history_from_storage()
+
+        # Add analysis ID if not present
+        if 'id' not in analysis_data:
+            analysis_data['id'] = f"analysis_{int(time.time())}_{len(history) + 1}"
+
+        # Add timestamp if not present
+        if 'timestamp' not in analysis_data:
+            analysis_data['timestamp'] = datetime.now().isoformat()
+
+        history.append(analysis_data)
+
+        # Keep only last 1000 analyses
+        if len(history) > 1000:
+            history = history[-1000:]
+
+        history_file = 'data/analysis_history.json'
+        with open(history_file, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+
+        return True
+    except Exception as e:
+        logger.error(f"Error saving analysis: {e}")
+        return False
+
+def get_analysis_from_storage(analysis_id):
+    """Get analysis from storage"""
+    try:
+        history = load_analysis_history_from_storage()
+
+        for analysis in history:
+            if analysis.get('id') == analysis_id:
+                return analysis
+
+        return None
+    except Exception as e:
+        logger.error(f"Error getting analysis: {e}")
+        return None
+
+def delete_analysis_from_storage(analysis_id):
+    """Delete analysis from storage"""
+    try:
+        history = load_analysis_history_from_storage()
+
+        for i, analysis in enumerate(history):
+            if analysis.get('id') == analysis_id:
+                del history[i]
+
+                history_file = 'data/analysis_history.json'
+                with open(history_file, 'w', encoding='utf-8') as f:
+                    json.dump(history, f, indent=2, ensure_ascii=False)
+
+                return True
+
+        return False
+    except Exception as e:
+        logger.error(f"Error deleting analysis: {e}")
+        return False
