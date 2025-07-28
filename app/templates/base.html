@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SQL Analyzer Enterprise - Análisis profesional de SQL con soporte multi-base de datos">
+    <meta name="keywords" content="SQL, análisis, optimización, seguridad, rendimiento, base de datos">
+    <meta name="author" content="SQL Analysis Team">
+    
+    <title>{% block title %}SQL Analyzer Enterprise{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    {% block styles %}{% endblock %}
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS variables -->
+    <style>
+        :root {
+            --primary-color: #0969da;
+            --secondary-color: #f6f8fa;
+            --accent-color: #d0d7de;
+            --text-color: #24292f;
+            --background-color: #ffffff;
+            --border-color: #d0d7de;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
+            
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            --font-size-base: 14px;
+            --line-height-base: 1.5;
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            
+            --transition-fast: 150ms ease;
+            --transition-normal: 200ms ease;
+            --transition-slow: 300ms ease;
+            
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #58a6ff;
+                --secondary-color: #21262d;
+                --accent-color: #30363d;
+                --text-color: #f0f6fc;
+                --background-color: #0d1117;
+                --border-color: #30363d;
+            }
+        }
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Procesando análisis SQL...</p>
+        </div>
+    </div>
+    
+    <!-- Main application container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="app-logo">
+                        <i class="fas fa-database"></i>
+                        <span class="app-title">SQL Analyzer Enterprise</span>
+                        <span class="app-version">v{{ app_metadata.version }}</span>
+                    </div>
+                </div>
+                
+                <div class="header-center">
+                    <nav class="main-navigation">
+                        <a href="{{ url_for('sql_analysis') }}" 
+                           class="nav-item {% if active_view == 'sql-analysis' %}active{% endif %}">
+                            <i class="fas fa-code"></i>
+                            <span>Análisis SQL</span>
+                        </a>
+                        <a href="{{ url_for('security_analysis') }}" 
+                           class="nav-item {% if active_view == 'security-analysis' %}active{% endif %}">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Seguridad</span>
+                        </a>
+                        <a href="{{ url_for('performance_optimization') }}" 
+                           class="nav-item {% if active_view == 'performance-optimization' %}active{% endif %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Rendimiento</span>
+                        </a>
+                        <a href="{{ url_for('schema_analysis') }}" 
+                           class="nav-item {% if active_view == 'schema-analysis' %}active{% endif %}">
+                            <i class="fas fa-sitemap"></i>
+                            <span>Esquema</span>
+                        </a>
+                        <a href="{{ url_for('export_center') }}" 
+                           class="nav-item {% if active_view == 'export-center' %}active{% endif %}">
+                            <i class="fas fa-download"></i>
+                            <span>Exportar</span>
+                        </a>
+                    </nav>
+                </div>
+                
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="btn btn-icon" id="theme-toggle" title="Cambiar tema">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="btn btn-icon" id="help-toggle" title="Ayuda">
+                            <i class="fas fa-question-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main content area -->
+        <main class="app-main">
+            <!-- Sidebar -->
+            <aside class="app-sidebar">
+                <div class="sidebar-content">
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">
+                            <i class="fas fa-tools"></i>
+                            Herramientas
+                        </h3>
+                        <nav class="sidebar-nav">
+                            <a href="{{ url_for('sql_analysis') }}" 
+                               class="sidebar-item {% if active_view == 'sql-analysis' %}active{% endif %}">
+                                <i class="fas fa-code"></i>
+                                <span>Análisis & Corrección</span>
+                            </a>
+                            <a href="{{ url_for('security_analysis') }}" 
+                               class="sidebar-item {% if active_view == 'security-analysis' %}active{% endif %}">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Escaneo de Seguridad</span>
+                            </a>
+                            <a href="{{ url_for('performance_optimization') }}" 
+                               class="sidebar-item {% if active_view == 'performance-optimization' %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Optimización</span>
+                            </a>
+                            <a href="{{ url_for('schema_analysis') }}" 
+                               class="sidebar-item {% if active_view == 'schema-analysis' %}active{% endif %}">
+                                <i class="fas fa-sitemap"></i>
+                                <span>Análisis de Esquema</span>
+                            </a>
+                        </nav>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">
+                            <i class="fas fa-file-export"></i>
+                            Exportación
+                        </h3>
+                        <nav class="sidebar-nav">
+                            <a href="{{ url_for('export_center') }}" 
+                               class="sidebar-item {% if active_view == 'export-center' %}active{% endif %}">
+                                <i class="fas fa-download"></i>
+                                <span>Centro de Exportación</span>
+                            </a>
+                            <a href="{{ url_for('version_management') }}" 
+                               class="sidebar-item {% if active_view == 'version-management' %}active{% endif %}">
+                                <i class="fas fa-code-branch"></i>
+                                <span>Gestión de Versiones</span>
+                            </a>
+                            <a href="{{ url_for('comment_documentation') }}" 
+                               class="sidebar-item {% if active_view == 'comment-documentation' %}active{% endif %}">
+                                <i class="fas fa-comments"></i>
+                                <span>Documentación</span>
+                            </a>
+                        </nav>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">
+                            <i class="fas fa-info-circle"></i>
+                            Estado del Sistema
+                        </h3>
+                        <div class="system-status">
+                            <div class="status-item">
+                                <span class="status-label">Estado:</span>
+                                <span class="status-value status-online">
+                                    <i class="fas fa-circle"></i>
+                                    En línea
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Versión:</span>
+                                <span class="status-value">{{ app_metadata.version }}</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Tiempo:</span>
+                                <span class="status-value" id="current-time">--:--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Content area -->
+            <div class="app-content">
+                <!-- Page header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">
+                            {% block page_icon %}{% endblock %}
+                            {% block page_title %}{{ page_title }}{% endblock %}
+                        </h1>
+                        <div class="page-actions">
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Flash messages -->
+                <div id="flash-messages" class="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible">
+                                    <span class="alert-message">{{ message }}</span>
+                                    <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                
+                <!-- Main content -->
+                <div class="page-content">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <span>&copy; 2024 {{ app_metadata.name }}. Todos los derechos reservados.</span>
+                </div>
+                <div class="footer-center">
+                    <span>Desarrollado con ❤️ para la comunidad SQL</span>
+                </div>
+                <div class="footer-right">
+                    <a href="{{ app_metadata.documentation }}" target="_blank" class="footer-link">
+                        <i class="fas fa-book"></i>
+                        Documentación
+                    </a>
+                    <a href="{{ app_metadata.url }}" target="_blank" class="footer-link">
+                        <i class="fab fa-github"></i>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Help modal -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ayuda - SQL Analyzer Enterprise</h2>
+                <button class="modal-close" onclick="closeModal('help-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-content">
+                    <h3>Características Principales</h3>
+                    <ul>
+                        <li><strong>Análisis SQL:</strong> Detección de errores de sintaxis y semántica</li>
+                        <li><strong>Seguridad:</strong> Escaneo de vulnerabilidades OWASP</li>
+                        <li><strong>Rendimiento:</strong> Optimización y sugerencias de índices</li>
+                        <li><strong>Esquema:</strong> Análisis de relaciones y estructura</li>
+                        <li><strong>Exportación:</strong> Más de 20 formatos disponibles</li>
+                    </ul>
+                    
+                    <h3>Bases de Datos Soportadas</h3>
+                    <ul>
+                        <li>MySQL</li>
+                        <li>PostgreSQL</li>
+                        <li>Oracle</li>
+                        <li>SQL Server</li>
+                        <li>SQLite</li>
+                        <li>MongoDB</li>
+                    </ul>
+                    
+                    <h3>Contacto</h3>
+                    <p>Para soporte técnico: <a href="mailto:{{ app_metadata.support }}">{{ app_metadata.support }}</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+    {% block scripts %}{% endblock %}
+    
+    <!-- Initialize application -->
+    <script>
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000); // Update every minute
+        });
+        
+        function updateCurrentTime() {
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                const now = new Date();
+                timeElement.textContent = now.toLocaleString('es-ES');
+            }
+        }
+        
+        function initializeApp() {
+            // Theme toggle
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+            
+            // Help toggle
+            const helpToggle = document.getElementById('help-toggle');
+            if (helpToggle) {
+                helpToggle.addEventListener('click', () => openModal('help-modal'));
+            }
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const icon = document.querySelector('#theme-toggle i');
+            if (document.body.classList.contains('dark-theme')) {
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            const icon = document.querySelector('#theme-toggle i');
+            if (icon) icon.className = 'fas fa-sun';
+        }
+    </script>
+</body>
+</html>

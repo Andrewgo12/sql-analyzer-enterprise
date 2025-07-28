@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}Export Center - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/export_center.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="export-center-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="header-text">
+                <h1>📤 Export & Format Conversion Center</h1>
+                <p>Multi-format export with 20+ supported formats and batch processing capabilities</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="total-exports">0</span>
+                <span class="stat-label">Total Exports</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="available-formats">20+</span>
+                <span class="stat-label">Formats</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="export-success-rate">100%</span>
+                <span class="stat-label">Success Rate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Analysis Selection -->
+        <div class="left-panel">
+            <div class="analysis-selection">
+                <h3>📊 Select Analysis</h3>
+                <div class="analysis-search">
+                    <input type="text" id="analysis-search" placeholder="Search analyses..." class="search-input">
+                    <button class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="analysis-list" id="analysis-list">
+                    <!-- Recent analyses will be populated here -->
+                </div>
+                
+                <div class="upload-new">
+                    <h4>📁 Or Upload New File</h4>
+                    <div class="upload-area" id="export-upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <p><strong>Drop SQL file here</strong></p>
+                            <p class="upload-hint">Quick analysis for export</p>
+                        </div>
+                        <input type="file" id="export-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-options">
+                <h3>⚙️ Export Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="include-metadata" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Include Metadata</strong>
+                            <small>Add analysis metadata to export</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="include-comments" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Include Comments</strong>
+                            <small>Add intelligent comments</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="include-corrections" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Include Corrections</strong>
+                            <small>Export corrected SQL code</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="include-recommendations">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Include Recommendations</strong>
+                            <small>Add optimization suggestions</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="compression-options">
+                    <h4>📦 Compression</h4>
+                    <label class="option-item">
+                        <input type="radio" name="compression" value="none" checked>
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>No Compression</strong>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="radio" name="compression" value="zip">
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>ZIP Archive</strong>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Format Selection & Export -->
+        <div class="right-panel">
+            <div class="format-selection" id="format-selection">
+                <h3>📋 Export Formats</h3>
+                
+                <!-- Format Categories -->
+                <div class="format-categories">
+                    <button class="category-btn active" data-category="all">All Formats</button>
+                    <button class="category-btn" data-category="document">Documents</button>
+                    <button class="category-btn" data-category="database">Database</button>
+                    <button class="category-btn" data-category="data">Data</button>
+                    <button class="category-btn" data-category="web">Web</button>
+                </div>
+
+                <!-- Format Grid -->
+                <div class="formats-grid" id="formats-grid">
+                    <!-- Document Formats -->
+                    <div class="format-card" data-format="json" data-category="data">
+                        <div class="format-icon">
+                            <i class="fas fa-file-code"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>JSON</h4>
+                            <p>Structured data format</p>
+                            <span class="format-size">~2KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('json')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="html" data-category="web">
+                        <div class="format-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>HTML Report</h4>
+                            <p>Interactive web report</p>
+                            <span class="format-size">~15KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('html')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="pdf" data-category="document">
+                        <div class="format-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>PDF Report</h4>
+                            <p>Professional document</p>
+                            <span class="format-size">~25KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('pdf')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="excel" data-category="data">
+                        <div class="format-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>Excel Workbook</h4>
+                            <p>Spreadsheet format</p>
+                            <span class="format-size">~8KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('excel')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="word" data-category="document">
+                        <div class="format-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>Word Document</h4>
+                            <p>Microsoft Word format</p>
+                            <span class="format-size">~12KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('word')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="mysql_dump" data-category="database">
+                        <div class="format-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>MySQL Dump</h4>
+                            <p>MySQL backup format</p>
+                            <span class="format-size">~5KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('mysql_dump')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="postgresql_backup" data-category="database">
+                        <div class="format-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>PostgreSQL Backup</h4>
+                            <p>PostgreSQL dump format</p>
+                            <span class="format-size">~5KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('postgresql_backup')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="csv" data-category="data">
+                        <div class="format-icon">
+                            <i class="fas fa-file-csv"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>CSV Data</h4>
+                            <p>Comma-separated values</p>
+                            <span class="format-size">~3KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('csv')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="xml" data-category="data">
+                        <div class="format-icon">
+                            <i class="fas fa-file-code"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>XML</h4>
+                            <p>Extensible markup language</p>
+                            <span class="format-size">~4KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('xml')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="markdown" data-category="document">
+                        <div class="format-icon">
+                            <i class="fab fa-markdown"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>Markdown</h4>
+                            <p>Lightweight markup</p>
+                            <span class="format-size">~2KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('markdown')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="txt" data-category="document">
+                        <div class="format-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>Plain Text</h4>
+                            <p>Simple text format</p>
+                            <span class="format-size">~1KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('txt')">Select</button>
+                        </div>
+                    </div>
+
+                    <div class="format-card" data-format="sql" data-category="database">
+                        <div class="format-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="format-info">
+                            <h4>SQL Script</h4>
+                            <p>Corrected SQL code</p>
+                            <span class="format-size">~3KB</span>
+                        </div>
+                        <div class="format-actions">
+                            <button class="btn btn-sm btn-primary" onclick="selectFormat('sql')">Select</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Format Preview -->
+                <div class="selected-format" id="selected-format" style="display: none;">
+                    <h3>📋 Selected Format</h3>
+                    <div class="format-preview">
+                        <div class="preview-header">
+                            <div class="format-details">
+                                <h4 id="selected-format-name">JSON</h4>
+                                <p id="selected-format-description">Structured data format</p>
+                            </div>
+                            <div class="format-meta">
+                                <span class="estimated-size" id="estimated-size">~2KB</span>
+                                <span class="mime-type" id="mime-type">application/json</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-content" id="preview-content">
+                            <!-- Format preview will be shown here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Controls -->
+                <div class="export-controls" id="export-controls" style="display: none;">
+                    <div class="export-actions">
+                        <button class="btn btn-primary btn-large" id="start-export" onclick="startExport()">
+                            <i class="fas fa-download"></i>
+                            Export Analysis
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="previewExport()">
+                            <i class="fas fa-eye"></i>
+                            Preview
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="batchExport()">
+                            <i class="fas fa-layer-group"></i>
+                            Batch Export
+                        </button>
+                    </div>
+                    
+                    <div class="export-progress" id="export-progress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="export-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="export-progress-text">Preparing export...</span>
+                            <span id="export-progress-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export History -->
+            <div class="export-history">
+                <h3>📜 Export History</h3>
+                <div class="history-list" id="export-history-list">
+                    <!-- Export history will be populated here -->
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="export-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Ready for Export</h3>
+                <p>Select an analysis from the left panel to start exporting</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>20+ Export Formats</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Batch Processing</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Format Preview</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Custom Options</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Preview Modal -->
+<div class="modal" id="export-preview-modal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3 id="preview-modal-title">Export Preview</h3>
+            <button class="modal-close" onclick="closePreviewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="preview-modal-body">
+            <!-- Export preview will be shown here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePreviewModal()">Close</button>
+            <button class="btn btn-primary" onclick="confirmExport()">Export</button>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Export Modal -->
+<div class="modal" id="batch-export-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Batch Export</h3>
+            <button class="modal-close" onclick="closeBatchModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="batch-options">
+                <h4>Select Analyses</h4>
+                <div class="batch-analysis-list" id="batch-analysis-list">
+                    <!-- Batch analysis selection will be populated here -->
+                </div>
+                
+                <h4>Select Formats</h4>
+                <div class="batch-format-list" id="batch-format-list">
+                    <!-- Batch format selection will be populated here -->
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeBatchModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="startBatchExport()">Start Batch Export</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/export_center.js') }}"></script>
+{% endblock %}

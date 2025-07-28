@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Analyzer Enterprise - Inicio{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 2rem;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.feature-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #667eea;
+}
+
+.feature-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.feature-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.feature-btn {
+    background: #667eea;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.feature-btn:hover {
+    background: #5a6fd8;
+    color: white;
+    text-decoration: none;
+}
+
+.stats-section {
+    background: #f8f9fa;
+    padding: 3rem 2rem;
+    margin: 3rem 0;
+    border-radius: 12px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #667eea;
+    display: block;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.quick-start {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 3rem 0;
+}
+
+.quick-start h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.quick-start-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.step-number {
+    background: #667eea;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-text {
+    color: #333;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">🚀 SQL Analyzer Enterprise</h1>
+        <p class="hero-subtitle">
+            Análisis inteligente de SQL con corrección automática, optimización de rendimiento y análisis de seguridad
+        </p>
+        <a href="{{ url_for('sql_analysis') }}" class="btn btn-light btn-lg">
+            <i class="fas fa-play"></i> Comenzar Análisis
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features Grid -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <h3 class="feature-title">Análisis y Corrección SQL</h3>
+            <p class="feature-description">
+                Detección automática de errores de sintaxis, optimización de consultas y corrección inteligente con comentarios en español.
+            </p>
+            <a href="{{ url_for('sql_analysis') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Analizar SQL
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="feature-title">Análisis de Seguridad</h3>
+            <p class="feature-description">
+                Detección de vulnerabilidades SQL injection, compliance OWASP Top 10 2021 y análisis de riesgos de seguridad.
+            </p>
+            <a href="{{ url_for('security_analysis') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Verificar Seguridad
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h3 class="feature-title">Optimización de Rendimiento</h3>
+            <p class="feature-description">
+                Análisis de performance, recomendaciones de índices y detección de cuellos de botella en consultas.
+            </p>
+            <a href="{{ url_for('performance_optimization') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Optimizar
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-sitemap"></i>
+            </div>
+            <h3 class="feature-title">Análisis de Esquema</h3>
+            <p class="feature-description">
+                Mapeo de relaciones entre tablas, visualización de diagramas ERD y documentación automática de base de datos.
+            </p>
+            <a href="{{ url_for('schema_analysis') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Analizar Esquema
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <h3 class="feature-title">Centro de Exportación</h3>
+            <p class="feature-description">
+                Exportación en 20+ formatos: JSON, HTML, PDF, Excel, Word, MySQL dump, PostgreSQL backup y más.
+            </p>
+            <a href="{{ url_for('export_center') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Exportar
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-code-branch"></i>
+            </div>
+            <h3 class="feature-title">Gestión de Versiones</h3>
+            <p class="feature-description">
+                Control de versiones SQL, comparación inteligente de diferencias y resolución de conflictos de merge.
+            </p>
+            <a href="{{ url_for('version_management') }}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Gestionar Versiones
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <h2 class="text-center mb-4">📊 Estadísticas del Sistema</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">50+</span>
+                <span class="stat-label">Tipos de Base de Datos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">20+</span>
+                <span class="stat-label">Formatos de Exportación</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">&lt;2s</span>
+                <span class="stat-label">Tiempo de Análisis</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100MB</span>
+                <span class="stat-label">Tamaño Máximo de Archivo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="quick-start">
+        <h3><i class="fas fa-rocket"></i> Inicio Rápido</h3>
+        <div class="quick-start-steps">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-text">Sube tu archivo SQL (hasta 100MB)</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-text">Selecciona el tipo de análisis deseado</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-text">Revisa los resultados y recomendaciones</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <div class="step-text">Exporta en el formato que necesites</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Section -->
+    <div class="text-center" style="margin: 3rem 0;">
+        <h3>🎯 ¿Tienes un archivo SQL para probar?</h3>
+        <p class="text-muted mb-3">Prueba nuestro analizador con el archivo que tienes seleccionado</p>
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('sql_analysis') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-upload"></i> Subir y Analizar
+            </a>
+            <a href="{{ url_for('security_analysis') }}" class="btn btn-outline-danger btn-lg">
+                <i class="fas fa-shield-alt"></i> Verificar Seguridad
+            </a>
+            <a href="{{ url_for('performance_optimization') }}" class="btn btn-outline-success btn-lg">
+                <i class="fas fa-tachometer-alt"></i> Optimizar Rendimiento
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stats on scroll
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const statNumbers = entry.target.querySelectorAll('.stat-number');
+                statNumbers.forEach(stat => {
+                    stat.style.transform = 'scale(1.1)';
+                    stat.style.transition = 'transform 0.3s ease';
+                    setTimeout(() => {
+                        stat.style.transform = 'scale(1)';
+                    }, 300);
+                });
+            }
+        });
+    }, observerOptions);
+
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+        observer.observe(statsSection);
+    }
+
+    // Add hover effects to feature cards
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.borderColor = '#667eea';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.borderColor = '#dee2e6';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Schema Analysis - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/schema_analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="schema-analysis-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-sitemap"></i>
+            </div>
+            <div class="header-text">
+                <h1>🗄️ Schema & Relationship Analysis</h1>
+                <p>Comprehensive database structure analysis with relationship mapping and documentation generation</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="total-tables">0</span>
+                <span class="stat-label">Tables</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="total-relationships">0</span>
+                <span class="stat-label">Relationships</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="schema-complexity">Low</span>
+                <span class="stat-label">Complexity</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Upload & Configuration -->
+        <div class="left-panel">
+            <div class="upload-section">
+                <h3>📁 SQL File Upload</h3>
+                <div class="upload-area" id="schema-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <p><strong>Drop SQL file here</strong> or click to browse</p>
+                        <p class="upload-hint">Supports .sql, .txt, .ddl files up to 100MB</p>
+                    </div>
+                    <input type="file" id="schema-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                </div>
+                
+                <div class="file-info" id="schema-file-info" style="display: none;">
+                    <div class="file-details">
+                        <i class="fas fa-file-code"></i>
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                    </div>
+                    <button class="remove-file-btn" id="schema-remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="schema-options">
+                <h3>🔧 Analysis Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="table-detection" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Table Detection</strong>
+                            <small>Identify all database tables</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="relationship-mapping" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Relationship Mapping</strong>
+                            <small>Map foreign key relationships</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="constraint-analysis" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Constraint Analysis</strong>
+                            <small>Analyze data integrity constraints</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="index-detection" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Index Detection</strong>
+                            <small>Identify existing indexes</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="documentation-generation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Documentation Generation</strong>
+                            <small>Generate schema documentation</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="visualization-options">
+                    <h4>📊 Visualization Options</h4>
+                    <label class="option-item">
+                        <input type="radio" name="diagram-type" value="erd" checked>
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Entity Relationship Diagram</strong>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="radio" name="diagram-type" value="dependency">
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Dependency Graph</strong>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="radio" name="diagram-type" value="hierarchical">
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Hierarchical View</strong>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="analysis-controls">
+                <button class="btn btn-primary btn-large" id="start-schema-analysis" disabled>
+                    <i class="fas fa-sitemap"></i>
+                    Start Schema Analysis
+                </button>
+                
+                <div class="analysis-progress" id="schema-analysis-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="schema-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="schema-progress-text">Initializing schema analysis...</span>
+                        <span id="schema-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="right-panel">
+            <div class="results-section" id="schema-results" style="display: none;">
+                <!-- Schema Overview -->
+                <div class="schema-overview">
+                    <h3>🗄️ Schema Overview</h3>
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <div class="card-icon tables">
+                                <i class="fas fa-table"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="tables-count">0</span>
+                                <span class="card-label">Tables</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon columns">
+                                <i class="fas fa-columns"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="columns-count">0</span>
+                                <span class="card-label">Columns</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon relationships">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="relationships-count">0</span>
+                                <span class="card-label">Relationships</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon indexes">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="indexes-count">0</span>
+                                <span class="card-label">Indexes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schema Visualization -->
+                <div class="schema-visualization">
+                    <h3>📊 Schema Visualization</h3>
+                    <div class="visualization-controls">
+                        <button class="btn btn-secondary" onclick="zoomIn()">
+                            <i class="fas fa-search-plus"></i> Zoom In
+                        </button>
+                        <button class="btn btn-secondary" onclick="zoomOut()">
+                            <i class="fas fa-search-minus"></i> Zoom Out
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetZoom()">
+                            <i class="fas fa-expand-arrows-alt"></i> Reset
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDiagram()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                    <div class="diagram-container" id="schema-diagram">
+                        <!-- Schema diagram will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Tables List -->
+                <div class="tables-section">
+                    <h3>📋 Tables</h3>
+                    <div class="table-filters">
+                        <input type="text" id="table-search" placeholder="Search tables..." class="search-input">
+                        <select id="table-sort" class="sort-select">
+                            <option value="name">Sort by Name</option>
+                            <option value="columns">Sort by Columns</option>
+                            <option value="relationships">Sort by Relationships</option>
+                        </select>
+                    </div>
+                    
+                    <div class="tables-list" id="tables-list">
+                        <!-- Tables will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Relationships -->
+                <div class="relationships-section">
+                    <h3>🔗 Relationships</h3>
+                    <div class="relationships-list" id="relationships-list">
+                        <!-- Relationships will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Constraints -->
+                <div class="constraints-section">
+                    <h3>🔒 Constraints</h3>
+                    <div class="constraints-list" id="constraints-list">
+                        <!-- Constraints will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Schema Documentation -->
+                <div class="documentation-section">
+                    <h3>📖 Schema Documentation</h3>
+                    <div class="documentation-controls">
+                        <button class="btn btn-secondary" onclick="generateDocumentation()">
+                            <i class="fas fa-file-alt"></i> Generate Documentation
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDocumentation()">
+                            <i class="fas fa-download"></i> Export Documentation
+                        </button>
+                    </div>
+                    <div class="documentation-content" id="documentation-content">
+                        <!-- Documentation will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-section">
+                    <h3>📤 Export Schema Analysis</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportSchemaReport('json')">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSchemaReport('html')">
+                            <i class="fas fa-file-alt"></i> HTML
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSchemaReport('sql')">
+                            <i class="fas fa-database"></i> SQL
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSchemaReport('documentation')">
+                            <i class="fas fa-book"></i> Documentation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="schema-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h3>Ready for Schema Analysis</h3>
+                <p>Upload a SQL file to start comprehensive database schema analysis</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Table Structure Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Relationship Mapping</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Visual Diagram Generation</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Documentation Generation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Detail Modal -->
+<div class="modal" id="table-detail-modal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3 id="table-modal-title">Table Details</h3>
+            <button class="modal-close" onclick="closeTableModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="table-modal-body">
+            <!-- Table details will be populated here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeTableModal()">Close</button>
+            <button class="btn btn-primary" onclick="exportTableStructure()">Export Structure</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{{ url_for('static', filename='js/schema_analysis.js') }}"></script>
+{% endblock %}

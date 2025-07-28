@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Security Analysis - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/security_analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="security-analysis-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="header-text">
+                <h1>🛡️ Security & Vulnerability Analysis</h1>
+                <p>Comprehensive security scanning with OWASP Top 10 compliance and CWE classification</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="total-scans">0</span>
+                <span class="stat-label">Total Scans</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="vulnerabilities-found">0</span>
+                <span class="stat-label">Vulnerabilities</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="security-score">100</span>
+                <span class="stat-label">Security Score</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Upload & Configuration -->
+        <div class="left-panel">
+            <div class="upload-section">
+                <h3>📁 SQL File Upload</h3>
+                <div class="upload-area" id="security-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <p><strong>Drop SQL file here</strong> or click to browse</p>
+                        <p class="upload-hint">Supports .sql, .txt files up to 100MB</p>
+                    </div>
+                    <input type="file" id="security-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                </div>
+                
+                <div class="file-info" id="security-file-info" style="display: none;">
+                    <div class="file-details">
+                        <i class="fas fa-file-code"></i>
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                    </div>
+                    <button class="remove-file-btn" id="security-remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="security-options">
+                <h3>🔧 Security Scan Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="sql-injection-scan" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>SQL Injection Detection</strong>
+                            <small>Scan for SQL injection vulnerabilities</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="hardcoded-credentials" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Hardcoded Credentials</strong>
+                            <small>Detect embedded passwords and secrets</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="information-disclosure" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Information Disclosure</strong>
+                            <small>Check for sensitive data exposure</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="privilege-escalation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Privilege Escalation</strong>
+                            <small>Identify privilege escalation risks</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="owasp-compliance" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>OWASP Top 10 Compliance</strong>
+                            <small>Full OWASP 2021 vulnerability check</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="scan-controls">
+                <button class="btn btn-primary btn-large" id="start-security-scan" disabled>
+                    <i class="fas fa-shield-alt"></i>
+                    Start Security Scan
+                </button>
+                
+                <div class="scan-progress" id="security-scan-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="security-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="security-progress-text">Initializing security scan...</span>
+                        <span id="security-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="right-panel">
+            <div class="results-section" id="security-results" style="display: none;">
+                <!-- Security Overview -->
+                <div class="security-overview">
+                    <h3>🛡️ Security Assessment Overview</h3>
+                    <div class="overview-grid">
+                        <div class="overview-card risk-critical">
+                            <div class="risk-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="risk-content">
+                                <span class="risk-count" id="critical-count">0</span>
+                                <span class="risk-label">Critical</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card risk-high">
+                            <div class="risk-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="risk-content">
+                                <span class="risk-count" id="high-count">0</span>
+                                <span class="risk-label">High</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card risk-medium">
+                            <div class="risk-icon">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="risk-content">
+                                <span class="risk-count" id="medium-count">0</span>
+                                <span class="risk-label">Medium</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card risk-low">
+                            <div class="risk-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="risk-content">
+                                <span class="risk-count" id="low-count">0</span>
+                                <span class="risk-label">Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Score -->
+                <div class="security-score-section">
+                    <h3>📊 Security Score</h3>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <svg class="score-svg" viewBox="0 0 120 120">
+                                <circle class="score-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="score-progress" cx="60" cy="60" r="50" id="security-score-circle"></circle>
+                            </svg>
+                            <div class="score-text">
+                                <span class="score-value" id="security-score-value">100</span>
+                                <span class="score-max">/100</span>
+                            </div>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-level" id="security-score-level">Excellent</div>
+                            <div class="score-description" id="security-score-description">
+                                No security vulnerabilities detected
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vulnerability List -->
+                <div class="vulnerabilities-section">
+                    <h3>🔍 Detected Vulnerabilities</h3>
+                    <div class="vulnerability-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="critical">Critical</button>
+                        <button class="filter-btn" data-filter="high">High</button>
+                        <button class="filter-btn" data-filter="medium">Medium</button>
+                        <button class="filter-btn" data-filter="low">Low</button>
+                    </div>
+                    
+                    <div class="vulnerability-list" id="vulnerability-list">
+                        <!-- Vulnerabilities will be populated here -->
+                    </div>
+                </div>
+
+                <!-- OWASP Compliance -->
+                <div class="owasp-compliance">
+                    <h3>🏆 OWASP Top 10 Compliance</h3>
+                    <div class="compliance-grid" id="owasp-compliance-grid">
+                        <!-- OWASP categories will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Remediation Recommendations -->
+                <div class="remediation-section">
+                    <h3>🔧 Remediation Recommendations</h3>
+                    <div class="recommendations-list" id="security-recommendations">
+                        <!-- Recommendations will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-section">
+                    <h3>📤 Export Security Report</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportSecurityReport('json')">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSecurityReport('html')">
+                            <i class="fas fa-file-alt"></i> HTML
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSecurityReport('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSecurityReport('csv')">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="security-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Ready for Security Analysis</h3>
+                <p>Upload a SQL file to start comprehensive security vulnerability scanning</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>OWASP Top 10 2021 Compliance</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>CWE Classification</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Real-time Risk Assessment</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Automated Remediation Suggestions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vulnerability Detail Modal -->
+<div class="modal" id="vulnerability-detail-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="vuln-modal-title">Vulnerability Details</h3>
+            <button class="modal-close" onclick="closeVulnerabilityModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="vuln-modal-body">
+            <!-- Vulnerability details will be populated here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeVulnerabilityModal()">Close</button>
+            <button class="btn btn-primary" onclick="fixVulnerability()">Apply Fix</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/security_analysis.js') }}"></script>
+{% endblock %}

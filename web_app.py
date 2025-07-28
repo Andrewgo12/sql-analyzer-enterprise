@@ -16,11 +16,23 @@ import threading
 import hashlib
 import time
 
-# Import senterprise backend modules with better error handling
-ENTERPRISE_BACKEND = False
-sql_analyzer = None
-security_analyzer = None
-performance_analyzer = None
+# Import comprehensive SQL analysis system
+try:
+    from comprehensive_sql_analyzer import ComprehensiveSQLAnalyzer, DatabaseType
+    from export_engine import ExportEngine
+    from enterprise_file_processor import EnterpriseFileProcessor
+
+    ENTERPRISE_BACKEND = True
+    sql_analyzer = ComprehensiveSQLAnalyzer()
+    export_engine = ExportEngine()
+    file_processor = EnterpriseFileProcessor()
+    print("✅ Comprehensive SQL analysis system loaded")
+except ImportError as e:
+    print(f"⚠️ Enterprise backend not available: {e}")
+    ENTERPRISE_BACKEND = False
+    sql_analyzer = None
+    export_engine = None
+    file_processor = None
 
 # Import enterprise logging system
 try:
@@ -208,113 +220,15 @@ app_state = {
 
 @app.route('/')
 def index():
-    """Página principal - Advanced Analysis Hub"""
-    return render_template('advanced_analysis_hub.html', 
+    """Página principal - SQL Analysis"""
+    return render_template('sql_analysis_correction.html',
                          active_tab='sql-analysis',
                          app_state=app_state)
-
-@app.route('/sql-analysis')
-def sql_analysis():
-    """Pestaña SQL Analysis & Correction"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='sql-analysis',
-                         app_state=app_state)
-
-@app.route('/security-analysis')
-def security_analysis():
-    """Pestaña Security & Vulnerability Scanning"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='security-analysis',
-                         app_state=app_state)
-
-@app.route('/performance-optimizer')
-def performance_optimizer():
-    """Pestaña Performance Optimization"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='performance-optimizer',
-                         app_state=app_state)
-
-@app.route('/schema-analysis')
-def schema_analysis():
-    """Pestaña Schema & Relationship Analysis"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='schema-analysis',
-                         app_state=app_state)
-
-@app.route('/cache-management')
-def cache_management():
-    """Pestaña Cache & System Management"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='cache-management',
-                         app_state=app_state)
-
-@app.route('/database-connections')
-def database_connections():
-    """Pestaña Database Connections"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='database-connections',
-                         app_state=app_state)
-
-@app.route('/export-center')
-def export_center():
-    """Pestaña Export & Format Conversion"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='export-center',
-                         app_state=app_state)
-
-@app.route('/metrics')
-def system_monitoring():
-    """Pestaña System Monitoring"""
-    return render_template('advanced_analysis_hub.html', 
-                         active_tab='system-monitoring',
-                         app_state=app_state)
-
-# ===== RUTAS INDEPENDIENTES =====
-
-@app.route('/dashboard')
-def dashboard():
-    """Vista Dashboard independiente"""
-    return render_template('dashboard.html', app_state=app_state)
-
-@app.route('/file-manager')
-def file_manager():
-    """Vista File Manager independiente"""
-    return render_template('file_manager.html', app_state=app_state)
-
-@app.route('/history')
-def history():
-    """Vista History independiente"""
-    return render_template('history.html', app_state=app_state)
-
-@app.route('/terminal')
-def terminal():
-    """Vista Terminal independiente"""
-    return render_template('terminal.html', app_state=app_state)
-
-@app.route('/settings')
-def settings():
-    """Vista Settings independiente"""
-    return render_template('settings.html', app_state=app_state)
-
-@app.route('/help')
-def help_view():
-    """Vista Help independiente"""
-    return render_template('help.html', app_state=app_state)
-
-@app.route('/real-time-stats')
-def real_time_statistics():
-    """Vista de Estadísticas en Tiempo Real"""
-    return render_template('real_time_statistics.html', active_tab='real-time-stats', app_state=app_state)
-
-@app.route('/auto-corrections')
-def auto_corrections():
-    """Vista de Correcciones Automáticas"""
-    return render_template('auto_corrections.html', active_tab='auto-corrections', app_state=app_state)
 
 # ===== SPECIALIZED ANALYSIS VIEWS =====
 
 @app.route('/sql-analysis')
-def sql_analysis_correction():
+def sql_analysis():
     """Vista Especializada de Análisis SQL y Corrección"""
     return render_template('sql_analysis_correction.html', active_tab='sql-analysis', app_state=app_state)
 
@@ -446,15 +360,42 @@ def api_export(format):
         if not app_state['analysis_results']:
             return jsonify({'error': 'No analysis results to export'}), 400
 
-        # Usar exportador empresarial si está disponible
-        if ENTERPRISE_BACKEND and result_exporter:
-            export_result = result_exporter.export_results(
-                app_state['analysis_results'],
-                format
-            )
+        # Use enterprise export engine if available
+        if ENTERPRISE_BACKEND and export_engine:
+            # Create mock analysis result for export
+            mock_result = type('AnalysisResult', (), {
+                'file_hash': 'mock_hash',
+                'processing_time': 1.0,
+                'database_type': type('DatabaseType', (), {'value': 'mysql'})(),
+                'total_lines': app_state['analysis_results'].get('total_lines', 0),
+                'total_statements': app_state['analysis_results'].get('total_statements', 0),
+                'syntax_errors': [],
+                'semantic_errors': [],
+                'performance_issues': app_state['analysis_results'].get('performance_issues', []),
+                'security_vulnerabilities': app_state['analysis_results'].get('security_vulnerabilities', []),
+                'tables': [],
+                'relationships': [],
+                'quality_score': app_state['analysis_results'].get('quality_score', 85),
+                'complexity_score': app_state['analysis_results'].get('complexity_score', 35),
+                'recommendations': app_state['analysis_results'].get('recommendations', []),
+                'corrected_sql': app_state['analysis_results'].get('corrected_sql', ''),
+                'intelligent_comments': app_state['analysis_results'].get('intelligent_comments', [])
+            })()
+
+            export_result = export_engine.export(mock_result, format)
 
             if export_result['success']:
-                # Registrar en historial
+                # Create temporary file with exported content
+                temp_file = tempfile.NamedTemporaryFile(
+                    mode='w',
+                    suffix=f'.{format}',
+                    delete=False,
+                    encoding='utf-8'
+                )
+                temp_file.write(export_result['content'])
+                temp_file.close()
+
+                # Register in history
                 app_state['export_history'].append({
                     'format': format,
                     'filename': export_result['filename'],
@@ -464,10 +405,10 @@ def api_export(format):
                 })
 
                 return send_file(
-                    export_result['file_path'],
+                    temp_file.name,
                     as_attachment=True,
                     download_name=export_result['filename'],
-                    mimetype='application/octet-stream'
+                    mimetype=export_result['mime_type']
                 )
             else:
                 return jsonify({'error': export_result['error']}), 400
@@ -552,7 +493,7 @@ def api_health():
 
 @app.route('/api/sql-analyze', methods=['POST'])
 def api_sql_analyze():
-    """API endpoint especializado para análisis SQL y corrección"""
+    """API endpoint especializado para análisis SQL completo con sistema empresarial"""
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file provided'}), 400
@@ -561,32 +502,99 @@ def api_sql_analyze():
         if file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
 
-        # Process file
-        file_processor = EnterpriseFileProcessor()
-        file_info = file_processor.process_file(file)
+        # Process file with enterprise processor
+        if not file_processor:
+            return jsonify({'success': False, 'error': 'File processor not available'}), 500
+
+        file_info = file_processor.process_file(file, file.filename)
 
         if not file_info['success']:
             return jsonify({'success': False, 'error': file_info['error']}), 400
 
-        # SQL Analysis only
-        sql_analyzer = SQLAnalyzer()
-        sql_results = sql_analyzer.analyze(file_info['content'], engine='mysql')
+        # Analyze SQL with comprehensive analyzer
+        if ENTERPRISE_BACKEND and sql_analyzer:
+            # Detect database type from filename or content
+            db_type = DatabaseType.GENERIC
+            filename_lower = file.filename.lower()
+            if 'mysql' in filename_lower:
+                db_type = DatabaseType.MYSQL
+            elif 'postgres' in filename_lower or 'psql' in filename_lower:
+                db_type = DatabaseType.POSTGRESQL
+            elif 'oracle' in filename_lower:
+                db_type = DatabaseType.ORACLE
+            elif 'sqlserver' in filename_lower or 'mssql' in filename_lower:
+                db_type = DatabaseType.SQL_SERVER
 
-        # Generate corrections
-        corrections = generate_sql_corrections(sql_results)
-        corrected_sql = apply_sql_corrections(file_info['content'], corrections)
+            # Perform comprehensive analysis
+            analysis_result = sql_analyzer.analyze_file(
+                file_info['content'],
+                file.filename,
+                db_type
+            )
+
+            # Convert result to JSON-serializable format
+            analysis_data = {
+                'syntax_errors': [
+                    {
+                        'line': error.line_number,
+                        'column': error.column,
+                        'type': error.error_type,
+                        'severity': error.severity,
+                        'message': error.message,
+                        'suggestion': error.suggestion,
+                        'auto_fixable': error.auto_fixable
+                    } for error in analysis_result.syntax_errors
+                ],
+                'semantic_errors': [
+                    {
+                        'line': error.line_number,
+                        'column': error.column,
+                        'type': error.error_type,
+                        'severity': error.severity,
+                        'message': error.message,
+                        'suggestion': error.suggestion
+                    } for error in analysis_result.semantic_errors
+                ],
+                'performance_issues': analysis_result.performance_issues,
+                'security_vulnerabilities': analysis_result.security_vulnerabilities,
+                'quality_score': analysis_result.quality_score,
+                'complexity_score': analysis_result.complexity_score,
+                'recommendations': analysis_result.recommendations,
+                'corrected_sql': analysis_result.corrected_sql,
+                'intelligent_comments': analysis_result.intelligent_comments,
+                'database_type': analysis_result.database_type.value,
+                'total_lines': analysis_result.total_lines,
+                'total_statements': analysis_result.total_statements,
+                'tables_found': len(analysis_result.tables),
+                'relationships_found': len(analysis_result.relationships)
+            }
+
+            processing_time = analysis_result.processing_time
+        else:
+            # Fallback mock analysis
+            analysis_data = {
+                'syntax_errors': [],
+                'semantic_errors': [],
+                'performance_issues': [],
+                'security_vulnerabilities': [],
+                'quality_score': 85,
+                'complexity_score': 35,
+                'recommendations': ['Enterprise backend not available - using mock analysis'],
+                'corrected_sql': file_info['content'],
+                'intelligent_comments': [],
+                'database_type': 'generic',
+                'total_lines': len(file_info['content'].split('\n')),
+                'total_statements': file_info['content'].count(';'),
+                'tables_found': 0,
+                'relationships_found': 0
+            }
+            processing_time = 0.1
 
         return jsonify({
             'success': True,
-            'analysis_results': {
-                'syntax_errors': sql_results.get('syntax_errors', []),
-                'statistics': sql_results.get('statistics', {}),
-                'corrections': corrections,
-                'original_sql': file_info['content'],
-                'corrected_sql': corrected_sql,
-                'quality_score': sql_results.get('quality_score', 0)
-            },
-            'processing_time': sql_results.get('processing_time', 0)
+            'analysis_results': analysis_data,
+            'file_info': file_info.get('metadata', {}),
+            'processing_time': processing_time
         })
 
     except Exception as e:

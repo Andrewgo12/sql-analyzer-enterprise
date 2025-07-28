@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Comment & Documentation - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/comment_documentation.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="comment-documentation-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-comment-alt"></i>
+            </div>
+            <div class="header-text">
+                <h1>💬 Intelligent Commenting & Documentation</h1>
+                <p>AI-powered Spanish commenting with comprehensive documentation generation</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="comments-generated">0</span>
+                <span class="stat-label">Comments</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="documentation-pages">0</span>
+                <span class="stat-label">Doc Pages</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="coverage-percentage">0%</span>
+                <span class="stat-label">Coverage</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Upload & Configuration -->
+        <div class="left-panel">
+            <div class="upload-section">
+                <h3>📁 SQL File Upload</h3>
+                <div class="upload-area" id="comment-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <p><strong>Drop SQL file here</strong> or click to browse</p>
+                        <p class="upload-hint">Generate intelligent comments and documentation</p>
+                    </div>
+                    <input type="file" id="comment-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                </div>
+                
+                <div class="file-info" id="comment-file-info" style="display: none;">
+                    <div class="file-details">
+                        <i class="fas fa-file-code"></i>
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                    </div>
+                    <button class="remove-file-btn" id="comment-remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="comment-options">
+                <h3>🔧 Comment Generation Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="intelligent-comments" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Intelligent Comments</strong>
+                            <small>AI-powered contextual comments</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="spanish-language" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Spanish Language</strong>
+                            <small>Generate comments in Spanish</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="function-documentation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Function Documentation</strong>
+                            <small>Document stored procedures and functions</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="table-documentation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Table Documentation</strong>
+                            <small>Document table structures and purposes</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="business-logic-comments">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Business Logic Comments</strong>
+                            <small>Explain business rules and logic</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="comment-style">
+                    <h4>💬 Comment Style</h4>
+                    <label class="option-item">
+                        <input type="radio" name="comment-style" value="detailed" checked>
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Detailed</strong>
+                            <small>Comprehensive explanations</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="radio" name="comment-style" value="concise">
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Concise</strong>
+                            <small>Brief, essential comments</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="radio" name="comment-style" value="technical">
+                        <span class="radio-mark"></span>
+                        <div class="option-content">
+                            <strong>Technical</strong>
+                            <small>Technical implementation details</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="documentation-options">
+                    <h4>📖 Documentation Options</h4>
+                    <label class="option-item">
+                        <input type="checkbox" id="generate-readme" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Generate README</strong>
+                            <small>Create project documentation</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="api-documentation">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>API Documentation</strong>
+                            <small>Document stored procedures as API</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="schema-documentation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Schema Documentation</strong>
+                            <small>Document database schema</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="generation-controls">
+                <button class="btn btn-primary btn-large" id="start-comment-generation" disabled>
+                    <i class="fas fa-comment-alt"></i>
+                    Generate Comments & Docs
+                </button>
+                
+                <div class="generation-progress" id="comment-generation-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="comment-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="comment-progress-text">Analyzing SQL structure...</span>
+                        <span id="comment-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="right-panel">
+            <div class="results-section" id="comment-results" style="display: none;">
+                <!-- Comment Overview -->
+                <div class="comment-overview">
+                    <h3>💬 Comment Generation Overview</h3>
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <div class="card-icon comments">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="total-comments">0</span>
+                                <span class="card-label">Comments Added</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon coverage">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="comment-coverage">0%</span>
+                                <span class="card-label">Code Coverage</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon quality">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="comment-quality">Excellent</span>
+                                <span class="card-label">Comment Quality</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon readability">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="readability-score">95</span>
+                                <span class="card-label">Readability</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commented Code Preview -->
+                <div class="code-preview-section">
+                    <h3>📝 Commented Code Preview</h3>
+                    <div class="preview-controls">
+                        <button class="btn btn-sm btn-secondary" onclick="toggleComments()">
+                            <i class="fas fa-eye"></i> Toggle Comments
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="highlightChanges()">
+                            <i class="fas fa-highlighter"></i> Highlight Changes
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="copyCommentedCode()">
+                            <i class="fas fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    
+                    <div class="code-preview" id="commented-code-preview">
+                        <!-- Commented code will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Comment Analysis -->
+                <div class="comment-analysis">
+                    <h3>📊 Comment Analysis</h3>
+                    <div class="analysis-tabs">
+                        <button class="tab-btn active" data-tab="statistics">Statistics</button>
+                        <button class="tab-btn" data-tab="quality">Quality</button>
+                        <button class="tab-btn" data-tab="suggestions">Suggestions</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="statistics-tab">
+                        <div class="statistics-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Lines Commented:</span>
+                                <span class="stat-value" id="lines-commented">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Functions Documented:</span>
+                                <span class="stat-value" id="functions-documented">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Tables Documented:</span>
+                                <span class="stat-value" id="tables-documented">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Average Comment Length:</span>
+                                <span class="stat-value" id="avg-comment-length">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="quality-tab">
+                        <div class="quality-metrics" id="quality-metrics">
+                            <!-- Quality metrics will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="suggestions-tab">
+                        <div class="suggestions-list" id="comment-suggestions">
+                            <!-- Comment suggestions will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation Generation -->
+                <div class="documentation-generation">
+                    <h3>📖 Generated Documentation</h3>
+                    <div class="documentation-tabs">
+                        <button class="doc-tab-btn active" data-doc="readme">README</button>
+                        <button class="doc-tab-btn" data-doc="schema">Schema</button>
+                        <button class="doc-tab-btn" data-doc="api">API</button>
+                        <button class="doc-tab-btn" data-doc="changelog">Changelog</button>
+                    </div>
+                    
+                    <div class="documentation-content">
+                        <div class="doc-content active" id="readme-doc">
+                            <!-- README documentation will be generated here -->
+                        </div>
+                        
+                        <div class="doc-content" id="schema-doc">
+                            <!-- Schema documentation will be generated here -->
+                        </div>
+                        
+                        <div class="doc-content" id="api-doc">
+                            <!-- API documentation will be generated here -->
+                        </div>
+                        
+                        <div class="doc-content" id="changelog-doc">
+                            <!-- Changelog will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-section">
+                    <h3>📤 Export Documentation</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportCommentedCode('sql')">
+                            <i class="fas fa-database"></i> Commented SQL
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDocumentation('html')">
+                            <i class="fas fa-file-alt"></i> HTML Docs
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDocumentation('markdown')">
+                            <i class="fab fa-markdown"></i> Markdown
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDocumentation('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="comment-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-comment-alt"></i>
+                </div>
+                <h3>Ready for Comment Generation</h3>
+                <p>Upload a SQL file to start intelligent commenting and documentation generation</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>AI-Powered Spanish Comments</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Comprehensive Documentation</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Business Logic Explanation</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Multiple Export Formats</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comment Edit Modal -->
+<div class="modal" id="comment-edit-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Comment</h3>
+            <button class="modal-close" onclick="closeCommentEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="comment-editor">
+                <label for="comment-text">Comment Text:</label>
+                <textarea id="comment-text" class="comment-textarea"></textarea>
+                
+                <div class="comment-options">
+                    <label class="option-item">
+                        <input type="checkbox" id="comment-multiline">
+                        <span class="checkmark"></span>
+                        <span>Multi-line comment</span>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="comment-header">
+                        <span class="checkmark"></span>
+                        <span>Header comment</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCommentEditModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveCommentEdit()">Save Comment</button>
+        </div>
+    </div>
+</div>
+
+<!-- Documentation Preview Modal -->
+<div class="modal" id="doc-preview-modal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3 id="doc-preview-title">Documentation Preview</h3>
+            <button class="modal-close" onclick="closeDocPreviewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="doc-preview-body">
+            <!-- Documentation preview will be shown here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDocPreviewModal()">Close</button>
+            <button class="btn btn-primary" onclick="exportCurrentDoc()">Export</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="{{ url_for('static', filename='js/comment_documentation.js') }}"></script>
+{% endblock %}

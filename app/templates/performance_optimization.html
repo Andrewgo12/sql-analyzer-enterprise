@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Optimization - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/performance_optimization.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="performance-optimization-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="header-text">
+                <h1>⚡ Performance Optimization</h1>
+                <p>Advanced query optimization with intelligent performance suggestions and bottleneck detection</p>
+            </div>
+        </div>
+        <div class="header-metrics">
+            <div class="metric-card">
+                <span class="metric-value" id="avg-processing-time">0.0s</span>
+                <span class="metric-label">Avg Processing</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-value" id="optimization-potential">0%</span>
+                <span class="metric-label">Optimization Potential</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-value" id="performance-score">100</span>
+                <span class="metric-label">Performance Score</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Upload & Configuration -->
+        <div class="left-panel">
+            <div class="upload-section">
+                <h3>📁 SQL File Upload</h3>
+                <div class="upload-area" id="performance-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <p><strong>Drop SQL file here</strong> or click to browse</p>
+                        <p class="upload-hint">Supports .sql, .txt files up to 100MB</p>
+                    </div>
+                    <input type="file" id="performance-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                </div>
+                
+                <div class="file-info" id="performance-file-info" style="display: none;">
+                    <div class="file-details">
+                        <i class="fas fa-file-code"></i>
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                    </div>
+                    <button class="remove-file-btn" id="performance-remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="performance-options">
+                <h3>🔧 Performance Analysis Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="query-optimization" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Query Optimization</strong>
+                            <small>Analyze and optimize SQL queries</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="index-analysis" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Index Analysis</strong>
+                            <small>Recommend optimal indexing strategies</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="bottleneck-detection" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Bottleneck Detection</strong>
+                            <small>Identify performance bottlenecks</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="execution-plan" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Execution Plan Analysis</strong>
+                            <small>Analyze query execution plans</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="resource-estimation" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Resource Estimation</strong>
+                            <small>Estimate CPU, memory, and I/O usage</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="database-selection">
+                    <label for="performance-db-type">Database Type:</label>
+                    <select id="performance-db-type">
+                        <option value="auto">Auto-detect</option>
+                        <option value="mysql">MySQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="oracle">Oracle</option>
+                        <option value="sql_server">SQL Server</option>
+                        <option value="sqlite">SQLite</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="analysis-controls">
+                <button class="btn btn-primary btn-large" id="start-performance-analysis" disabled>
+                    <i class="fas fa-tachometer-alt"></i>
+                    Start Performance Analysis
+                </button>
+                
+                <div class="analysis-progress" id="performance-analysis-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="performance-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="performance-progress-text">Initializing performance analysis...</span>
+                        <span id="performance-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="right-panel">
+            <div class="results-section" id="performance-results" style="display: none;">
+                <!-- Performance Overview -->
+                <div class="performance-overview">
+                    <h3>⚡ Performance Overview</h3>
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <div class="card-icon processing-time">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="processing-time">0.0s</span>
+                                <span class="card-label">Processing Time</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon memory-usage">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="memory-usage">0MB</span>
+                                <span class="card-label">Memory Usage</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon query-complexity">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="query-complexity">Low</span>
+                                <span class="card-label">Query Complexity</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon optimization-score">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="optimization-score">100</span>
+                                <span class="card-label">Optimization Score</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="performance-chart-section">
+                    <h3>📊 Performance Metrics</h3>
+                    <div class="chart-container">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #4CAF50;"></span>
+                            <span>Optimal Performance</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #FF9800;"></span>
+                            <span>Needs Optimization</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #F44336;"></span>
+                            <span>Performance Issues</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Issues -->
+                <div class="performance-issues-section">
+                    <h3>🔍 Performance Issues</h3>
+                    <div class="issue-filters">
+                        <button class="filter-btn active" data-filter="all">All Issues</button>
+                        <button class="filter-btn" data-filter="high">High Impact</button>
+                        <button class="filter-btn" data-filter="medium">Medium Impact</button>
+                        <button class="filter-btn" data-filter="low">Low Impact</button>
+                    </div>
+                    
+                    <div class="issues-list" id="performance-issues-list">
+                        <!-- Performance issues will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Optimization Suggestions -->
+                <div class="optimization-suggestions">
+                    <h3>💡 Optimization Suggestions</h3>
+                    <div class="suggestions-list" id="optimization-suggestions-list">
+                        <!-- Optimization suggestions will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Index Recommendations -->
+                <div class="index-recommendations">
+                    <h3>🗂️ Index Recommendations</h3>
+                    <div class="recommendations-list" id="index-recommendations-list">
+                        <!-- Index recommendations will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Query Execution Plan -->
+                <div class="execution-plan-section">
+                    <h3>🔄 Query Execution Plan</h3>
+                    <div class="execution-plan-container" id="execution-plan-container">
+                        <!-- Execution plan visualization will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-section">
+                    <h3>📤 Export Performance Report</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportPerformanceReport('json')">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportPerformanceReport('html')">
+                            <i class="fas fa-file-alt"></i> HTML
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportPerformanceReport('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportPerformanceReport('csv')">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="performance-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3>Ready for Performance Analysis</h3>
+                <p>Upload a SQL file to start comprehensive performance optimization analysis</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Query Optimization Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Index Recommendations</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Bottleneck Detection</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Execution Plan Analysis</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Issue Detail Modal -->
+<div class="modal" id="performance-issue-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="issue-modal-title">Performance Issue Details</h3>
+            <button class="modal-close" onclick="closePerformanceIssueModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="issue-modal-body">
+            <!-- Performance issue details will be populated here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePerformanceIssueModal()">Close</button>
+            <button class="btn btn-primary" onclick="applyOptimization()">Apply Optimization</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/performance_optimization.js') }}"></script>
+{% endblock %}

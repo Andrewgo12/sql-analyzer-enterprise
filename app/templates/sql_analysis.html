@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis y Corrección SQL - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sql_analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="sql-analysis-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="header-text">
+                <h1>🔍 Análisis y Corrección SQL</h1>
+                <p>Análisis inteligente con corrección automática, comentarios en español y optimización de consultas</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="files-analyzed">0</span>
+                <span class="stat-label">Archivos Analizados</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="errors-corrected">0</span>
+                <span class="stat-label">Errores Corregidos</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="quality-score">100%</span>
+                <span class="stat-label">Calidad Promedio</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Upload & Options -->
+        <div class="left-panel">
+            <div class="upload-section">
+                <h3>📁 Subir Archivo SQL</h3>
+                <div class="upload-area" id="sql-upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <p><strong>Arrastra tu archivo SQL aquí</strong> o haz clic para seleccionar</p>
+                        <p class="upload-hint">Soporta archivos .sql, .txt, .ddl hasta 100MB</p>
+                    </div>
+                    <input type="file" id="sql-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                </div>
+                
+                <div class="file-info" id="sql-file-info" style="display: none;">
+                    <div class="file-details">
+                        <i class="fas fa-file-code"></i>
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                    </div>
+                    <button class="remove-file-btn" id="sql-remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="analysis-options">
+                <h3>⚙️ Opciones de Análisis</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="syntax-check" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Verificación de Sintaxis</strong>
+                            <small>Detectar errores de sintaxis SQL</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="auto-correction" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Corrección Automática</strong>
+                            <small>Corregir errores automáticamente</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="spanish-comments" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Comentarios en Español</strong>
+                            <small>Agregar comentarios explicativos</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="optimization-suggestions">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Sugerencias de Optimización</strong>
+                            <small>Recomendaciones de mejora</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="format-beautify">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Formateo y Embellecimiento</strong>
+                            <small>Mejorar formato del código</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="database-selection">
+                    <label for="sql-db-type">Tipo de Base de Datos:</label>
+                    <select id="sql-db-type">
+                        <option value="auto">Detección Automática</option>
+                        <option value="mysql">MySQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="oracle">Oracle</option>
+                        <option value="sqlserver">SQL Server</option>
+                        <option value="sqlite">SQLite</option>
+                        <option value="mariadb">MariaDB</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="analysis-controls">
+                <button class="btn btn-primary btn-large" id="start-sql-analysis" disabled>
+                    <i class="fas fa-play"></i>
+                    Iniciar Análisis
+                </button>
+                
+                <div class="analysis-progress" id="sql-analysis-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="sql-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="sql-progress-text">Iniciando análisis...</span>
+                        <span id="sql-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="right-panel">
+            <div class="results-section" id="sql-results" style="display: none;">
+                <!-- Analysis Overview -->
+                <div class="analysis-overview">
+                    <h3>📊 Resumen del Análisis</h3>
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <div class="card-icon errors">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="errors-found">0</span>
+                                <span class="card-label">Errores Encontrados</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon corrections">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="corrections-made">0</span>
+                                <span class="card-label">Correcciones Aplicadas</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon quality">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="code-quality">95%</span>
+                                <span class="card-label">Calidad del Código</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon lines">
+                                <i class="fas fa-list-ol"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="total-lines">0</span>
+                                <span class="card-label">Líneas de Código</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Comparison -->
+                <div class="code-comparison">
+                    <h3>🔄 Comparación de Código</h3>
+                    <div class="comparison-tabs">
+                        <button class="tab-btn active" data-tab="original">Código Original</button>
+                        <button class="tab-btn" data-tab="corrected">Código Corregido</button>
+                        <button class="tab-btn" data-tab="diff">Diferencias</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="original-tab">
+                        <div class="code-editor" id="original-code">
+                            <!-- Código original se mostrará aquí -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="corrected-tab">
+                        <div class="code-editor" id="corrected-code">
+                            <!-- Código corregido se mostrará aquí -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="diff-tab">
+                        <div class="code-diff" id="code-diff">
+                            <!-- Diferencias se mostrarán aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issues and Corrections -->
+                <div class="issues-section">
+                    <h3>🔧 Problemas y Correcciones</h3>
+                    <div class="issues-list" id="issues-list">
+                        <!-- Lista de problemas se poblará aquí -->
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="suggestions-section">
+                    <h3>💡 Sugerencias de Mejora</h3>
+                    <div class="suggestions-list" id="suggestions-list">
+                        <!-- Sugerencias se poblarán aquí -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-section">
+                    <h3>📤 Exportar Resultados</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportSQLResults('sql')">
+                            <i class="fas fa-database"></i> SQL Corregido
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSQLResults('html')">
+                            <i class="fas fa-file-alt"></i> Reporte HTML
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSQLResults('json')">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportSQLResults('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="sql-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Listo para Analizar SQL</h3>
+                <p>Sube un archivo SQL para comenzar el análisis inteligente con corrección automática</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Detección Automática de Errores</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Corrección Inteligente</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Comentarios en Español</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Optimización de Consultas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Issue Detail Modal -->
+<div class="modal" id="issue-detail-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="issue-modal-title">Detalle del Problema</h3>
+            <button class="modal-close" onclick="closeIssueModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="issue-modal-body">
+            <!-- Detalles del problema se mostrarán aquí -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeIssueModal()">Cerrar</button>
+            <button class="btn btn-primary" onclick="applyCorrection()">Aplicar Corrección</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="{{ url_for('static', filename='js/sql_analysis.js') }}"></script>
+{% endblock %}

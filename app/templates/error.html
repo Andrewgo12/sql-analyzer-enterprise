@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ error_code }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            {% if error_code == 404 %}
+                <i class="fas fa-search"></i>
+            {% elif error_code == 500 %}
+                <i class="fas fa-exclamation-triangle"></i>
+            {% elif error_code == 413 %}
+                <i class="fas fa-file-upload"></i>
+            {% else %}
+                <i class="fas fa-exclamation-circle"></i>
+            {% endif %}
+        </div>
+        
+        <div class="error-details">
+            <h1 class="error-code">{{ error_code or 'Error' }}</h1>
+            <h2 class="error-title">
+                {% if error_code == 404 %}
+                    Page Not Found
+                {% elif error_code == 500 %}
+                    Internal Server Error
+                {% elif error_code == 413 %}
+                    File Too Large
+                {% else %}
+                    Something Went Wrong
+                {% endif %}
+            </h2>
+            
+            <p class="error-message">
+                {{ error_message or 'An unexpected error occurred. Please try again.' }}
+            </p>
+            
+            <div class="error-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i>
+                    Go Home
+                </a>
+                <button onclick="history.back()" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Go Back
+                </button>
+                <button onclick="location.reload()" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    Retry
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    {% if error_code == 404 %}
+    <div class="helpful-links">
+        <h3>Popular Pages</h3>
+        <ul>
+            <li><a href="{{ url_for('sql_analysis') }}">SQL Analysis & Correction</a></li>
+            <li><a href="{{ url_for('security_analysis') }}">Security Analysis</a></li>
+            <li><a href="{{ url_for('performance_optimization') }}">Performance Optimization</a></li>
+            <li><a href="{{ url_for('schema_analysis') }}">Schema Analysis</a></li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-content {
+    max-width: 600px;
+    margin-bottom: 2rem;
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: bold;
+    color: #dc3545;
+    margin: 0;
+    line-height: 1;
+}
+
+.error-title {
+    font-size: 2rem;
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 1rem 0 2rem;
+    line-height: 1.5;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.helpful-links {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.helpful-links h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.helpful-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+.helpful-links li {
+    margin: 0.5rem 0;
+}
+
+.helpful-links a {
+    color: #0969da;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.helpful-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 4rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .error-actions .btn {
+        width: 200px;
+    }
+}
+</style>
+{% endblock %}

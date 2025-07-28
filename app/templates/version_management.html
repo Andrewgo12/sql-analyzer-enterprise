@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Version Management - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/version_management.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="version-management-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-code-branch"></i>
+            </div>
+            <div class="header-text">
+                <h1>🔄 Version Management & Comparison</h1>
+                <p>SQL version control with intelligent diff analysis and merge capabilities</p>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="total-versions">0</span>
+                <span class="stat-label">Versions</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="active-comparisons">0</span>
+                <span class="stat-label">Comparisons</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="merge-conflicts">0</span>
+                <span class="stat-label">Conflicts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Panel: Version Control -->
+        <div class="left-panel">
+            <div class="version-upload">
+                <h3>📁 Upload SQL Versions</h3>
+                <div class="upload-tabs">
+                    <button class="tab-btn active" data-tab="single">Single File</button>
+                    <button class="tab-btn" data-tab="multiple">Multiple Files</button>
+                </div>
+                
+                <div class="tab-content active" id="single-upload">
+                    <div class="upload-area" id="version-upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <p><strong>Drop SQL file here</strong> or click to browse</p>
+                            <p class="upload-hint">Add new version to compare</p>
+                        </div>
+                        <input type="file" id="version-file-input" accept=".sql,.txt,.ddl,.dml" hidden>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="multiple-upload">
+                    <div class="upload-area" id="multiple-upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <p><strong>Drop multiple SQL files here</strong></p>
+                            <p class="upload-hint">Upload multiple versions at once</p>
+                        </div>
+                        <input type="file" id="multiple-file-input" accept=".sql,.txt,.ddl,.dml" multiple hidden>
+                    </div>
+                </div>
+            </div>
+
+            <div class="version-list">
+                <h3>📋 Version History</h3>
+                <div class="version-controls">
+                    <button class="btn btn-sm btn-secondary" onclick="sortVersions('date')">
+                        <i class="fas fa-sort"></i> Sort by Date
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="sortVersions('name')">
+                        <i class="fas fa-sort-alpha-down"></i> Sort by Name
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearVersions()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="versions" id="version-list">
+                    <!-- Versions will be populated here -->
+                </div>
+            </div>
+
+            <div class="comparison-options">
+                <h3>⚙️ Comparison Options</h3>
+                <div class="option-group">
+                    <label class="option-item">
+                        <input type="checkbox" id="ignore-whitespace" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Ignore Whitespace</strong>
+                            <small>Ignore whitespace differences</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="ignore-comments">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Ignore Comments</strong>
+                            <small>Ignore comment differences</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="case-sensitive">
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Case Sensitive</strong>
+                            <small>Consider case differences</small>
+                        </div>
+                    </label>
+                    
+                    <label class="option-item">
+                        <input type="checkbox" id="semantic-comparison" checked>
+                        <span class="checkmark"></span>
+                        <div class="option-content">
+                            <strong>Semantic Comparison</strong>
+                            <small>Compare SQL logic, not just text</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="diff-algorithm">
+                    <label for="diff-algorithm-select">Diff Algorithm:</label>
+                    <select id="diff-algorithm-select">
+                        <option value="myers">Myers Algorithm</option>
+                        <option value="patience">Patience Algorithm</option>
+                        <option value="histogram">Histogram Algorithm</option>
+                        <option value="minimal">Minimal Algorithm</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="comparison-controls">
+                <button class="btn btn-primary btn-large" id="start-comparison" onclick="startComparison()" disabled>
+                    <i class="fas fa-code-branch"></i>
+                    Compare Versions
+                </button>
+                
+                <div class="comparison-progress" id="comparison-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="comparison-progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="comparison-progress-text">Analyzing differences...</span>
+                        <span id="comparison-progress-percent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Comparison Results -->
+        <div class="right-panel">
+            <div class="comparison-results" id="comparison-results" style="display: none;">
+                <!-- Comparison Header -->
+                <div class="comparison-header">
+                    <h3>🔍 Version Comparison</h3>
+                    <div class="comparison-info">
+                        <div class="version-info">
+                            <span class="version-label">Version A:</span>
+                            <span class="version-name" id="version-a-name">-</span>
+                        </div>
+                        <div class="version-info">
+                            <span class="version-label">Version B:</span>
+                            <span class="version-name" id="version-b-name">-</span>
+                        </div>
+                    </div>
+                    <div class="comparison-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="additions-count">0</span>
+                            <span class="stat-label additions">Additions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="deletions-count">0</span>
+                            <span class="stat-label deletions">Deletions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="modifications-count">0</span>
+                            <span class="stat-label modifications">Modifications</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diff View Controls -->
+                <div class="diff-controls">
+                    <div class="view-modes">
+                        <button class="view-btn active" data-view="side-by-side">
+                            <i class="fas fa-columns"></i> Side by Side
+                        </button>
+                        <button class="view-btn" data-view="unified">
+                            <i class="fas fa-align-left"></i> Unified
+                        </button>
+                        <button class="view-btn" data-view="inline">
+                            <i class="fas fa-list"></i> Inline
+                        </button>
+                    </div>
+                    
+                    <div class="diff-options">
+                        <button class="btn btn-sm btn-secondary" onclick="expandAll()">
+                            <i class="fas fa-expand-alt"></i> Expand All
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="collapseAll()">
+                            <i class="fas fa-compress-alt"></i> Collapse All
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="nextDifference()">
+                            <i class="fas fa-arrow-down"></i> Next Diff
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="previousDifference()">
+                            <i class="fas fa-arrow-up"></i> Previous Diff
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Diff Viewer -->
+                <div class="diff-viewer" id="diff-viewer">
+                    <div class="diff-content side-by-side" id="diff-content">
+                        <!-- Diff content will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Semantic Analysis -->
+                <div class="semantic-analysis">
+                    <h3>🧠 Semantic Analysis</h3>
+                    <div class="semantic-results" id="semantic-results">
+                        <!-- Semantic analysis results will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Merge Tools -->
+                <div class="merge-tools">
+                    <h3>🔀 Merge Tools</h3>
+                    <div class="merge-controls">
+                        <button class="btn btn-secondary" onclick="autoMerge()">
+                            <i class="fas fa-magic"></i> Auto Merge
+                        </button>
+                        <button class="btn btn-secondary" onclick="manualMerge()">
+                            <i class="fas fa-edit"></i> Manual Merge
+                        </button>
+                        <button class="btn btn-secondary" onclick="conflictResolution()">
+                            <i class="fas fa-exclamation-triangle"></i> Resolve Conflicts
+                        </button>
+                    </div>
+                    
+                    <div class="merge-preview" id="merge-preview" style="display: none;">
+                        <!-- Merge preview will be shown here -->
+                    </div>
+                </div>
+
+                <!-- Export Comparison -->
+                <div class="export-comparison">
+                    <h3>📤 Export Comparison</h3>
+                    <div class="export-options">
+                        <button class="btn btn-secondary" onclick="exportDiff('html')">
+                            <i class="fas fa-file-alt"></i> HTML Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDiff('pdf')">
+                            <i class="fas fa-file-pdf"></i> PDF Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDiff('patch')">
+                            <i class="fas fa-file-code"></i> Patch File
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportMerged()">
+                            <i class="fas fa-download"></i> Merged SQL
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="version-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <h3>Ready for Version Comparison</h3>
+                <p>Upload SQL files to start version comparison and analysis</p>
+                <div class="empty-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Intelligent Diff Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Semantic Comparison</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Merge Conflict Resolution</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Multiple View Modes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Version Detail Modal -->
+<div class="modal" id="version-detail-modal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3 id="version-modal-title">Version Details</h3>
+            <button class="modal-close" onclick="closeVersionModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="version-modal-body">
+            <!-- Version details will be populated here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeVersionModal()">Close</button>
+            <button class="btn btn-primary" onclick="selectVersionForComparison()">Select for Comparison</button>
+        </div>
+    </div>
+</div>
+
+<!-- Merge Conflict Resolution Modal -->
+<div class="modal" id="merge-conflict-modal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3>Merge Conflict Resolution</h3>
+            <button class="modal-close" onclick="closeMergeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="conflict-resolution">
+                <div class="conflict-info">
+                    <h4>Conflict Details</h4>
+                    <div class="conflict-summary" id="conflict-summary">
+                        <!-- Conflict summary will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="resolution-options">
+                    <h4>Resolution Options</h4>
+                    <div class="resolution-choices" id="resolution-choices">
+                        <!-- Resolution choices will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="manual-edit">
+                    <h4>Manual Edit</h4>
+                    <textarea id="manual-merge-editor" class="merge-editor"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeMergeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="applyMergeResolution()">Apply Resolution</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/diff/5.1.0/diff.min.js"></script>
+<script src="{{ url_for('static', filename='js/version_management.js') }}"></script>
+{% endblock %}

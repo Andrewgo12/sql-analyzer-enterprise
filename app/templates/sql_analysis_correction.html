@@ -1,0 +1,668 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis SQL & Corrección - SQL Analyzer Enterprise{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sql_analysis.css') }}">
+{% endblock %}
+
+{% block page_icon %}<i class="fas fa-code"></i>{% endblock %}
+
+{% block page_actions %}
+<div class="page-actions-group">
+    <button class="btn btn-primary" onclick="openModal('upload-modal')">
+        <i class="fas fa-upload"></i>
+        Subir Archivo SQL
+    </button>
+    <button class="btn btn-secondary" onclick="clearAnalysis()">
+        <i class="fas fa-trash"></i>
+        Limpiar
+    </button>
+    <button class="btn btn-info" onclick="showSampleData()">
+        <i class="fas fa-eye"></i>
+        Datos de Ejemplo
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="sql-analysis-container">
+    <!-- Upload Section -->
+    <div class="analysis-section upload-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-file-upload"></i>
+                Subir Archivo SQL
+            </h2>
+            <div class="section-info">
+                <span class="info-badge">
+                    <i class="fas fa-info-circle"></i>
+                    Máximo 100MB
+                </span>
+            </div>
+        </div>
+        
+        <div class="upload-area" id="upload-area">
+            <div class="upload-content">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h3>Arrastra tu archivo SQL aquí</h3>
+                <p>o haz clic para seleccionar un archivo</p>
+                <div class="upload-formats">
+                    <span class="format-badge">.sql</span>
+                    <span class="format-badge">.txt</span>
+                    <span class="format-badge">.ddl</span>
+                    <span class="format-badge">.dml</span>
+                </div>
+            </div>
+            <input type="file" id="file-input" accept=".sql,.txt,.ddl,.dml" style="display: none;">
+        </div>
+        
+        <div class="upload-options">
+            <div class="option-group">
+                <label for="database-type">Tipo de Base de Datos:</label>
+                <select id="database-type" class="form-select">
+                    <option value="generic">Detección Automática</option>
+                    {% for key, value in database_types.items() %}
+                    <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="option-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="auto-fix" checked>
+                    <span class="checkmark"></span>
+                    Corrección Automática
+                </label>
+            </div>
+            
+            <div class="option-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="intelligent-comments" checked>
+                    <span class="checkmark"></span>
+                    Comentarios Inteligentes
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Results Section -->
+    <div class="analysis-section results-section" id="results-section" style="display: none;">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Resultados del Análisis
+            </h2>
+            <div class="section-actions">
+                <button class="btn btn-success" onclick="exportResults('html')">
+                    <i class="fas fa-download"></i>
+                    Exportar HTML
+                </button>
+                <button class="btn btn-primary" onclick="exportResults('json')">
+                    <i class="fas fa-download"></i>
+                    Exportar JSON
+                </button>
+            </div>
+        </div>
+        
+        <!-- Analysis Summary -->
+        <div class="analysis-summary">
+            <div class="summary-cards">
+                <div class="summary-card quality-card">
+                    <div class="card-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Calidad</h3>
+                        <div class="score-display">
+                            <span class="score-value" id="quality-score">--</span>
+                            <span class="score-max">/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="quality-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-card complexity-card">
+                    <div class="card-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Complejidad</h3>
+                        <div class="score-display">
+                            <span class="score-value" id="complexity-score">--</span>
+                            <span class="score-max">/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="complexity-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-card errors-card">
+                    <div class="card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Errores</h3>
+                        <div class="score-display">
+                            <span class="score-value" id="errors-count">--</span>
+                            <span class="score-max">encontrados</span>
+                        </div>
+                        <div class="error-breakdown" id="error-breakdown"></div>
+                    </div>
+                </div>
+                
+                <div class="summary-card performance-card">
+                    <div class="card-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Rendimiento</h3>
+                        <div class="score-display">
+                            <span class="score-value" id="processing-time">--</span>
+                            <span class="score-max">segundos</span>
+                        </div>
+                        <div class="performance-status" id="performance-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Results Tabs -->
+        <div class="results-tabs">
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="showTab('syntax-tab')">
+                    <i class="fas fa-code"></i>
+                    Sintaxis
+                </button>
+                <button class="tab-btn" onclick="showTab('semantic-tab')">
+                    <i class="fas fa-brain"></i>
+                    Semántica
+                </button>
+                <button class="tab-btn" onclick="showTab('corrected-tab')">
+                    <i class="fas fa-magic"></i>
+                    SQL Corregido
+                </button>
+                <button class="tab-btn" onclick="showTab('recommendations-tab')">
+                    <i class="fas fa-lightbulb"></i>
+                    Recomendaciones
+                </button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Syntax Errors Tab -->
+                <div id="syntax-tab" class="tab-panel active">
+                    <div class="panel-header">
+                        <h3>Errores de Sintaxis</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-primary" onclick="fixAllSyntaxErrors()">
+                                <i class="fas fa-magic"></i>
+                                Corregir Todo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="errors-list" id="syntax-errors-list">
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No se encontraron errores de sintaxis</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Semantic Errors Tab -->
+                <div id="semantic-tab" class="tab-panel">
+                    <div class="panel-header">
+                        <h3>Advertencias Semánticas</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="filterSemanticErrors('all')">
+                                Todos
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="filterSemanticErrors('high')">
+                                Alta Prioridad
+                            </button>
+                        </div>
+                    </div>
+                    <div class="errors-list" id="semantic-errors-list">
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No se encontraron advertencias semánticas</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Corrected SQL Tab -->
+                <div id="corrected-tab" class="tab-panel">
+                    <div class="panel-header">
+                        <h3>SQL Corregido con Comentarios Inteligentes</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-success" onclick="copyCorrectedSQL()">
+                                <i class="fas fa-copy"></i>
+                                Copiar
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="downloadCorrectedSQL()">
+                                <i class="fas fa-download"></i>
+                                Descargar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-container">
+                        <pre><code id="corrected-sql-code" class="language-sql">-- El SQL corregido aparecerá aquí</code></pre>
+                    </div>
+                </div>
+                
+                <!-- Recommendations Tab -->
+                <div id="recommendations-tab" class="tab-panel">
+                    <div class="panel-header">
+                        <h3>Recomendaciones de Mejora</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-info" onclick="exportRecommendations()">
+                                <i class="fas fa-file-export"></i>
+                                Exportar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="recommendations-list" id="recommendations-list">
+                        <div class="empty-state">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>Las recomendaciones aparecerán después del análisis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Subir Archivo SQL</h2>
+            <button class="modal-close" onclick="closeModal('upload-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="modal-file-input">Seleccionar Archivo:</label>
+                    <input type="file" id="modal-file-input" name="file" accept=".sql,.txt,.ddl,.dml" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-database-type">Tipo de Base de Datos:</label>
+                    <select id="modal-database-type" name="database_type" class="form-select">
+                        <option value="generic">Detección Automática</option>
+                        {% for key, value in database_types.items() %}
+                        <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="auto_fix" checked>
+                            <span class="checkmark"></span>
+                            Aplicar correcciones automáticas
+                        </label>
+                        
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="intelligent_comments" checked>
+                            <span class="checkmark"></span>
+                            Generar comentarios inteligentes en español
+                        </label>
+                        
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="security_scan" checked>
+                            <span class="checkmark"></span>
+                            Incluir escaneo de seguridad
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('upload-modal')">
+                Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" onclick="submitAnalysis()">
+                <i class="fas fa-play"></i>
+                Iniciar Análisis
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div id="progress-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Analizando Archivo SQL</h2>
+        </div>
+        <div class="modal-body">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="analysis-progress"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progress-message">Iniciando análisis...</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+            </div>
+            
+            <div class="progress-steps">
+                <div class="step" id="step-upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Subiendo archivo</span>
+                </div>
+                <div class="step" id="step-parse">
+                    <i class="fas fa-code"></i>
+                    <span>Analizando sintaxis</span>
+                </div>
+                <div class="step" id="step-security">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Escaneando seguridad</span>
+                </div>
+                <div class="step" id="step-optimize">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Optimizando rendimiento</span>
+                </div>
+                <div class="step" id="step-complete">
+                    <i class="fas fa-check"></i>
+                    <span>Completado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sql_analysis.js') }}"></script>
+<script>
+// Global variables
+let currentAnalysisId = null;
+let analysisResults = null;
+
+// Initialize SQL Analysis page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSQLAnalysis();
+});
+
+function initializeSQLAnalysis() {
+    setupFileUpload();
+    setupDragAndDrop();
+}
+
+function setupFileUpload() {
+    const fileInput = document.getElementById('file-input');
+    const uploadArea = document.getElementById('upload-area');
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+}
+
+function setupDragAndDrop() {
+    const uploadArea = document.getElementById('upload-area');
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect({ target: { files: files } });
+        }
+    });
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        document.getElementById('modal-file-input').files = event.target.files;
+        openModal('upload-modal');
+    }
+}
+
+function submitAnalysis() {
+    const form = document.getElementById('upload-form');
+    const formData = new FormData(form);
+    
+    closeModal('upload-modal');
+    openModal('progress-modal');
+    
+    // Start progress simulation
+    simulateProgress();
+    
+    // Submit analysis
+    fetch('/api/analyze', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        closeModal('progress-modal');
+        
+        if (data.success) {
+            displayAnalysisResults(data.data);
+        } else {
+            showError('Error en el análisis: ' + data.error);
+        }
+    })
+    .catch(error => {
+        closeModal('progress-modal');
+        showError('Error de conexión: ' + error.message);
+    });
+}
+
+function simulateProgress() {
+    const steps = ['upload', 'parse', 'security', 'optimize', 'complete'];
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            document.getElementById(`step-${steps[currentStep]}`).classList.add('active');
+            currentStep++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 1000);
+}
+
+function displayAnalysisResults(results) {
+    analysisResults = results.analysis_result;
+    currentAnalysisId = analysisResults.id;
+    
+    // Update summary cards
+    updateSummaryCards(analysisResults);
+    
+    // Update detailed results
+    updateDetailedResults(analysisResults);
+    
+    // Show results section
+    document.getElementById('results-section').style.display = 'block';
+    
+    // Scroll to results
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateSummaryCards(results) {
+    // Quality score
+    document.getElementById('quality-score').textContent = results.quality_score;
+    document.getElementById('quality-fill').style.width = results.quality_score + '%';
+    
+    // Complexity score
+    document.getElementById('complexity-score').textContent = results.complexity_score;
+    document.getElementById('complexity-fill').style.width = results.complexity_score + '%';
+    
+    // Errors count
+    const totalErrors = results.syntax_errors.length + results.semantic_errors.length;
+    document.getElementById('errors-count').textContent = totalErrors;
+    
+    // Processing time
+    document.getElementById('processing-time').textContent = results.processing_time.toFixed(3);
+}
+
+function updateDetailedResults(results) {
+    // Update syntax errors
+    updateErrorsList('syntax-errors-list', results.syntax_errors);
+    
+    // Update semantic errors
+    updateErrorsList('semantic-errors-list', results.semantic_errors);
+    
+    // Update corrected SQL
+    document.getElementById('corrected-sql-code').textContent = results.corrected_sql;
+    
+    // Update recommendations
+    updateRecommendationsList(results.recommendations);
+}
+
+function updateErrorsList(containerId, errors) {
+    const container = document.getElementById(containerId);
+    
+    if (errors.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No se encontraron errores</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = errors.map(error => `
+        <div class="error-item severity-${error.severity}">
+            <div class="error-header">
+                <span class="error-line">Línea ${error.line_number}</span>
+                <span class="error-type">${error.error_type}</span>
+                <span class="error-severity severity-${error.severity}">${error.severity}</span>
+            </div>
+            <div class="error-message">${error.message}</div>
+            <div class="error-suggestion">
+                <i class="fas fa-lightbulb"></i>
+                ${error.suggestion}
+            </div>
+            ${error.auto_fixable ? `
+                <div class="error-actions">
+                    <button class="btn btn-sm btn-success" onclick="applyFix('${error.id}')">
+                        <i class="fas fa-magic"></i>
+                        Aplicar Corrección
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+function updateRecommendationsList(recommendations) {
+    const container = document.getElementById('recommendations-list');
+    
+    if (recommendations.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-lightbulb"></i>
+                <p>No hay recomendaciones disponibles</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = recommendations.map((rec, index) => `
+        <div class="recommendation-item">
+            <div class="recommendation-number">${index + 1}</div>
+            <div class="recommendation-content">
+                <p>${rec}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+function exportResults(format) {
+    if (!currentAnalysisId) {
+        showError('No hay resultados para exportar');
+        return;
+    }
+    
+    window.open(`/api/export/${currentAnalysisId}/${format}`, '_blank');
+}
+
+function clearAnalysis() {
+    document.getElementById('results-section').style.display = 'none';
+    currentAnalysisId = null;
+    analysisResults = null;
+    
+    // Reset file inputs
+    document.getElementById('file-input').value = '';
+    document.getElementById('modal-file-input').value = '';
+}
+
+function showError(message) {
+    const flashMessages = document.getElementById('flash-messages');
+    flashMessages.innerHTML = `
+        <div class="alert alert-error alert-dismissible">
+            <span class="alert-message">${message}</span>
+            <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+}
+
+function showSampleData() {
+    const sampleSQL = `-- Ejemplo de SQL con errores para demostración
+SELECT u.id, u.name, u.email, o.total
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE u.is_active = TRUE
+  AND o.status = 'completed'
+ORDER BY o.created_at DESC
+LIMIT 50;
+
+-- Error de sintaxis: paréntesis sin cerrar
+SELECT COUNT( FROM users WHERE active = 1;
+
+-- Advertencia de seguridad: posible inyección SQL
+SELECT * FROM users WHERE username = 'admin' OR '1'='1';`;
+    
+    // Create a blob and simulate file upload
+    const blob = new Blob([sampleSQL], { type: 'text/plain' });
+    const file = new File([blob], 'sample.sql', { type: 'text/plain' });
+    
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    
+    document.getElementById('modal-file-input').files = dataTransfer.files;
+    openModal('upload-modal');
+}
+</script>
+{% endblock %}
